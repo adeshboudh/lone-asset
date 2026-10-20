@@ -81,10 +81,11 @@ godot --headless --export-release "Web" build/web/index.html
 
 ### 1.4 Hosting
 
-- Static host + CDN with HTTPS. **Provider not yet chosen**; everything below is provider-agnostic (see §25.3 for the shortlist and deadline).
+- **Cloudflare Pages** (direct upload from GitHub Actions via Wrangler), HTTPS, Cloudflare CDN compression.
 - `.wasm` served as `application/wasm`.
 - Brotli pre-compression of `.wasm`, `.pck`, `.js` in CI (`*.br`), with gzip fallback.
-- File names carry a content hash or build ID; `Cache-Control: public, max-age=31536000, immutable` for hashed files, `no-cache` for `index.html`.
+- Godot export file names are not content-hashed, so `index.html` is `no-cache` and `.wasm`/`.pck`/`.js` use a short `max-age` with ETag revalidation (`web/_headers`).
+- **Cloudflare Pages limits each file to 25 MiB.** CI fails if any file exceeds it. If the engine `.wasm` alone exceeds it, build size-optimised custom web templates (disable unused engine modules) or serve the `.wasm` from Cloudflare R2. The `.pck` stays under the limit through split resource packs.
 - Every pull request deploys a preview URL; `main` deploys to the staging URL.
 
 ---
@@ -1129,19 +1130,8 @@ One finished-art hero area in Milestone 1; rest of the level is graybox. Details
 ### 25.2 Safari — decided
 Safari is **not** a target for Milestone 1 or Milestone 2. Supported: current stable Chrome, Edge and Firefox on desktop. The HTML shell shows an "unsupported browser" note on Safari but does not block loading. Revisit before any public release.
 
-### 25.3 Hosting — not decided
-Requirements: HTTPS, custom headers, `application/wasm` MIME type, Brotli (pre-compressed or automatic), per-branch preview deployments from GitHub Actions, free or low-cost tier.
-
-Shortlist:
-
-| Provider | Notes |
-|---|---|
-| Cloudflare Pages | Custom headers via `_headers`, automatic Brotli, preview deployments per branch, generous free tier — **recommended default** |
-| Netlify | Similar features; smaller free bandwidth |
-| GitHub Pages | Simplest; no custom headers (fine for single-threaded build), no per-PR previews without extra work |
-| itch.io | Good for distributing playtest builds later; not for CI previews |
-
-Decide **before WP 1** (§22), because WP 1's exit check is a deployed preview URL. Until then, CI uploads the web build as a downloadable artifact and it is tested locally with a static server.
+### 25.3 Hosting — decided
+**Cloudflare Pages**, deployed from GitHub Actions with Wrangler. `main` deploys to production; every other branch and pull request gets its own preview URL. Watch the 25 MiB per-file limit (§1.4).
 
 ### 25.4 Playtesting — decided
 The developer is the only playtester for Milestone 1. Process in §18.6; acceptance item 20 updated accordingly. Recruit 1–2 outside testers before Milestone 2.

@@ -1,0 +1,19 @@
+# Cloudflare Pages response headers for the web build.
+# Godot export file names are not content-hashed, so assets use a short cache with ETag revalidation.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/index.html
+  Cache-Control: no-cache
+
+/*.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=300, must-revalidate
+
+/*.pck
+  Cache-Control: public, max-age=300, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=300, must-revalidate

@@ -85,7 +85,7 @@ godot --headless --export-release "Web" build/web/index.html
 - `.wasm` served as `application/wasm`.
 - Brotli pre-compression of `.wasm`, `.pck`, `.js` in CI (`*.br`), with gzip fallback.
 - Godot export file names are not content-hashed, so `index.html` is `no-cache` and `.wasm`/`.pck`/`.js` use a short `max-age` with ETag revalidation (`web/_headers`).
-- **Cloudflare Pages limits each file to 25 MiB.** CI fails if any file exceeds it. If the engine `.wasm` alone exceeds it, build size-optimised custom web templates (disable unused engine modules) or serve the `.wasm` from Cloudflare R2. The `.pck` stays under the limit through split resource packs.
+- **Cloudflare Pages limits each file to 25 MiB.** CI fails if any file exceeds it. The Godot 4.7 engine `.wasm` is ~38 MiB (6.6 MiB Brotli), so only `index.wasm.br` is deployed and a Pages advanced-mode worker (`web/_worker.js`) serves it at `/index.wasm` with `Content-Encoding: br`. Size-optimised custom web templates remain a later option to cut download size further. The `.pck` stays under the limit through split resource packs.
 - Every pull request deploys a preview URL; `main` deploys to the staging URL.
 
 ---

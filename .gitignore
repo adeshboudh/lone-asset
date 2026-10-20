@@ -1,0 +1,14 @@
+# Godot
+.godot/
+/build/
+*.translation
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Tests
+/tests/browser/node_modules/
+/tests/browser/test-results/

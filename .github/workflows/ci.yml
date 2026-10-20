@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Lint, test and export web build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - name: Licence compliance (REUSE)
+        uses: fsfe/reuse-action@v5
+
+      - name: Read engine version
+        id: engine
+        run: echo "version=$(cat ENGINE_VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Godot and export templates
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/godot-ci
+          key: godot-${{ steps.engine.outputs.version }}-web
+
+      - name: Install Godot ${{ steps.engine.outputs.version }}
+        run: tools/ci/install_godot.sh "${{ steps.engine.outputs.version }}"
+
+      - name: Install compression tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q brotli
+
+      - name: Import project
+        run: godot --headless --path . --import
+
+      - name: Smoke test
+        run: tools/ci/smoke_test.sh
+
+      - name: Stamp build ID
+        run: tools/ci/stamp_version.sh "$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
+
+      - name: Export web build
+        run: |
+          mkdir -p build/web
+          godot --headless --path . --export-release "Web" build/web/index.html
+          test -f build/web/index.wasm
+
+      - name: Compress and report size
+        run: tools/ci/compress_web.sh build/web | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v5
+        with:
+          name: web-build-${{ github.sha }}
+          path: build/web
+          retention-days: 14

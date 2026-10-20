@@ -1,0 +1,22 @@
+# Licensing per the REUSE specification (https://reuse.software).
+# Later annotations take precedence: add third-party assets at the end of this file.
+version = 1
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Lone Asset contributors"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["docs/**", "content/**", "icon.svg", "icon.svg.import"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Lone Asset contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Third-party assets go below, one block per source, for example:
+# [[annotations]]
+# path = "content/textures/polyhaven/**"
+# precedence = "override"
+# SPDX-FileCopyrightText = "Poly Haven"
+# SPDX-License-Identifier = "CC0-1.0"

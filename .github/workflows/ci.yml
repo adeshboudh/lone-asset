@@ -43,6 +43,18 @@ jobs:
       - name: Smoke test
         run: tools/ci/smoke_test.sh
 
+      - name: Unit tests
+        run: tools/ci/run_tests.sh
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: test-report-${{ github.sha }}
+          path: reports
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Stamp build ID
         run: tools/ci/stamp_version.sh "$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
 

@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/ui/pause/pause_menu.gd" id="1_pause"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_pause")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Box" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(280, 0)
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Center/Box"]
+theme_override_font_sizes/font_size = 32
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="Center/Box"]
+unique_name_in_owner = true
+text = "Resume"
+
+[node name="QuitButton" type="Button" parent="Center/Box"]
+unique_name_in_owner = true
+text = "Quit to title"
+
+[node name="CaptureHint" type="Label" parent="Center/Box"]
+unique_name_in_owner = true
+visible = false
+text = "The browser needs a moment after Esc.
+Click Resume again."
+horizontal_alignment = 1

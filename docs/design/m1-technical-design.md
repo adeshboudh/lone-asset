@@ -669,7 +669,7 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 - `user://` maps to **IndexedDB** in the web build.
 - Settings: `user://settings.cfg` (ConfigFile).
 - Checkpoint: `user://saves/checkpoint.json`.
-- On first launch, `Platform` calls `navigator.storage.persist()` through `JavaScriptBridge` to reduce eviction risk.
+- When the first checkpoint is written (WP 12), `Platform` calls `navigator.storage.persist()` through `JavaScriptBridge` to reduce eviction risk. (Firefox shows a permission prompt, so it is not requested on first launch.)
 - Settings menu offers **Export save** (downloads the JSON via `JavaScriptBridge.download_buffer`) and **Import save** (file picker).
 
 ### 16.2 Checkpoint schema

@@ -57,3 +57,17 @@ func test_bus_layout_has_all_buses_routed_correctly() -> void:
 	for bus: StringName in [&"Weapons", &"Footsteps", &"Ambience"]:
 		assert_str(AudioServer.get_bus_send(AudioServer.get_bus_index(bus))).is_equal("SFX")
 	assert_str(AudioServer.get_bus_send(AudioServer.get_bus_index(&"SFX"))).is_equal("Master")
+
+
+func test_sounds_are_imported_uncompressed() -> void:
+	# Web builds play samples; uncompressed PCM is the safe format for sample playback.
+	var dir: DirAccess = DirAccess.open("res://content/audio/sfx")
+	var checked: int = 0
+	for file: String in dir.get_files():
+		if not file.ends_with(".wav.import"):
+			continue
+		var config: ConfigFile = ConfigFile.new()
+		assert_int(config.load("res://content/audio/sfx/" + file)).is_equal(OK)
+		assert_int(config.get_value("params", "compress/mode", -1)).override_failure_message("%s is compressed" % file).is_equal(0)
+		checked += 1
+	assert_int(checked).is_greater(30)

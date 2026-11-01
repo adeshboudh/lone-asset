@@ -9,6 +9,8 @@ Usage (from the repository root):
 
 Output is 16-bit mono WAV: web builds play sounds as samples, and WAV is the format Godot's sample
 playback is built around. Re-test Ogg Vorbis on the web before switching real recordings to Ogg.
+Keep each file's import setting compress/mode=0 (uncompressed PCM): QOA-compressed WAV is unverified for
+web sample playback. tests/unit/test_audio_bank.gd checks this.
 """
 import wave
 from pathlib import Path

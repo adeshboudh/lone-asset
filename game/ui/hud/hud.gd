@@ -4,6 +4,7 @@ extends CanvasLayer
 ## mode, health, light exposure and a hit marker when the player damages something.
 
 const HIT_MARKER_TIME_S: float = 0.15
+const TOAST_TIME_S: float = 3.0
 
 var _player: Player
 var _hit_marker_remaining: float = 0.0
@@ -12,12 +13,17 @@ var _hit_marker_killed: bool = false
 var _hits_taken: Array[Dictionary] = []
 ## 1 right after being hurt, fading to 0.
 var _hurt_flash: float = 0.0
+var _toast_remaining: float = 0.0
 
 @onready var _crosshair: Control = %Crosshair
 @onready var _ammo_label: Label = %AmmoLabel
 @onready var _health_label: Label = %HealthLabel
 @onready var _exposure_bar: ProgressBar = %ExposureBar
 @onready var _indicators: Control = %Indicators
+@onready var _objective_list: Label = %ObjectiveList
+@onready var _prompt_label: Label = %PromptLabel
+@onready var _hold_bar: ProgressBar = %HoldBar
+@onready var _toast_label: Label = %ToastLabel
 
 ## Where the suspicion arcs sit, in pixels from the crosshair.
 const INDICATOR_RADIUS: float = 130.0
@@ -38,6 +44,10 @@ func setup(player: Player) -> void:
 	_crosshair.draw.connect(_draw_crosshair)
 	_indicators.draw.connect(_draw_indicators)
 	EventBus.damage_applied.connect(_on_damage_applied)
+	Mission.changed.connect(_refresh_objectives)
+	Mission.objective_completed.connect(_on_objective_completed)
+	_toast_label.modulate.a = 0.0
+	_refresh_objectives()
 
 
 func _process(delta: float) -> void:
@@ -54,8 +64,44 @@ func _process(delta: float) -> void:
 	for hit: Dictionary in _hits_taken:
 		hit["age"] += delta
 	_hits_taken = _hits_taken.filter(func(hit: Dictionary) -> bool: return hit["age"] < HIT_ARC_TIME_S)
+	_update_prompt()
+	_toast_remaining = maxf(_toast_remaining - delta, 0.0)
+	_toast_label.modulate.a = clampf(_toast_remaining, 0.0, 1.0)
 	_crosshair.queue_redraw()
 	_indicators.queue_redraw()
+
+
+## "[F] Open" for what the player is looking at, with a progress bar while holding a timed use.
+func _update_prompt() -> void:
+	var focus: Interactable = _player.interactor.focus
+	_prompt_label.text = "" if focus == null else "[F]  %s" % focus.prompt_text
+	var progress: float = _player.interactor.hold_progress
+	_hold_bar.visible = focus != null and focus.definition.hold_duration > 0.0
+	_hold_bar.value = progress
+
+
+func _refresh_objectives() -> void:
+	var lines: PackedStringArray = []
+	for objective: ObjectiveDefinition in Mission.state.definition.objectives:
+		var status: MissionState.Status = Mission.state.status_of(objective.id)
+		if status == MissionState.Status.INACTIVE:
+			continue
+		var mark: String = "[ ]"
+		match status:
+			MissionState.Status.COMPLETED:
+				mark = "[x]"
+			MissionState.Status.FAILED:
+				mark = "[-]"
+		lines.append("%s%s  %s" % [objective.text, "  (optional)" if objective.optional else "", mark])
+	_objective_list.text = "\n".join(lines)
+
+
+func _on_objective_completed(objective: ObjectiveDefinition) -> void:
+	if objective.type == ObjectiveDefinition.TYPE_STEALTH:
+		return
+	_toast_label.text = "OBJECTIVE COMPLETE\n%s" % objective.text
+	_toast_remaining = TOAST_TIME_S
+	Audio.play_ui(&"objective_complete")
 
 
 func _on_damage_applied(target: Node, info: DamageInfo, killed: bool) -> void:

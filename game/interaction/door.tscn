@@ -1,0 +1,53 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/interaction/door.gd" id="1_door"]
+[ext_resource type="Script" path="res://game/interaction/interactable.gd" id="2_inter"]
+[ext_resource type="Resource" path="res://data/interaction/door.tres" id="3_def"]
+
+[sub_resource type="BoxShape3D" id="leaf_shape"]
+size = Vector3(2.0, 2.6, 0.1)
+
+[sub_resource type="BoxMesh" id="leaf_mesh"]
+size = Vector3(2.0, 2.6, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="leaf_mat"]
+albedo_color = Color(0.45, 0.28, 0.14, 1)
+
+[sub_resource type="BoxShape3D" id="use_shape"]
+size = Vector3(2.2, 2.7, 0.5)
+
+[sub_resource type="BoxShape3D" id="sensor_shape"]
+size = Vector3(3.8, 2.0, 3.6)
+
+[node name="Door" type="Node3D"]
+script = ExtResource("1_door")
+
+[node name="Leaf" type="AnimatableBody3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+sync_to_physics = true
+
+[node name="Shape" type="CollisionShape3D" parent="Leaf"]
+shape = SubResource("leaf_shape")
+
+[node name="Mesh" type="MeshInstance3D" parent="Leaf"]
+mesh = SubResource("leaf_mesh")
+surface_material_override/0 = SubResource("leaf_mat")
+
+[node name="Interactable" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+script = ExtResource("2_inter")
+definition = ExtResource("3_def")
+
+[node name="Shape" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("use_shape")
+
+[node name="GuardSensor" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+collision_layer = 0
+collision_mask = 2
+
+[node name="Shape" type="CollisionShape3D" parent="GuardSensor"]
+shape = SubResource("sensor_shape")

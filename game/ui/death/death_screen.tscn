@@ -7,6 +7,7 @@ layer = 11
 script = ExtResource("1_death")
 
 [node name="Tint" type="ColorRect" parent="."]
+unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -26,8 +27,14 @@ custom_minimum_size = Vector2(280, 0)
 theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Center/Box"]
+unique_name_in_owner = true
 theme_override_font_sizes/font_size = 40
 text = "ELIMINATED"
+horizontal_alignment = 1
+
+[node name="Summary" type="Label" parent="Center/Box"]
+unique_name_in_owner = true
+visible = false
 horizontal_alignment = 1
 
 [node name="RetryButton" type="Button" parent="Center/Box"]

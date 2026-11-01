@@ -23,7 +23,7 @@ func after_test() -> void:
 
 func test_every_patrol_leg_is_connected_on_the_baked_mesh() -> void:
 	var map: RID = _course.get_node("NavigationRegion").get_navigation_map()
-	for route_name: String in ["RouteA", "RouteB"]:
+	for route_name: String in ["RouteA", "RouteB", "RouteC"]:
 		var points: Array[PatrolPoint] = (_course.get_node("Patrols/" + route_name) as PatrolRoute).points()
 		assert_int(points.size()).override_failure_message("%s has no points" % route_name).is_greater(1)
 		for i: int in points.size():
@@ -34,6 +34,25 @@ func test_every_patrol_leg_is_connected_on_the_baked_mesh() -> void:
 			var end: Vector3 = path[path.size() - 1]
 			var gap: float = Vector2(end.x - to.x, end.z - to.z).length()
 			assert_float(gap).override_failure_message("%s leg %d ends %.2f m from its point" % [route_name, i, gap]).is_less(0.6)
+
+
+func test_the_compound_can_be_entered_through_either_door() -> void:
+	var map: RID = _course.get_node("NavigationRegion").get_navigation_map()
+	var inside: Vector3 = Vector3(-23.0, 0.0, -24.0)
+	for outside: Vector3 in [Vector3(-23.8, 0.0, -17.0), Vector3(-14.0, 0.0, -26.0)]:
+		var path: PackedVector3Array = NavigationServer3D.map_get_path(map, outside, inside, true)
+		assert_int(path.size()).override_failure_message("no path from %s into the compound" % outside).is_greater(1)
+		var end: Vector3 = path[path.size() - 1]
+		assert_float(Vector2(end.x - inside.x, end.z - inside.z).length()).is_less(0.6)
+
+
+func test_doors_sit_in_their_doorways_with_the_leaf_along_the_wall() -> void:
+	var south: Door = _course.get_node("Compound/DoorSouth")
+	var east: Door = _course.get_node("Compound/DoorEast")
+	assert_vector(south.global_basis.x).is_equal_approx(Vector3.RIGHT, Vector3(0.01, 0.01, 0.01))
+	# The east wall runs north-south, so that door's leaf runs along z.
+	assert_float(absf(east.global_basis.x.z)).is_equal_approx(1.0, 0.01)
+	assert_float(absf(east.global_basis.x.x)).is_less(0.01)
 
 
 func test_guards_are_assigned_their_routes() -> void:

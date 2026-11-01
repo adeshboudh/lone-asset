@@ -7,7 +7,7 @@ enum Motion { STILL, WALK, SPRINT }
 
 ## Rays per vision check: head, chest and pelvis of the target.
 const RAYS_PER_CHECK: int = 3
-## Line of sight is blocked by world geometry (physics layer 1); doors join it in WP 9.
+## Line of sight is blocked by world geometry and closed doors (physics layer 1).
 const LOS_MASK: int = 1
 ## Below this speed (m/s) a player counts as standing still.
 const STILL_SPEED: float = 0.3

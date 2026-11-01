@@ -4,6 +4,10 @@ extends Node3D
 ## targets at 10, 25 and 40 m on the right (WP 4), and stealth test spots (WP 5): light zones
 ## (tunnel, shadow behind the low cover, floodlit range), noise sensors either side of a wall,
 ## and metal / grass floor patches. Press F3 for noise rings and light volumes.
+## WP 9 adds the compound in the north-west corner (two doors, a data terminal, a guard inside) and
+## the extraction zone in the south-east, with the mission that ties them together.
+
+const MISSION: MissionDefinition = preload("res://data/missions/m1_prototype.tres")
 
 @onready var _player: Player = $Player
 
@@ -20,13 +24,14 @@ func _ready() -> void:
 	var wind: AudioStreamPlayer = Audio.make_loop(&"wind_loop", &"Ambience", -14.0)
 	if wind != null:
 		add_child(wind)
+	Mission.start(MISSION)
 	Game.level_ready()
 
 
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_player):
 		return
-	_readout.text = "%.2f m/s  %s%s  lean %+.2f  %s\nWASD move · Shift sprint · C crouch · Q/E lean · Space jump · LMB fire · RMB aim · R reload · X fire mode · F3 debug · Esc pause" % [
+	_readout.text = "%.2f m/s  %s%s  lean %+.2f  %s\nWASD move · Shift sprint · C crouch · Q/E lean · Space jump · LMB fire · RMB aim · R reload · X fire mode · F use · F3 debug · Esc pause" % [
 		_player.horizontal_speed,
 		StanceComponent.Stance.keys()[_player.stance],
 		"  SPRINT" if _player.is_sprinting else "",

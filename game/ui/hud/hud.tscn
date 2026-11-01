@@ -68,6 +68,20 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 22
 text = "100"
 
+[node name="StanceLabel" type="Label" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.7)
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -78.0
+offset_right = 200.0
+offset_bottom = -54.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 14
+text = "STANDING"
+
 [node name="ExposureBox" type="VBoxContainer" parent="."]
 anchors_preset = 7
 anchor_left = 0.5

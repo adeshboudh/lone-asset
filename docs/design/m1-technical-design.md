@@ -697,7 +697,7 @@ Implemented early (with WP 5) because silence made the prototype hard to judge.
 - **Occlusion**: for positional sounds, `NoiseSystem.walls_between()` counts walls (ear height) between the camera and the source. Behind a wall the sound plays a pre-muffled copy (`<id>_muffled`, low-passed at 900 Hz) at −6 dB per wall, up to 3 walls. Sounds closer than 2 m are never occluded. This replaces the earlier bus low-pass plan.
 - **Format**: 16-bit mono WAV (32 kHz) for the placeholders, because WAV is the format sample playback is built around. Before switching real recordings to Ogg Vorbis to save download size, test Ogg on the web (sample mode, looping).
 - Audio unlocks on the click-to-start screen.
-- **Not yet**: music, voice, volume sliders (WP 11). Door, terminal and objective sounds arrived in WP 9.
+- Door, terminal and objective sounds arrived in WP 9; guard footsteps (one positional sound per 1.8 m stride, occluded by walls like any positional sound) and the volume settings in WP 11. **Not yet**: music and voice, which have no assets (Milestone 2).
 
 ---
 
@@ -714,6 +714,12 @@ Implemented early (with WP 5) because silence made the prototype hard to judge.
 | Debug overlay (F3) | WP 5: noise rings (radius by type, fading), light-volume boxes coloured by level, light level / exposure / active volume / last noise. Later: FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states. Enabled in all Milestone 1 previews; restricted to development builds before a public release |
 
 Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()` keys from day one.
+
+**Implemented in WP 11**
+
+- `Settings` autoload (`game/autoload/settings.gd`, rules in `game/settings/settings_rules.gd`): mouse sensitivity scale (0.25–3), invert Y, FOV (70–100), head bob, master / music / effects volume. Saved to `user://settings.cfg` (browser storage on the web), applied immediately (bus volumes here, the player reads the rest). `SettingsPanel` is shared by the title and pause menus.
+- The HUD gained a stance line; the end screen shows time, detected yes/no, guards eliminated and the stealth bonus.
+- **Deferred**: key rebinding, quality preset and render scale (WP 13 decides them with the performance numbers), and the `tr()` translation keys (all text is still literal).
 
 ---
 

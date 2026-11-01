@@ -5,6 +5,9 @@ extends GuardState
 enum Phase { WAIT_FOR_NAVIGATION, MOVING, WAITING }
 ## Facing a PatrolPoint's look direction within this many degrees counts as facing it.
 const FACING_TOLERANCE_DEG: float = 8.0
+## A guard stays curious about a stimulus for this long. After a fight, suspicion stays at 30 for good,
+## but the guard does not keep staring at where the fight was.
+const CURIOUS_MEMORY_S: float = 8.0
 
 var phase: Phase = Phase.WAIT_FOR_NAVIGATION
 ## Index of the point the guard is heading to or standing at.
@@ -92,7 +95,8 @@ func _tick_waiting(delta: float) -> void:
 
 ## Curious (suspicion 20–40): the guard slows down and looks toward whatever it noticed (design §9.5).
 func _is_curious() -> bool:
-	return guard.suspicion.band == SuspicionRules.Band.CURIOUS and guard.has_stimulus()
+	return guard.suspicion.band == SuspicionRules.Band.CURIOUS and guard.has_stimulus() \
+		and guard.suspicion.seconds_since_stimulus < CURIOUS_MEMORY_S
 
 
 func _arrive(point: PatrolPoint) -> void:

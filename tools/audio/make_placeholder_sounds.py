@@ -129,6 +129,16 @@ def reload(rng: np.random.Generator, empty: bool) -> np.ndarray:
     return normalise(track, 0.8)
 
 
+def shot_loud(rng: np.random.Generator) -> np.ndarray:
+    """An unsuppressed rifle shot: a sharp crack, a deep boom and a short echo tail."""
+    track = np.zeros(int(0.9 * SR))
+    place(track, noise(0.9, rng, 300, 9000) * decay(0.9, 0.05, 0.0002), 0.0, 1.0)
+    place(track, thump(0.9, 90, 32, 0.16), 0.0, 1.0)
+    place(track, click(rng, 0.6), 0.004, 0.5)
+    place(track, noise(0.9, rng, 150, 2500) * decay(0.9, 0.22), 0.05, 0.35)  # tail
+    return normalise(track, 0.95)
+
+
 def impact_world(rng: np.random.Generator) -> np.ndarray:
     track = np.zeros(int(0.3 * SR))
     place(track, noise(0.3, rng, 1500, 9000) * decay(0.3, 0.025), 0.0, 0.7)
@@ -209,6 +219,8 @@ def main() -> None:
     add("ui_click", [ui_click()])
     wind, wind_sr = wind_loop(rng)
     add("wind_loop", [wind], wind_sr)
+    # Added after the others so earlier sounds keep their exact samples (shared random generator).
+    add("rifle_shot_loud", [shot_loud(rng) for _ in range(3)], muffled=True)
 
     lines = ['[gd_resource type="Resource" script_class="SoundBank" load_steps=%d format=3]\n' % (2 + sum(len(v) for v in bank.values())),
              '[ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]']

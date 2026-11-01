@@ -10,6 +10,9 @@ var _course: Node
 func before_test() -> void:
 	_course = COURSE.instantiate()
 	add_child(_course)
+	# The spawn point is on guard A's route and guards now attack what they see. These tests are about
+	# patrolling, so the player is taken out; the fight itself is covered by test_guard_ai.gd.
+	_course.get_node("Player").free()
 	await _ticks(10)
 
 

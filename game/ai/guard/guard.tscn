@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://game/ai/guard/guard.gd" id="1_guard"]
 [ext_resource type="Script" path="res://game/damage/health_component.gd" id="2_health"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" path="res://data/ai/guard_default.tres" id="4_profile"]
 [ext_resource type="Script" path="res://game/ai/stealth/perception_component.gd" id="5_perception"]
 [ext_resource type="Script" path="res://game/noise/noise_listener.gd" id="6_listener"]
+[ext_resource type="Script" path="res://game/ai/guard/guard_weapon.gd" id="7_weapon"]
 
 [sub_resource type="StandardMaterial3D" id="mat_uniform"]
 albedo_color = Color(0.32, 0.38, 0.22, 1)
@@ -79,6 +80,10 @@ script = ExtResource("5_perception")
 [node name="NoiseListener" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("6_listener")
+
+[node name="GuardWeapon" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("7_weapon")
 
 [node name="NavigationAgent" type="NavigationAgent3D" parent="."]
 unique_name_in_owner = true

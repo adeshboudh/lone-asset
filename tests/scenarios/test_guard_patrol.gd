@@ -150,19 +150,21 @@ func test_dying_stops_the_guard_and_announces_the_state_change() -> void:
 
 
 func test_headshot_kills_and_torso_needs_three_hits() -> void:
-	var head_guard: Guard = _guard(null, Vector3(-4.0, 0.0, 0.0))
-	var torso_guard: Guard = _guard(null, Vector3(4.0, 0.0, 0.0))
+	# Hit guards now react and move, so each guard takes all its shots in one tick.
+	var head_guard: Guard = _guard(null, Vector3(-6.0, 0.0, 0.0))
+	var three_hits: Guard = _guard(null, Vector3(0.0, 0.0, 0.0))
+	var two_hits: Guard = _guard(null, Vector3(6.0, 0.0, 0.0))
 	await _ticks(5)
-	_ballistics.fire(Vector3(-4.0, 1.62, 6.0), Vector3.FORWARD, RIFLE, null)
+	_ballistics.fire(Vector3(-6.0, 1.62, 6.0), Vector3.FORWARD, RIFLE, null)
+	for i: int in 3:
+		_ballistics.fire(Vector3(0.0, 1.19, 6.0), Vector3.FORWARD, RIFLE, null)
+	for i: int in 2:
+		_ballistics.fire(Vector3(6.0, 1.19, 6.0), Vector3.FORWARD, RIFLE, null)
 	await _ticks(20)
 	assert_bool(head_guard.is_dead).is_true()
-	for i: int in 2:
-		_ballistics.fire(Vector3(4.0, 1.19, 6.0), Vector3.FORWARD, RIFLE, null)
-		await _ticks(20)
-	assert_bool(torso_guard.is_dead).is_false()
-	_ballistics.fire(Vector3(4.0, 1.19, 6.0), Vector3.FORWARD, RIFLE, null)
-	await _ticks(20)
-	assert_bool(torso_guard.is_dead).is_true()
+	assert_bool(three_hits.is_dead).is_true()
+	assert_bool(two_hits.is_dead).is_false()
+	assert_float(two_hits.health.health).is_equal_approx(100.0 - 2.0 * RIFLE.damage, 0.01)
 
 
 func test_dead_guard_does_not_stop_bullets() -> void:

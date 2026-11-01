@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=44 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=50 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_1.wav" id="2_rifle_shot_suppressed_1"]
@@ -43,6 +43,12 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/hit_marker.wav" id="41_hit_marker"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/ui_click.wav" id="42_ui_click"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/wind_loop.wav" id="43_wind_loop"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_1.wav" id="44_rifle_shot_loud_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_2.wav" id="45_rifle_shot_loud_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_3.wav" id="46_rifle_shot_loud_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_1_muffled.wav" id="47_rifle_shot_loud_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_2_muffled.wav" id="48_rifle_shot_loud_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_3_muffled.wav" id="49_rifle_shot_loud_3_muffled"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -66,5 +72,7 @@ sounds = {
 &"impact_body_muffled": [ExtResource("39_impact_body_1_muffled"), ExtResource("40_impact_body_2_muffled")],
 &"hit_marker": [ExtResource("41_hit_marker")],
 &"ui_click": [ExtResource("42_ui_click")],
-&"wind_loop": [ExtResource("43_wind_loop")]
+&"wind_loop": [ExtResource("43_wind_loop")],
+&"rifle_shot_loud": [ExtResource("44_rifle_shot_loud_1"), ExtResource("45_rifle_shot_loud_2"), ExtResource("46_rifle_shot_loud_3")],
+&"rifle_shot_loud_muffled": [ExtResource("47_rifle_shot_loud_1_muffled"), ExtResource("48_rifle_shot_loud_2_muffled"), ExtResource("49_rifle_shot_loud_3_muffled")]
 }

@@ -456,6 +456,18 @@ Milestone 2 adds a squad-level blackboard with the same keys, shared through the
 
 Guards fire with the same `BallisticsSystem` as the player, so gameplay is symmetric.
 
+**Implemented in WP 8**
+
+- **Escalation** is central (`GuardAlertRules`, unit-tested): suspicion ≥ 40 sends a calm guard (Patrol or ReturnToPatrol) to Investigate, ≥ 60 to Search, ≥ 80 to Combat. Calming down is up to each state. A guard at 80+ that has *not* recently seen or been hurt by the player (contact within `target_lost_s`, 8 s) searches "combat ready" instead of fighting an enemy it has not found. This is why gunfire alerts distant guards to *search* around the shots, while a guard that glimpsed the player a few seconds earlier goes straight to Combat.
+- **Investigate**: turns toward the stimulus (0.6 s), walks over at 2 m/s, then scans left and right (60° steps every 1.3 s) for at least 4 s and until suspicion has dropped below Suspicious; a new stimulus more than 2.5 m away re-targets it. Then ReturnToPatrol.
+- **Search** (`SearchPlanner`): 4–6 random walkable points within 12 m of where the enemy was last known, at least 3 m apart, nearest-neighbour order, scanning 2.5 s at each; a new stimulus more than 6 m from the current centre re-centres the search; when all points are done it plans again around the same place. It ends after 45 s with no stimulus. Suspicion cannot decay below 10 for 60 s after any search.
+- **Combat**: ENGAGE (clear view: stand, face the player, fire 2–4 round bursts with 0.7–1.5 s pauses after a 0.35 s reaction delay; aim error starts at 6° and settles to 1° over 3 s, ×1.5 against a moving target), REPOSITION (every 4–7 s, or when hurt: `Guard.find_position_with_sight_of` samples walkable spots 4–9 m away and takes the nearest with a clear line to the player), CHASE (no view: run to the last known position, which also follows the player's gunfire, and look around). The fight ends in a Search when the player has not been seen or felt for 8 s, or in ReturnToPatrol if the player dies. Suspicion cannot decay below 30 for the rest of the session after any fight.
+- **ReturnToPatrol** walks to the nearest patrol point and resumes the route from there.
+- Guards fire `data/weapons/rifle_guard.tres` (12 damage, 600 rpm, unsuppressed: an 80 m noise and a loud shot sound) through the same `BallisticsSystem`, so cover works and other guards hear the shots. A guard's rounds can hit other guards.
+- **Player**: dying shows a minimal "ELIMINATED" screen with Retry and Quit to title (the full end screen is WP 11). The HUD flashes red when hurt and shows an arc toward the shooter.
+- Times in the blackboard use the guard's own clock (`Guard.time`, which stops when paused), so a pause never counts as time without contact.
+- Tuning: everything above is in `GuardProfile` and `rifle_guard.tres`. The first thing to tune in playtests is damage and aim: in the movement course a standing player at about 5 m dies in roughly 2–3 seconds.
+
 ---
 
 ## 8. Perception System

@@ -21,6 +21,13 @@ var is_dead: bool:
 	get:
 		return _brain.current_name == GuardState.DEAD
 var suspicion: SuspicionModel
+## Seconds this guard has been active (stops when paused or dead). Blackboard times use this clock.
+var time: float = 0.0
+var weapon: GuardWeapon:
+	get:
+		return _weapon
+## Source of randomness for search points, bursts and repositioning. Tests seed it.
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 var _desired_velocity: Vector3 = Vector3.ZERO
 ## Zero = face the direction of travel.
@@ -39,6 +46,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var _state_label: Label3D = %StateLabel
 @onready var _perception: PerceptionComponent = %PerceptionComponent
 @onready var _ears: NoiseListener = %NoiseListener
+@onready var _weapon: GuardWeapon = %GuardWeapon
 
 
 func _ready() -> void:
@@ -59,7 +67,12 @@ func _ready() -> void:
 
 	_brain.setup(self)
 	_brain.blackboard.patrol_route = patrol_route
+	rng.randomize()
 	_brain.add_state(GuardState.PATROL, GuardPatrolState.new())
+	_brain.add_state(GuardState.INVESTIGATE, GuardInvestigateState.new())
+	_brain.add_state(GuardState.SEARCH, GuardSearchState.new())
+	_brain.add_state(GuardState.COMBAT, GuardCombatState.new())
+	_brain.add_state(GuardState.RETURN_TO_PATROL, GuardReturnState.new())
 	_brain.add_state(GuardState.DEAD, GuardDeadState.new())
 	_brain.state_changed.connect(_on_state_changed)
 	_brain.start(GuardState.PATROL)
@@ -67,12 +80,57 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if not is_dead:
+		time += delta
 		suspicion.update(delta)
+		_escalate()
 	_brain.tick(delta)
 	_integrate_movement(delta)
 	if _state_label.visible:
-		_state_label.text = "%s\n%s\n%d  %s" % [guard_id, _brain.current_name, roundi(suspicion.value),
-			SuspicionRules.Band.keys()[suspicion.band]]
+		_state_label.text = "%s\n%s %s\n%d  %s" % [guard_id, _brain.current_name, _brain.current_state.debug_text(),
+			roundi(suspicion.value), SuspicionRules.Band.keys()[suspicion.band]]
+
+
+# --- Alertness ---------------------------------------------------------------------------------------
+
+## True while the guard has recently seen the player or been hurt by them.
+func has_contact() -> bool:
+	return time - _brain.blackboard.last_contact_time <= profile.target_lost_s
+
+
+func navigation_map() -> RID:
+	return _agent.get_navigation_map()
+
+
+## Suspicion pushes the guard into more alert states (design §7.2). Calming down is up to each state.
+func _escalate() -> void:
+	var next: StringName = GuardAlertRules.target_state(_brain.current_name, suspicion.band, has_contact())
+	if next != &"":
+		_brain.transition_to(next)
+
+
+## A walkable spot a few metres away from which `target_point` can be seen, nearest first; INF if none.
+func find_position_with_sight_of(target_point: Vector3) -> Vector3:
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var map: RID = navigation_map()
+	var best: Vector3 = Vector3.INF
+	var best_distance: float = INF
+	for i: int in profile.reposition_samples:
+		var angle: float = rng.randf() * TAU
+		var distance: float = rng.randf_range(profile.reposition_min_m, profile.reposition_max_m)
+		var desired: Vector3 = global_position + Vector3(cos(angle), 0.0, sin(angle)) * distance
+		var spot: Vector3 = NavigationServer3D.map_get_closest_point(map, desired)
+		if Vector2(spot.x - desired.x, spot.z - desired.z).length() > SearchPlanner.MAX_SNAP_DISTANCE_M:
+			continue
+		# Eyes are measured from the floor, not from the (floating) navigation mesh.
+		var eye: Vector3 = Vector3(spot.x, global_position.y + profile.eye_height_m, spot.z)
+		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(eye, target_point, PerceptionRules.LOS_MASK)
+		if not space.intersect_ray(query).is_empty():
+			continue
+		var travel: float = Vector2(spot.x - global_position.x, spot.z - global_position.z).length()
+		if travel < best_distance:
+			best_distance = travel
+			best = spot
+	return best
 
 
 # --- Senses ------------------------------------------------------------------------------------------
@@ -106,7 +164,9 @@ func on_player_seen(player: Player, visibility: float, distance: float, cone: Pe
 	var blackboard: GuardBlackboard = _brain.blackboard
 	blackboard.target = player
 	blackboard.last_known_position = player.global_position
-	blackboard.last_known_time = Time.get_ticks_msec() / 1000.0
+	blackboard.last_known_time = time
+	blackboard.last_sight_time = time
+	blackboard.last_contact_time = time
 	blackboard.confidence = visibility
 	blackboard.alerted_by = &"sight"
 
@@ -117,6 +177,12 @@ func _on_noise_heard(event: NoiseEvent, _distance: float, _walls: int) -> void:
 	suspicion.add_noise(event.type)
 	_brain.blackboard.investigate_position = event.position
 	_brain.blackboard.alerted_by = &"noise"
+	# While hunting, the player's gunfire shows where they are even without seeing them.
+	var hunting: bool = _brain.current_name == GuardState.COMBAT or _brain.current_name == GuardState.SEARCH
+	var gunfire: bool = event.type == NoiseEvent.SHOT or event.type == NoiseEvent.SHOT_SUPPRESSED
+	if hunting and gunfire and event.source is Player:
+		_brain.blackboard.last_known_position = event.position
+		_brain.blackboard.last_known_time = time
 
 
 func _on_damaged(info: DamageInfo, _amount: float) -> void:
@@ -127,7 +193,8 @@ func _on_damaged(info: DamageInfo, _amount: float) -> void:
 	if attacker != null:
 		blackboard.target = attacker
 		blackboard.last_known_position = attacker.global_position
-		blackboard.last_known_time = Time.get_ticks_msec() / 1000.0
+		blackboard.last_known_time = time
+		blackboard.last_contact_time = time
 		blackboard.confidence = 1.0
 
 

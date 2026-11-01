@@ -69,7 +69,9 @@ func _ready() -> void:
 	floor_snap_length = settings.step_height + 0.05
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
-	_base_fov = _camera.fov
+	_base_fov = Settings.fov_deg
+	_camera.fov = _base_fov
+	Settings.changed.connect(func() -> void: _base_fov = Settings.fov_deg)
 	add_to_group(&"player")
 	_movement.landed.connect(_on_landed)
 	_noise.stepped.connect(_audio.on_step)
@@ -100,7 +102,8 @@ func _process(delta: float) -> void:
 	aim_fov = lerpf(aim_fov, BinocularsRules.fov_for_zoom(_base_fov, _binoculars.zoom), smoothstep(0.0, 1.0, _binoculars.raise_blend))
 	_camera.fov = aim_fov
 	# Same on-screen mouse speed when zoomed in.
-	var look: Vector2 = _input.take_look_delta() * settings.mouse_sensitivity * (aim_fov / _base_fov)
+	var look: Vector2 = _input.take_look_delta() * settings.mouse_sensitivity * Settings.mouse_sensitivity_scale * (aim_fov / _base_fov)
+	look.y = SettingsRules.look_y(look.y, Settings.invert_y)
 	rotate_y(-look.x)
 	var max_pitch: float = deg_to_rad(settings.max_pitch_deg)
 	_pitch = clampf(_pitch - look.y, -max_pitch, max_pitch)
@@ -151,7 +154,7 @@ func _on_died(info: DamageInfo) -> void:
 
 
 func _head_bob_offset(delta: float) -> float:
-	if not settings.head_bob_enabled or not is_on_floor():
+	if not (settings.head_bob_enabled and Settings.head_bob) or not is_on_floor():
 		return 0.0
 	var speed: float = horizontal_speed
 	_bob_phase = fmod(_bob_phase + speed * delta * settings.head_bob_cycles_per_metre * TAU, TAU)

@@ -52,6 +52,13 @@ size_flags_horizontal = 4
 action_mode = 0
 text = "Click to play"
 
+[node name="SettingsButton" type="Button" parent="Center/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Settings"
+
 [node name="VersionLabel" type="Label" parent="."]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.4)

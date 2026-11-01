@@ -18,6 +18,7 @@ var _toast_remaining: float = 0.0
 @onready var _crosshair: Control = %Crosshair
 @onready var _ammo_label: Label = %AmmoLabel
 @onready var _health_label: Label = %HealthLabel
+@onready var _stance_label: Label = %StanceLabel
 @onready var _exposure_bar: ProgressBar = %ExposureBar
 @onready var _indicators: Control = %Indicators
 @onready var _objective_list: Label = %ObjectiveList
@@ -60,6 +61,7 @@ func _process(delta: float) -> void:
 	_ammo_label.text = "%d / %d   %s" % [logic.magazine, logic.reserve, status]
 	_health_label.text = "%d" % ceili(_player.health.health)
 	_exposure_bar.value = _player.exposure.exposure
+	_stance_label.text = _stance_text()
 	_hit_marker_remaining = maxf(_hit_marker_remaining - delta, 0.0)
 	_hurt_flash = maxf(_hurt_flash - HURT_FLASH_RATE * delta, 0.0)
 	for hit: Dictionary in _hits_taken:
@@ -71,6 +73,12 @@ func _process(delta: float) -> void:
 	_toast_label.modulate.a = clampf(_toast_remaining, 0.0, 1.0)
 	_crosshair.queue_redraw()
 	_indicators.queue_redraw()
+
+
+func _stance_text() -> String:
+	if _player.is_sprinting:
+		return "SPRINTING"
+	return String(StanceComponent.Stance.keys()[_player.stance])
 
 
 ## "[F] Open" for what the player is looking at, with a progress bar while holding a timed use.

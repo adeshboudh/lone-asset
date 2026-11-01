@@ -7,6 +7,9 @@ const OFF_MESH_DISTANCE_M: float = 1.0
 ## A waypoint closer than this (horizontally) counts as reached.
 const WAYPOINT_REACHED_M: float = 0.3
 
+## Distance between footstep sounds.
+const STRIDE_M: float = 1.8
+
 @export var guard_id: StringName = &""
 @export var profile: GuardProfile
 @export var patrol_route: PatrolRoute
@@ -37,6 +40,7 @@ var _target_off_mesh: bool = false
 var _waypoint_index: int = 0
 var _path_size: int = -1
 var _path_start: Vector3 = Vector3.INF
+var _step_distance: float = 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 @onready var _agent: NavigationAgent3D = %NavigationAgent
@@ -85,9 +89,24 @@ func _physics_process(delta: float) -> void:
 		_escalate()
 	_brain.tick(delta)
 	_integrate_movement(delta)
+	_play_footsteps(delta)
 	if _state_label.visible:
 		_state_label.text = "%s\n%s %s\n%d  %s" % [guard_id, _brain.current_name, _brain.current_state.debug_text(),
 			roundi(suspicion.value), SuspicionRules.Band.keys()[suspicion.band]]
+
+
+## One footstep sound per stride while walking, so a guard can be heard (and found) behind a wall.
+func _play_footsteps(delta: float) -> void:
+	if is_dead or not is_on_floor():
+		return
+	var speed: float = Vector2(velocity.x, velocity.z).length()
+	if speed < 0.5:
+		_step_distance = 0.0
+		return
+	_step_distance += speed * delta
+	if _step_distance >= STRIDE_M:
+		_step_distance = 0.0
+		Audio.play_3d(&"footstep_concrete", global_position, &"Footsteps", -4.0, self)
 
 
 # --- Alertness ---------------------------------------------------------------------------------------

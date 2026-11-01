@@ -32,6 +32,7 @@ func _ready() -> void:
 	add_child(_pause_menu)
 	_pause_menu.resume_requested.connect(resume)
 	_pause_menu.quit_requested.connect(go_to_title)
+	_pause_menu.restart_requested.connect(continue_game)
 
 	_death_screen = DEATH_SCREEN_SCENE.instantiate()
 	add_child(_death_screen)
@@ -60,12 +61,23 @@ func enter_title() -> void:
 
 ## Called from the "Play" click, which is the user gesture that allows mouse capture and audio.
 func start_game() -> void:
+	Saves.delete_checkpoint()
+	Saves.pending = {}
+	_load_level()
+
+
+## Continue / restart from the last checkpoint.
+func continue_game() -> void:
+	Saves.pending = Saves.read_checkpoint()
 	_load_level()
 
 
 ## Called from the death screen's Retry click.
 func restart_level() -> void:
-	_load_level()
+	if Saves.has_checkpoint():
+		continue_game()
+	else:
+		start_game()
 
 
 func _load_level() -> void:
@@ -80,6 +92,9 @@ func _load_level() -> void:
 
 ## Called by a level once it is ready to play.
 func level_ready() -> void:
+	if not Saves.pending.is_empty():
+		Saves.apply(Saves.pending)
+		Saves.pending = {}
 	if not _machine.transition(GameStateMachine.State.PLAYING):
 		return
 	if not Platform.is_mouse_captured() and not Platform.is_capture_pending():

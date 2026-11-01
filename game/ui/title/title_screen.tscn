@@ -44,6 +44,14 @@ modulate = Color(1, 1, 1, 0.6)
 text = "Tactical stealth — prototype"
 horizontal_alignment = 1
 
+[node name="ContinueButton" type="Button" parent="Center/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+action_mode = 0
+text = "Continue"
+
 [node name="PlayButton" type="Button" parent="Center/Box"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 48)

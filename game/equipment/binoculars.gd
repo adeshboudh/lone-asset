@@ -37,6 +37,20 @@ func physics_update(player: Player, intent: InputIntent, delta: float) -> void:
 		_update_tagging(player, delta)
 
 
+func save_state() -> Dictionary:
+	var tags: Dictionary = {}
+	for id: StringName in _tags:
+		tags[String(id)] = _tags[id]
+	return tags
+
+
+func load_state(tags: Dictionary) -> void:
+	_tags.clear()
+	_progress.clear()
+	for key: String in tags:
+		_tags[StringName(key)] = float(tags[key])
+
+
 ## Seconds left on a guard's tag, 0 if it is not tagged.
 func tag_time_left(guard: Guard) -> float:
 	return _tags.get(guard.guard_id, 0.0)

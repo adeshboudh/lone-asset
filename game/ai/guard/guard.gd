@@ -95,6 +95,34 @@ func _physics_process(delta: float) -> void:
 			roundi(suspicion.value), SuspicionRules.Band.keys()[suspicion.band]]
 
 
+func save_state() -> Dictionary:
+	return {
+		"guard_id": String(guard_id),
+		"alive": not is_dead,
+		"position": SaveRules.vector_to_array(global_position),
+		"yaw": snappedf(rotation.y, 0.001),
+		"suspicion_floor": suspicion.floor_value,
+	}
+
+
+## Loading a checkpoint: a guard that was killed is killed again; a living one goes back to where it
+## was, calm, but remembers being on edge (the same suspicion floor as when saved).
+func load_state(data: Dictionary) -> void:
+	global_position = SaveRules.array_to_vector(data["position"])
+	rotation.y = float(data["yaw"])
+	velocity = Vector3.ZERO
+	if not bool(data["alive"]):
+		var info: DamageInfo = DamageInfo.new()
+		info.type = &"restore"
+		info.amount = _health.max_health
+		info.hit_position = global_position
+		_health.apply_damage(info)
+		return
+	var floor_level: float = float(data.get("suspicion_floor", 0.0))
+	if floor_level > 0.0:
+		suspicion.raise_floor(floor_level, -1.0)
+
+
 ## One footstep sound per stride while walking, so a guard can be heard (and found) behind a wall.
 func _play_footsteps(delta: float) -> void:
 	if is_dead or not is_on_floor():

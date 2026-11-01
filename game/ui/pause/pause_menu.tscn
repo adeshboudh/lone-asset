@@ -38,6 +38,10 @@ text = "Resume"
 unique_name_in_owner = true
 text = "Settings"
 
+[node name="RestartButton" type="Button" parent="Center/Box"]
+unique_name_in_owner = true
+text = "Restart from checkpoint"
+
 [node name="QuitButton" type="Button" parent="Center/Box"]
 unique_name_in_owner = true
 text = "Quit to title"

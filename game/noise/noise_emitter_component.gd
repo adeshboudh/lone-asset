@@ -2,6 +2,9 @@ class_name NoiseEmitterComponent
 extends Node
 ## Makes the player's gameplay noise (design §8.2): footsteps by stride, landings, shots.
 
+## A footstep happened (also when too quiet for AI to matter). Audio listens to this.
+signal stepped(type: StringName, surface: StringName)
+
 ## Falls shorter than this make no landing noise (stairs, small steps).
 const LANDING_MIN_FALL_M: float = 0.3
 ## Footstep surface check: a ray this far below the feet.
@@ -21,8 +24,10 @@ func physics_update(body: CharacterBody3D, on_floor: bool, speed: float, crouche
 	if _stride_progress < stride:
 		return
 	_stride_progress = fmod(_stride_progress, stride)
-	var radius: float = profiles.footstep_radius(type) * _surface_multiplier(body, profiles)
+	var surface: StringName = _surface_of(body)
+	var radius: float = profiles.footstep_radius(type) * profiles.surface_multiplier(surface)
 	NoiseSystem.emit_noise(type, body.global_position, radius, body)
+	stepped.emit(type, surface)
 
 
 func on_landed(body: CharacterBody3D, fall_height: float) -> void:
@@ -35,12 +40,13 @@ func emit_shot(body: CharacterBody3D, weapon: WeaponDefinition) -> void:
 	NoiseSystem.emit_noise(type, body.global_position, weapon.noise_radius_m, body)
 
 
-func _surface_multiplier(body: CharacterBody3D, profiles: NoiseProfiles) -> float:
+## The "surface" metadata of the floor under the body, or &"" for the default surface.
+func _surface_of(body: CharacterBody3D) -> StringName:
 	var from: Vector3 = body.global_position + Vector3.UP * SURFACE_RAY_UP
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 		from, from + Vector3.DOWN * (SURFACE_RAY_UP + SURFACE_RAY_DOWN), NoiseSystem.WORLD_MASK, [body.get_rid()])
 	var hit: Dictionary = body.get_world_3d().direct_space_state.intersect_ray(query)
 	var floor_node: Node = hit.get("collider") as Node
 	if floor_node != null and floor_node.has_meta(&"surface"):
-		return profiles.surface_multiplier(floor_node.get_meta(&"surface"))
-	return 1.0
+		return floor_node.get_meta(&"surface")
+	return &""

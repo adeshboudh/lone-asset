@@ -49,6 +49,7 @@ var _bob_phase: float = 0.0
 @onready var _hud: Hud = %Hud
 @onready var _noise: NoiseEmitterComponent = %NoiseEmitterComponent
 @onready var _exposure: ExposureComponent = %ExposureComponent
+@onready var _audio: PlayerAudio = %PlayerAudio
 
 
 func _ready() -> void:
@@ -59,6 +60,7 @@ func _ready() -> void:
 	_base_fov = _camera.fov
 	add_to_group(&"player")
 	_movement.landed.connect(_on_landed)
+	_noise.stepped.connect(_audio.on_step)
 	_weapon.fired.connect(_on_weapon_fired)
 	_health.died.connect(_on_died)
 	_hud.setup(self)
@@ -102,6 +104,7 @@ func _on_weapon_fired(_origin: Vector3, _direction: Vector3) -> void:
 
 func _on_landed(fall_height: float) -> void:
 	_noise.on_landed(self, fall_height)
+	_audio.on_landed(fall_height)
 	var amount: float = DamageRules.fall_damage(fall_height, _health.max_health)
 	if amount <= 0.0:
 		return

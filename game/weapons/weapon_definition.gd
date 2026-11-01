@@ -55,6 +55,12 @@ extends Resource
 ## Exposure (0–1) while the muzzle flashes; a suppressor hides most of it.
 @export_range(0.0, 1.0) var flash_exposure: float = 1.0
 
+@export_group("Audio (sound ids in the sound bank)")
+@export var fire_sound: StringName = &"rifle_shot_suppressed"
+@export var dry_fire_sound: StringName = &"rifle_dry"
+@export var reload_sound: StringName = &"rifle_reload"
+@export var reload_empty_sound: StringName = &"rifle_reload_empty"
+
 @export_group("Presentation")
 ## First-person model. Must contain a Node3D named "Muzzle".
 @export var viewmodel_scene: PackedScene

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://data/player/player_movement.tres" id="2_settings"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://game/ui/hud/hud.tscn" id="10_hud"]
 [ext_resource type="Script" path="res://game/noise/noise_emitter_component.gd" id="11_noise"]
 [ext_resource type="Script" path="res://game/ai/stealth/exposure_component.gd" id="12_exposure"]
+[ext_resource type="Script" path="res://game/player/player_audio.gd" id="13_audio"]
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
@@ -69,3 +70,7 @@ script = ExtResource("11_noise")
 [node name="ExposureComponent" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("12_exposure")
+
+[node name="PlayerAudio" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("13_audio")

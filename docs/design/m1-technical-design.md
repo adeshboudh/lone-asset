@@ -648,11 +648,17 @@ class_name EquipmentDefinition extends Resource
 
 ## 14. Audio (Milestone 1)
 
-- Buses: `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
-- `AudioStreamPlayer3D` for world sounds; pooled players for footsteps and impacts (max 24 concurrent 3D voices).
-- Occlusion: one raycast from listener to source on play (and 4 Hz for looping sources); occluded sounds get volume −6 dB and use an occluded variant bus with low-pass. **Validate early** that the low-pass bus effect works in the single-threaded web build; if not, fall back to pre-filtered "muffled" sample variants.
+Implemented early (with WP 5) because silence made the prototype hard to judge.
+
+- **Buses** (`game/audio/default_bus_layout.tres`): `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
+- **`Audio` autoload**: `play_2d` (the player's own weapon, footsteps and landings, 8 pooled voices), `play_3d` (positional sounds such as bullet impacts, at most 24 pooled voices), `play_ui` (plays while paused) and `make_loop` (level ambience, e.g. wind).
+- **Sound bank** (`data/audio/sound_bank.tres`): sound id → variants, picked at random so footsteps and shots do not repeat exactly. Weapons name their sounds in their `WeaponDefinition` (fire, dry fire, reload, reload from empty).
+- **Placeholder sounds** are synthesised by `tools/audio/make_placeholder_sounds.py` (our own work, CC BY 4.0). Replace a file and keep its name to swap in a real recording.
+- **Web playback mode**: Godot plays sounds as *samples* on the web by default. That mode has no bus effects (so no low-pass filters, reverb or Doppler), but avoids garbled sound in single-threaded builds. Decision: stay in sample mode.
+- **Occlusion**: for positional sounds, `NoiseSystem.walls_between()` counts walls (ear height) between the camera and the source. Behind a wall the sound plays a pre-muffled copy (`<id>_muffled`, low-passed at 900 Hz) at −6 dB per wall, up to 3 walls. Sounds closer than 2 m are never occluded. This replaces the earlier bus low-pass plan.
+- **Format**: 16-bit mono WAV (32 kHz) for the placeholders, because WAV is the format sample playback is built around. Before switching real recordings to Ogg Vorbis to save download size, test Ogg on the web (sample mode, looping).
 - Audio unlocks on the click-to-start screen.
-- Format: Ogg Vorbis for everything except very short UI sounds (WAV).
+- **Not yet**: weapon/footstep sounds for guards (WP 8), door sounds (WP 9), music, voice, volume sliders (WP 11).
 
 ---
 
@@ -1118,7 +1124,7 @@ Milestone 1 is complete when **all** of the following hold in the **deployed web
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Single-threaded performance insufficient for AI + physics + rendering | Medium | High | Budgets from day 1, AI LOD, GDExtension path proven early |
-| Web audio bus effects limited in single-threaded build | Medium | Medium | Validate in WP 2–3; pre-filtered sample fallback |
+| Web audio: sample mode has no bus effects; Ogg/looping behaviour unverified | Medium | Medium | Occlusion uses pre-muffled WAV copies (§14); placeholders are WAV; test Ogg on the web before adopting it |
 | WebGL 2 visual quality feels dated | Medium | Medium | Strong art direction, baked lighting, post-processing; WebGPU later |
 | Pointer lock behaviour differs across browsers | Medium | Medium | Manual matrix each milestone; tolerant resume logic |
 | Developer is the only playtester (bias, blind spots) | High | Medium | Recorded sessions, 3-day gap between ratings, fresh-eyes checks (§18.6); recruit 1–2 outside testers before Milestone 2 |

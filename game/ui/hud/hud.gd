@@ -38,6 +38,7 @@ func _on_damage_applied(_target: Node, info: DamageInfo, killed: bool) -> void:
 	if _player != null and info.source == _player:
 		_hit_marker_remaining = HIT_MARKER_TIME_S
 		_hit_marker_killed = killed
+		Audio.play_2d(&"hit_marker", &"UI", 0.0, 0.8 if killed else 1.0)
 
 
 func _draw_crosshair() -> void:

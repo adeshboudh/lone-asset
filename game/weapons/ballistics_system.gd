@@ -111,6 +111,7 @@ func _resolve_hit(projectile: Projectile, hit: Dictionary) -> void:
 	NoiseSystem.emit_noise(NoiseEvent.IMPACT, position, NoiseSystem.profiles.impact_m, projectile.source)
 
 	var health: HealthComponent = HealthComponent.of(collider)
+	Audio.play_3d(&"impact_world" if health == null else &"impact_body", position, &"Weapons", -2.0, projectile.source)
 	if health == null:
 		return
 	var zone: StringName = HitZoneTable.zone_of(collider, hit["shape"])

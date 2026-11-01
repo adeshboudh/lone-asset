@@ -24,7 +24,12 @@ Platform="*res://game/autoload/platform.gd"
 EventBus="*res://game/autoload/event_bus.gd"
 Game="*res://game/autoload/game.gd"
 NoiseSystem="*res://game/autoload/noise_system.gd"
+Audio="*res://game/autoload/audio.gd"
 DebugViews="*res://game/debug/debug_views.gd"
+
+[audio]
+
+buses/default_bus_layout="res://game/audio/default_bus_layout.tres"
 
 [debug]
 

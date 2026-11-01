@@ -21,7 +21,7 @@ func emit_noise(type: StringName, position: Vector3, radius_m: float, source: No
 	if radius_m <= 0.0:
 		return event
 
-	var space: PhysicsDirectSpaceState3D = get_tree().root.world_3d.direct_space_state
+	var space: PhysicsDirectSpaceState3D = _space()
 	var exclude: Array[RID] = []
 	var body: CollisionObject3D = source as CollisionObject3D
 	if body != null:
@@ -35,6 +35,15 @@ func emit_noise(type: StringName, position: Vector3, radius_m: float, source: No
 		if NoiseRules.is_heard(distance, NoiseRules.effective_radius(radius_m, walls)):
 			listener.hear(event, distance, walls)
 	return event
+
+
+## Walls between two points, at ear height. Also used for sound occlusion.
+func walls_between(from: Vector3, to: Vector3, exclude: Array[RID] = []) -> int:
+	return _count_walls(_space(), from, to, exclude)
+
+
+func _space() -> PhysicsDirectSpaceState3D:
+	return get_tree().root.world_3d.direct_space_state
 
 
 func _count_walls(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3, exclude: Array[RID]) -> int:

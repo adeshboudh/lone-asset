@@ -11,3 +11,12 @@ signal guard_alert_band_changed(guard: Node, old_band: int, new_band: int)
 
 ## guard: the Guard whose state machine changed state.
 signal guard_state_changed(guard: Node, old_state: StringName, new_state: StringName)
+
+## The player entered a TriggerZone.
+signal trigger_entered(trigger_id: StringName)
+
+## An Interactable finished (a door toggled, a terminal download completed). actor: who used it.
+signal interaction_completed(interactable_id: StringName, actor: Node)
+
+## A mission objective that asks for a checkpoint was completed (WP 12 saves on it).
+signal checkpoint_requested(objective_id: StringName)

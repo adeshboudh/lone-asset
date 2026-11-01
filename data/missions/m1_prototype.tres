@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="MissionDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://game/mission/mission_definition.gd" id="1_mission"]
+[ext_resource type="Script" path="res://game/mission/objective_definition.gd" id="2_obj"]
+
+[sub_resource type="Resource" id="obj_reach"]
+script = ExtResource("2_obj")
+id = &"obj_reach_compound"
+text = "Reach the compound"
+type = &"reach_trigger"
+target_id = &"compound_inner"
+
+[sub_resource type="Resource" id="obj_download"]
+script = ExtResource("2_obj")
+id = &"obj_download_data"
+text = "Download the data at the terminal"
+type = &"interact"
+target_id = &"terminal_01"
+activate_on = Array[StringName]([&"obj_reach_compound"])
+
+[sub_resource type="Resource" id="obj_extract"]
+script = ExtResource("2_obj")
+id = &"obj_extract"
+text = "Get to the extraction point"
+type = &"extract"
+target_id = &"extraction_zone"
+activate_on = Array[StringName]([&"obj_download_data"])
+
+[sub_resource type="Resource" id="obj_undetected"]
+script = ExtResource("2_obj")
+id = &"obj_undetected"
+text = "Stay out of combat"
+type = &"stealth"
+optional = true
+checkpoint_on_complete = false
+
+[resource]
+script = ExtResource("1_mission")
+id = &"m1_prototype"
+display_name = "Prototype: Retrieve the data"
+objectives = Array[ExtResource("2_obj")]([SubResource("obj_reach"), SubResource("obj_download"), SubResource("obj_extract"), SubResource("obj_undetected")])
+fail_conditions = Array[StringName]([&"player_died"])

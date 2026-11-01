@@ -13,6 +13,9 @@
 [ext_resource type="PackedScene" path="res://game/ai/guard/guard.tscn" id="11_guard"]
 [ext_resource type="Script" path="res://game/ai/navigation/patrol_route.gd" id="12_route"]
 [ext_resource type="Script" path="res://game/ai/navigation/patrol_point.gd" id="13_point"]
+[ext_resource type="PackedScene" path="res://game/interaction/door.tscn" id="14_door"]
+[ext_resource type="PackedScene" path="res://game/interaction/terminal.tscn" id="15_terminal"]
+[ext_resource type="Script" path="res://game/interaction/trigger_zone.gd" id="16_trigger"]
 
 [sub_resource type="ShaderMaterial" id="mat_floor"]
 render_priority = 0
@@ -53,6 +56,22 @@ size = Vector3(4, 0.08, 4)
 
 [sub_resource type="BoxShape3D" id="shape_patch"]
 size = Vector3(4, 0.08, 4)
+
+[sub_resource type="BoxShape3D" id="shape_compound_trigger"]
+size = Vector3(10, 2.4, 7)
+
+[sub_resource type="BoxShape3D" id="shape_extraction"]
+size = Vector3(4, 3, 4)
+
+[sub_resource type="BoxMesh" id="mesh_extraction"]
+size = Vector3(4, 3, 4)
+
+[sub_resource type="StandardMaterial3D" id="mat_extraction"]
+transparency = 1
+albedo_color = Color(0.2, 1, 0.4, 0.18)
+emission_enabled = true
+emission = Color(0.2, 1, 0.4, 1)
+emission_energy_multiplier = 0.6
 
 [node name="MovementCourse" type="Node3D"]
 script = ExtResource("1_course")
@@ -201,6 +220,36 @@ material = SubResource("mat_cover")
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 19, 0.6, 0)
 size = Vector3(1.5, 1.2, 1.5)
 material = SubResource("mat_cover")
+
+[node name="CompoundSouthW" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.15, 2, -20)
+size = Vector3(4.7, 4, 0.4)
+material = SubResource("mat_wall")
+
+[node name="CompoundSouthE" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.8, 2, -20)
+size = Vector3(6, 4, 0.4)
+material = SubResource("mat_wall")
+
+[node name="CompoundSouthLintel" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.8, 3.3, -20)
+size = Vector3(2, 1.4, 0.4)
+material = SubResource("mat_wall")
+
+[node name="CompoundEastN" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 2, -28.25)
+size = Vector3(0.4, 4, 2.5)
+material = SubResource("mat_wall")
+
+[node name="CompoundEastS" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 2, -22.6)
+size = Vector3(0.4, 4, 4.8)
+material = SubResource("mat_wall")
+
+[node name="CompoundEastLintel" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 3.3, -26)
+size = Vector3(0.4, 1.4, 2)
+material = SubResource("mat_wall")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
@@ -398,3 +447,66 @@ patrol_route = NodePath("../../Patrols/RouteA")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
 guard_id = &"guard_b"
 patrol_route = NodePath("../../Patrols/RouteB")
+
+[node name="Compound" type="Node3D" parent="."]
+
+[node name="DoorSouth" parent="Compound" instance=ExtResource("14_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.8, 0, -20)
+door_id = &"door_south"
+
+[node name="DoorEast" parent="Compound" instance=ExtResource("14_door")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -17, 0, -26)
+door_id = &"door_east"
+
+[node name="Terminal01" parent="Compound" instance=ExtResource("15_terminal")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.05, 0, -25)
+terminal_id = &"terminal_01"
+
+[node name="CompoundInner" type="Area3D" parent="Compound"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.5, 1.2, -24.5)
+script = ExtResource("16_trigger")
+trigger_id = &"compound_inner"
+
+[node name="Shape" type="CollisionShape3D" parent="Compound/CompoundInner"]
+shape = SubResource("shape_compound_trigger")
+
+[node name="ExtractionZone" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, 25)
+script = ExtResource("16_trigger")
+trigger_id = &"extraction_zone"
+once = false
+
+[node name="Shape" type="CollisionShape3D" parent="ExtractionZone"]
+shape = SubResource("shape_extraction")
+
+[node name="Marker" type="MeshInstance3D" parent="ExtractionZone"]
+mesh = SubResource("mesh_extraction")
+surface_material_override/0 = SubResource("mat_extraction")
+
+[node name="Label" type="Label3D" parent="ExtractionZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+billboard = 1
+text = "EXTRACTION"
+
+[node name="RouteC" type="Node3D" parent="Patrols"]
+script = ExtResource("12_route")
+mode = 1
+
+[node name="P1" type="Marker3D" parent="Patrols/RouteC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 0, -27)
+script = ExtResource("13_point")
+wait_time = 3.0
+use_look_direction = true
+look_yaw_deg = 90
+
+[node name="P2" type="Marker3D" parent="Patrols/RouteC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.5, 0, -22.5)
+script = ExtResource("13_point")
+wait_time = 3.0
+use_look_direction = true
+look_yaw_deg = 180
+
+[node name="GuardC" parent="Guards" node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 0, -27)
+guard_id = &"guard_c"
+patrol_route = NodePath("../../Patrols/RouteC")

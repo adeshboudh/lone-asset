@@ -175,6 +175,55 @@ def wind_loop(rng: np.random.Generator) -> tuple[np.ndarray, int]:
     return normalise((base + gust) * swell, 0.5), sr
 
 
+def door_open(rng: np.random.Generator) -> np.ndarray:
+    """Latch click, then a low creak that rises as the door swings."""
+    seconds = 0.9
+    t = t_axis(seconds)
+    track = np.zeros(len(t))
+    place(track, clack(rng), 0.0, 0.8)
+    creak_env = np.clip((t - 0.05) / 0.1, 0.0, 1.0) * np.exp(-np.clip(t - 0.35, 0.0, None) / 0.2)
+    freq = 90 + 60 * t + 25 * np.sin(2 * np.pi * 7 * t)
+    tone = np.sin(2 * np.pi * np.cumsum(freq) / SR) + 0.5 * np.sin(2 * np.pi * np.cumsum(freq * 2.01) / SR)
+    rasp = noise(seconds, rng, 300, 1400)
+    place(track, (tone * 0.35 + rasp * 0.25) * creak_env, 0.0, 0.7)
+    return normalise(track, 0.7)
+
+
+def door_close(rng: np.random.Generator) -> np.ndarray:
+    """A soft thud as the door meets the frame, then a latch click."""
+    track = np.zeros(int(0.5 * SR))
+    place(track, thump(0.3, 140, 55, 0.07) + noise(0.3, rng, 80, 700) * decay(0.3, 0.03), 0.0, 0.9)
+    place(track, clack(rng), 0.12, 0.5)
+    return normalise(track, 0.75)
+
+
+def terminal_loop(rng: np.random.Generator) -> tuple[np.ndarray, int]:
+    """A quiet hum with data chirps. Whole numbers of cycles keep the loop seamless."""
+    sr, seconds = 16000, 2.0
+    t = np.arange(int(sr * seconds)) / sr
+    hum = np.sin(2 * np.pi * 120 * t) * 0.5 + np.sin(2 * np.pi * 240 * t) * 0.2
+    gate = (np.sin(2 * np.pi * 8 * t) > 0.2).astype(float)
+    chirp = np.sin(2 * np.pi * (900 + 300 * np.sin(2 * np.pi * 3 * t)) * t) * gate * 0.25
+    return normalise(hum + chirp, 0.45), sr
+
+
+def terminal_done() -> np.ndarray:
+    t = t_axis(0.5)
+    track = np.zeros(len(t))
+    for at, freq in ((0.0, 880), (0.14, 1320)):
+        tone = np.sin(2 * np.pi * freq * t_axis(0.3)) * decay(0.3, 0.09, 0.002)
+        place(track, tone, at, 0.8)
+    return normalise(track, 0.55)
+
+
+def objective_complete() -> np.ndarray:
+    track = np.zeros(int(0.8 * SR))
+    for at, freq in ((0.0, 660), (0.12, 880), (0.24, 1175)):
+        tone = np.sin(2 * np.pi * freq * t_axis(0.5)) * decay(0.5, 0.14, 0.003)
+        place(track, tone, at, 0.8)
+    return normalise(track, 0.5)
+
+
 def write_wav(name: str, samples: np.ndarray, sr: int = SR) -> None:
     pcm = (np.clip(samples, -1.0, 1.0) * 32767).astype(np.int16)
     with wave.open(str(OUT / f"{name}.wav"), "wb") as wav:
@@ -221,6 +270,13 @@ def main() -> None:
     add("wind_loop", [wind], wind_sr)
     # Added after the others so earlier sounds keep their exact samples (shared random generator).
     add("rifle_shot_loud", [shot_loud(rng) for _ in range(3)], muffled=True)
+    # Added in WP 9, after the sounds above, for the same reason.
+    add("door_open", [door_open(rng)], muffled=True)
+    add("door_close", [door_close(rng)], muffled=True)
+    loop, loop_sr = terminal_loop(rng)
+    add("terminal_loop", [loop], loop_sr)
+    add("terminal_done", [terminal_done()])
+    add("objective_complete", [objective_complete()])
 
     lines = ['[gd_resource type="Resource" script_class="SoundBank" load_steps=%d format=3]\n' % (2 + sum(len(v) for v in bank.values())),
              '[ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]']

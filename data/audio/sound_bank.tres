@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=50 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=57 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_1.wav" id="2_rifle_shot_suppressed_1"]
@@ -49,6 +49,13 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_1_muffled.wav" id="47_rifle_shot_loud_1_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_2_muffled.wav" id="48_rifle_shot_loud_2_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_3_muffled.wav" id="49_rifle_shot_loud_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_open.wav" id="50_door_open"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_open_muffled.wav" id="51_door_open_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_close.wav" id="52_door_close"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_close_muffled.wav" id="53_door_close_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_loop.wav" id="54_terminal_loop"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_done.wav" id="55_terminal_done"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/objective_complete.wav" id="56_objective_complete"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -74,5 +81,12 @@ sounds = {
 &"ui_click": [ExtResource("42_ui_click")],
 &"wind_loop": [ExtResource("43_wind_loop")],
 &"rifle_shot_loud": [ExtResource("44_rifle_shot_loud_1"), ExtResource("45_rifle_shot_loud_2"), ExtResource("46_rifle_shot_loud_3")],
-&"rifle_shot_loud_muffled": [ExtResource("47_rifle_shot_loud_1_muffled"), ExtResource("48_rifle_shot_loud_2_muffled"), ExtResource("49_rifle_shot_loud_3_muffled")]
+&"rifle_shot_loud_muffled": [ExtResource("47_rifle_shot_loud_1_muffled"), ExtResource("48_rifle_shot_loud_2_muffled"), ExtResource("49_rifle_shot_loud_3_muffled")],
+&"door_open": [ExtResource("50_door_open")],
+&"door_open_muffled": [ExtResource("51_door_open_muffled")],
+&"door_close": [ExtResource("52_door_close")],
+&"door_close_muffled": [ExtResource("53_door_close_muffled")],
+&"terminal_loop": [ExtResource("54_terminal_loop")],
+&"terminal_done": [ExtResource("55_terminal_done")],
+&"objective_complete": [ExtResource("56_objective_complete")]
 }

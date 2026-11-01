@@ -18,6 +18,9 @@ var fire_pressed: bool = false
 var aim: bool = false
 var reload: bool = false
 var fire_mode_toggled: bool = false
+## Interact key held, and went down this tick.
+var interact: bool = false
+var interact_pressed: bool = false
 
 
 func clear() -> void:
@@ -31,3 +34,5 @@ func clear() -> void:
 	aim = false
 	reload = false
 	fire_mode_toggled = false
+	interact = false
+	interact_pressed = false

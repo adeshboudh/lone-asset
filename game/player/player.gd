@@ -29,6 +29,9 @@ var health: HealthComponent:
 var exposure: ExposureComponent:
 	get:
 		return _exposure
+var interactor: Interactor:
+	get:
+		return _interactor
 var is_crouched: bool:
 	get:
 		return _stance.is_crouched
@@ -53,6 +56,7 @@ var _bob_phase: float = 0.0
 @onready var _noise: NoiseEmitterComponent = %NoiseEmitterComponent
 @onready var _exposure: ExposureComponent = %ExposureComponent
 @onready var _audio: PlayerAudio = %PlayerAudio
+@onready var _interactor: Interactor = %Interactor
 
 
 func _ready() -> void:
@@ -66,6 +70,7 @@ func _ready() -> void:
 	_noise.stepped.connect(_audio.on_step)
 	_weapon.fired.connect(_on_weapon_fired)
 	_health.died.connect(_on_died)
+	_interactor.setup(self)
 	_hud.setup(self)
 
 
@@ -107,6 +112,7 @@ func _physics_process(delta: float) -> void:
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
 	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
 	var kick: Vector2 = _weapon.physics_update(intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
+	_interactor.physics_update(_camera, intent, delta)
 	_recoil_pitch += kick.x
 	rotate_y(kick.y)
 

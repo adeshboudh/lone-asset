@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="InteractionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/interaction/interaction_definition.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"terminal_download"
+prompt_text = "Download data"
+hold_duration = 4.0
+noise_radius_m = 6.0
+noise_type = &"impact"
+one_shot = true

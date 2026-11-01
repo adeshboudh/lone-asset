@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://game/noise/noise_emitter_component.gd" id="11_noise"]
 [ext_resource type="Script" path="res://game/ai/stealth/exposure_component.gd" id="12_exposure"]
 [ext_resource type="Script" path="res://game/player/player_audio.gd" id="13_audio"]
+[ext_resource type="Script" path="res://game/interaction/interactor.gd" id="14_interactor"]
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
@@ -74,3 +75,7 @@ script = ExtResource("12_exposure")
 [node name="PlayerAudio" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("13_audio")
+
+[node name="Interactor" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("14_interactor")

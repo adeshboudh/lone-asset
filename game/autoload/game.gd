@@ -21,6 +21,7 @@ var state: GameStateMachine.State:
 var _machine: GameStateMachine = GameStateMachine.new()
 var _pause_menu: PauseMenu
 var _death_screen: DeathScreen
+var _mission_succeeded: bool = false
 
 
 func _ready() -> void:
@@ -37,6 +38,7 @@ func _ready() -> void:
 	_death_screen.retry_requested.connect(restart_level)
 	_death_screen.quit_requested.connect(go_to_title)
 	EventBus.player_died.connect(_on_player_died)
+	Mission.mission_completed.connect(_on_mission_completed)
 
 	Platform.mouse_captured.connect(_on_mouse_captured)
 	Platform.mouse_capture_lost.connect(pause)
@@ -111,7 +113,7 @@ func _on_state_changed(old_state: GameStateMachine.State, new_state: GameStateMa
 	else:
 		_pause_menu.close()
 	if new_state == GameStateMachine.State.MISSION_END:
-		_death_screen.open()
+		_death_screen.open(_mission_succeeded, Mission.summary_text() if _mission_succeeded else "")
 	else:
 		_death_screen.close()
 
@@ -123,6 +125,13 @@ func _on_state_changed(old_state: GameStateMachine.State, new_state: GameStateMa
 
 func _on_player_died() -> void:
 	if state == GameStateMachine.State.PLAYING:
+		_mission_succeeded = false
+		_machine.transition(GameStateMachine.State.MISSION_END)
+
+
+func _on_mission_completed() -> void:
+	if state == GameStateMachine.State.PLAYING:
+		_mission_succeeded = true
 		_machine.transition(GameStateMachine.State.MISSION_END)
 
 

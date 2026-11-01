@@ -580,7 +580,7 @@ The suspicion maths is pure logic (`SuspicionRules` and `SuspicionModel`, no sce
 
 - `NavigationRegion3D` per level with a navmesh baked ahead of time and saved as a resource (no runtime baking in Milestone 1). The movement course's mesh is baked by `dev/bake_navmesh.gd` (`godot --headless --path . -s res://dev/bake_navmesh.gd`) from the nodes in the `navigation_geometry` group; re-bake after changing that geometry. A scenario test checks that every patrol leg is connected on the baked mesh. `dev/` is excluded from exports.
 - Agent: radius 0.4 m, height 1.8 m, max climb 0.35 m, max slope 40°. Guards climb ledges with the same `StepUp` helper as the player.
-- Doors: `NavigationLink3D` through each doorway; guards open closed, unlocked doors via the interaction system (same `Interactable` as the player). **Doors arrive with the interaction system in WP 9**, so WP 6 patrols stay in the open.
+- Doors (WP 9): the doorway is part of the baked mesh, so no `NavigationLink3D` is needed. A guard walking toward a closed door inside its sensor zone opens it through the same `Interactable` the player uses; a door a guard opened closes again after 5 s with nobody near. Doorways must be at least 2.0 m wide and 2.6 m high or the bake closes them (agent radius, cell size and a lintel closer than the agent height all erode the gap); re-bake after moving them.
 - `PatrolRoute` node: ordered child `PatrolPoint` markers (`wait_time`, optional look direction as `look_yaw_deg`). Supports loop and ping-pong (`PatrolSequence`, unit-tested).
 - `NavigationAgent3D` avoidance off in Milestone 1 (≤3 guards). Targets are set once per leg, so no repeated path requests.
 - **The baked mesh floats above the floor** (0.5 m in the course). Consequences, all handled in `Guard`: navigation targets are snapped onto the mesh with `map_get_closest_point`; a target more than 1 m (horizontally) from the mesh is unreachable; waypoints are consumed in order using ground-plane distance, because the agent's own 3D reached-test never passes the first waypoint when the mesh is 0.5 m above the guard's feet.
@@ -650,6 +650,15 @@ class_name InteractionDefinition extends Resource
 - AI uses the same `Interactable` API (guards open doors).
 - Milestone 1 implementations: `Door` (open/close, animated, emits noise, toggles nav link), `Terminal` (hold 4 s, plays loop sound, completes objective).
 
+**Implemented in WP 9**
+
+- Files: `game/interaction/` (`InteractionDefinition`, `InteractionRules`, `Interactable`, `Interactor`, `Door`, `Terminal`, `TriggerZone`), `game/mission/` (`ObjectiveDefinition`, `MissionDefinition`, `MissionState`), autoload `Mission` (`game/autoload/mission_service.gd`), mission data in `data/missions/m1_prototype.tres`, interaction data in `data/interaction/`.
+- `Interactable` is an `Area3D` on physics layer 4 (value 8). Its sibling collision bodies are tagged with an `interactable` meta so the player's ray, which usually hits the solid door or terminal first, still finds it. Completion fires `completed` and `EventBus.interaction_completed(id, actor)`, and makes noise only when the actor is the player.
+- `Interactor` (on the player, key F) casts a 2.5 m ray against world and interactables each physics tick. Instant uses need a key press; timed ones need the key held and show a progress bar. Releasing, looking away or (when `interrupt_on_damage`) being hit cancels the hold, and the key must be released before the next use.
+- The terminal needs a 4 s hold, plays a hum loop while downloading and turns green when done. Door noise is 10 m (DOOR type); the terminal makes a 6 m impact-type noise on completion.
+- Missions: `MissionState` is pure logic (statuses, gating by `activate_on`, optional stealth objective settled at the end, fail reasons). `Mission` feeds it `trigger_entered`, `interaction_completed`, `guard_alert_band_changed` (Combat) and `player_died`, and emits `checkpoint_requested` for objectives that ask for one (WP 12 saves on it). Completing the mission ends the run with a MISSION COMPLETE screen (time and stealth result); dying still shows ELIMINATED.
+- The movement course gained the compound (north-west, two doors, terminal, guard C inside) and the extraction zone (south-east). The mission is Reach compound, then Download data, then Extract, plus the optional "Stay out of combat".
+
 ---
 
 ## 13. Equipment Framework
@@ -682,7 +691,7 @@ Implemented early (with WP 5) because silence made the prototype hard to judge.
 - **Occlusion**: for positional sounds, `NoiseSystem.walls_between()` counts walls (ear height) between the camera and the source. Behind a wall the sound plays a pre-muffled copy (`<id>_muffled`, low-passed at 900 Hz) at −6 dB per wall, up to 3 walls. Sounds closer than 2 m are never occluded. This replaces the earlier bus low-pass plan.
 - **Format**: 16-bit mono WAV (32 kHz) for the placeholders, because WAV is the format sample playback is built around. Before switching real recordings to Ogg Vorbis to save download size, test Ogg on the web (sample mode, looping).
 - Audio unlocks on the click-to-start screen.
-- **Not yet**: weapon/footstep sounds for guards (WP 8), door sounds (WP 9), music, voice, volume sliders (WP 11).
+- **Not yet**: music, voice, volume sliders (WP 11). Door, terminal and objective sounds arrived in WP 9.
 
 ---
 

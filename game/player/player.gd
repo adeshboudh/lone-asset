@@ -29,6 +29,9 @@ var health: HealthComponent:
 var exposure: ExposureComponent:
 	get:
 		return _exposure
+var binoculars: Binoculars:
+	get:
+		return _binoculars
 var interactor: Interactor:
 	get:
 		return _interactor
@@ -37,6 +40,7 @@ var is_crouched: bool:
 		return _stance.is_crouched
 
 var _pitch: float = 0.0
+var _idle_intent: InputIntent = InputIntent.new()
 ## Recoil offset on top of the aim pitch; recovers toward 0.
 var _recoil_pitch: float = 0.0
 var _base_fov: float = 0.0
@@ -57,6 +61,7 @@ var _bob_phase: float = 0.0
 @onready var _exposure: ExposureComponent = %ExposureComponent
 @onready var _audio: PlayerAudio = %PlayerAudio
 @onready var _interactor: Interactor = %Interactor
+@onready var _binoculars: Binoculars = %Binoculars
 
 
 func _ready() -> void:
@@ -92,6 +97,7 @@ func set_scripted_intent(intent: InputIntent) -> void:
 
 func _process(delta: float) -> void:
 	var aim_fov: float = lerpf(_base_fov, _weapon.definition.ads_fov, smoothstep(0.0, 1.0, _weapon.aim_blend))
+	aim_fov = lerpf(aim_fov, BinocularsRules.fov_for_zoom(_base_fov, _binoculars.zoom), smoothstep(0.0, 1.0, _binoculars.raise_blend))
 	_camera.fov = aim_fov
 	# Same on-screen mouse speed when zoomed in.
 	var look: Vector2 = _input.take_look_delta() * settings.mouse_sensitivity * (aim_fov / _base_fov)
@@ -111,7 +117,11 @@ func _physics_process(delta: float) -> void:
 	_noise.physics_update(self, is_on_floor(), horizontal_speed, _stance.is_crouched, _movement.is_sprinting, delta)
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
 	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
-	var kick: Vector2 = _weapon.physics_update(intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
+	_binoculars.physics_update(self, intent, delta)
+	_weapon.visible = not _binoculars.is_active
+	# Raised binoculars take both hands: the weapon sees no input.
+	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active else intent
+	var kick: Vector2 = _weapon.physics_update(weapon_intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
 	_interactor.physics_update(_camera, intent, delta)
 	_recoil_pitch += kick.x
 	rotate_y(kick.y)

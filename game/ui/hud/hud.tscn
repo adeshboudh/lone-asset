@@ -1,9 +1,32 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://game/ui/hud/hud.gd" id="1_hud"]
 
+[sub_resource type="Shader" id="vignette_shader"]
+code = "shader_type canvas_item;
+void fragment() {
+	float d = distance(UV, vec2(0.5));
+	float edge = smoothstep(0.28, 0.62, d);
+	COLOR = vec4(0.0, 0.0, 0.0, edge * 0.85);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="vignette_material"]
+shader = SubResource("vignette_shader")
+
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
+
+[node name="Vignette" type="ColorRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("vignette_material")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
 
 [node name="Crosshair" type="Control" parent="."]
 unique_name_in_owner = true

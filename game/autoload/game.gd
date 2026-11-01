@@ -9,6 +9,7 @@ extends Node
 
 signal state_changed(old_state: GameStateMachine.State, new_state: GameStateMachine.State)
 
+const LOADING_TIMEOUT_S: float = 20.0
 const TITLE_SCENE: String = "res://game/ui/title/title_screen.tscn"
 const FIRST_LEVEL_SCENE: String = "res://game/levels/graybox/movement_course.tscn"
 const PAUSE_MENU_SCENE: PackedScene = preload("res://game/ui/pause/pause_menu.tscn")
@@ -83,6 +84,7 @@ func restart_level() -> void:
 func _load_level() -> void:
 	if not _machine.transition(GameStateMachine.State.LOADING):
 		return
+	_watch_loading()
 	Platform.capture_mouse()
 	var error: Error = get_tree().change_scene_to_file(FIRST_LEVEL_SCENE)
 	if error != OK:
@@ -90,12 +92,24 @@ func _load_level() -> void:
 		_machine.transition(GameStateMachine.State.TITLE)
 
 
+## A level that never reports ready (a load error) would leave the game frozen and paused; give up
+## after a while and return to the title instead.
+func _watch_loading() -> void:
+	await get_tree().create_timer(LOADING_TIMEOUT_S, true, false, true).timeout
+	if state == GameStateMachine.State.LOADING:
+		Log.error(&"game", "Level did not become ready within %d s; returning to the title" % int(LOADING_TIMEOUT_S))
+		Saves.pending = {}
+		go_to_title()
+
+
 ## Called by a level once it is ready to play.
 func level_ready() -> void:
+	var entered: bool = _machine.transition(GameStateMachine.State.PLAYING)
+	# After the transition, so a problem in a checkpoint can never leave the game paused in LOADING.
 	if not Saves.pending.is_empty():
 		Saves.apply(Saves.pending)
 		Saves.pending = {}
-	if not _machine.transition(GameStateMachine.State.PLAYING):
+	if not entered:
 		return
 	if not Platform.is_mouse_captured() and not Platform.is_capture_pending():
 		pause()

@@ -74,10 +74,10 @@ func save_checkpoint() -> bool:
 func apply(data: Dictionary) -> void:
 	var player: Player = get_tree().get_first_node_in_group(&"player") as Player
 	if player != null:
-		player.load_state(data["player"])
+		player.load_state(data.get("player", {}))
 		player.binoculars.load_state(data.get("world", {}).get("tags", {}))
 	var saved_guards: Dictionary = {}
-	for entry: Dictionary in data["guards"]:
+	for entry: Dictionary in data.get("guards", []):
 		saved_guards[StringName(entry["guard_id"])] = entry
 	for node: Node in get_tree().get_nodes_in_group(&"guards"):
 		var guard: Guard = node as Guard
@@ -90,7 +90,7 @@ func apply(data: Dictionary) -> void:
 	for node: Node in get_tree().get_nodes_in_group(&"terminals"):
 		var terminal: Terminal = node as Terminal
 		terminal.load_state(world.get("terminals", {}).get(String(terminal.terminal_id), {}))
-	Mission.load_state(data["mission"], data["objectives"])
+	Mission.load_state(data.get("mission", {}), data.get("objectives", {}))
 
 
 ## Hands the save to the browser as a download (web only).

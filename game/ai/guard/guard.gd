@@ -108,10 +108,10 @@ func save_state() -> Dictionary:
 ## Loading a checkpoint: a guard that was killed is killed again; a living one goes back to where it
 ## was, calm, but remembers being on edge (the same suspicion floor as when saved).
 func load_state(data: Dictionary) -> void:
-	global_position = SaveRules.array_to_vector(data["position"])
-	rotation.y = float(data["yaw"])
+	global_position = SaveRules.array_to_vector(data.get("position"))
+	rotation.y = float(data.get("yaw", 0.0))
 	velocity = Vector3.ZERO
-	if not bool(data["alive"]):
+	if not bool(data.get("alive", true)):
 		var info: DamageInfo = DamageInfo.new()
 		info.type = &"restore"
 		info.amount = _health.max_health

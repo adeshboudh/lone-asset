@@ -103,15 +103,18 @@ func save_state() -> Dictionary:
 
 
 func load_state(data: Dictionary) -> void:
-	global_position = SaveRules.array_to_vector(data["position"])
-	rotation.y = float(data["yaw"])
+	if data.is_empty():
+		return
+	global_position = SaveRules.array_to_vector(data.get("position"))
+	rotation.y = float(data.get("yaw", 0.0))
 	velocity = Vector3.ZERO
 	_pitch = 0.0
-	_stance.restore(data["stance"] == "crouch", settings)
+	_stance.restore(data.get("stance", "stand") == "crouch", settings)
 	_head.position.y = _stance.eye_height
-	_health.health = float(data["health"])
-	_weapon.logic.magazine = int(data["weapon"]["mag"])
-	_weapon.logic.reserve = int(data["weapon"]["reserve"])
+	_health.health = float(data.get("health", _health.max_health))
+	var saved_weapon: Dictionary = data.get("weapon", {})
+	_weapon.logic.magazine = int(saved_weapon.get("mag", _weapon.logic.magazine))
+	_weapon.logic.reserve = int(saved_weapon.get("reserve", _weapon.logic.reserve))
 
 
 ## Scripted input for tests and AI dummies; null returns control to the devices.

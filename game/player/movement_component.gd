@@ -5,10 +5,6 @@ extends Node
 ## Emitted on touching the ground, with the height fallen from the highest point of the jump or fall.
 signal landed(fall_height: float)
 
-## Minimum forward distance when stepping up. A single tick moves only a few centimetres, which would
-## leave the body balanced on the very edge of the step.
-const MIN_STEP_FORWARD: float = 0.1
-
 var is_sprinting: bool = false
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -41,7 +37,8 @@ func physics_update(body: CharacterBody3D, intent: InputIntent, stance: StanceCo
 		vertical -= _gravity * delta
 
 	body.velocity = horizontal + Vector3.UP * vertical
-	if on_floor and vertical <= 0.0 and _try_step_up(body, settings, delta):
+	var horizontal_motion: Vector3 = Vector3(body.velocity.x, 0.0, body.velocity.z) * delta
+	if on_floor and vertical <= 0.0 and StepUp.try_step(body, horizontal_motion, settings.step_height):
 		return
 	body.move_and_slide()
 
@@ -52,39 +49,3 @@ func _track_landing(body: CharacterBody3D, on_floor: bool) -> void:
 	if not on_floor:
 		_air_peak_y = body.global_position.y if _was_on_floor else maxf(_air_peak_y, body.global_position.y)
 	_was_on_floor = on_floor
-
-
-## Climbs ledges up to step_height without jumping. Returns true if the body was moved.
-func _try_step_up(body: CharacterBody3D, settings: PlayerMovementSettings, delta: float) -> bool:
-	var motion: Vector3 = Vector3(body.velocity.x, 0.0, body.velocity.z) * delta
-	if motion.length_squared() < 0.000001:
-		return false
-
-	var start: Transform3D = body.global_transform
-	var hit: KinematicCollision3D = KinematicCollision3D.new()
-	# Walkable slopes are left to move_and_slide; only steeper faces are treated as steps.
-	if not body.test_move(start, motion, hit) or hit.get_normal().angle_to(Vector3.UP) <= body.floor_max_angle:
-		return false
-
-	var up: Vector3 = Vector3.UP * settings.step_height
-	if body.test_move(start, up):
-		return false
-	var raised: Transform3D = start.translated(up)
-	var forward: Vector3 = motion.normalized() * maxf(motion.length(), MIN_STEP_FORWARD)
-	if body.test_move(raised, forward):
-		return false
-
-	var ground: KinematicCollision3D = KinematicCollision3D.new()
-	var over: Transform3D = raised.translated(forward)
-	if not body.test_move(over, -up, ground):
-		return false
-	if ground.get_normal().angle_to(Vector3.UP) > body.floor_max_angle:
-		return false
-
-	body.global_position = over.origin + ground.get_travel()
-	# Settle on the new floor so is_on_floor() stays true, without moving horizontally twice.
-	var velocity: Vector3 = body.velocity
-	body.velocity = Vector3.DOWN
-	body.move_and_slide()
-	body.velocity = Vector3(velocity.x, 0.0, velocity.z)
-	return true

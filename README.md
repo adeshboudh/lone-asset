@@ -4,7 +4,7 @@ An open-source tactical stealth FPS that runs in the web browser (Godot 4, WebAs
 
 Observe, plan, infiltrate, complete the objective, extract. Stealth is systemic: guards react to light, stance, movement, sound and line of sight.
 
-> Status: Milestone 1 (core prototype), work package 5 — noise system, light volumes and exposure, plus placeholder sound effects.
+> Status: Milestone 1 (core prototype), work package 6 — guards that patrol a baked navigation mesh.
 
 ## Design
 
@@ -26,6 +26,12 @@ Smoke test (headless):
 
 ```bash
 tools/ci/smoke_test.sh
+```
+
+Re-bake the movement course's navigation mesh after changing its geometry:
+
+```bash
+godot --headless --path . -s res://dev/bake_navmesh.gd
 ```
 
 Web export:

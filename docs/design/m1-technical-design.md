@@ -305,16 +305,23 @@ class_name WeaponDefinition extends Resource
 @export var spread_ads_deg: float = 0.15
 @export var spread_move_add_deg: float = 2.0
 @export var spread_crouch_mult: float = 0.7
-@export var recoil_pattern: Curve2D              # per-shot camera kick
-@export var recoil_recovery: float = 8.0
+@export var spread_per_shot_deg: float = 0.35     # bloom, capped and recovering
+@export_group("Recoil")
+@export var recoil_pitch_deg: float = 0.6         # per shot, upward
+@export var recoil_yaw_deg: float = 0.25          # per shot, random ±
+@export var recoil_ads_mult: float = 0.6
+@export var recoil_recovery_deg_per_s: float = 8.0
+@export_group("Aiming")
+@export var ads_fov: float = 55.0
+@export var ads_time: float = 0.18
 @export_group("Stealth")
 @export var noise_radius_m: float = 18.0         # suppressed
 @export var suppressed: bool = true
 @export_group("Presentation")
-@export var viewmodel_scene: PackedScene
-@export var audio_profile: WeaponAudioProfile
-@export var animation_profile: WeaponAnimationProfile
+@export var viewmodel_scene: PackedScene         # must contain a "Muzzle" node
 ```
+
+Milestone 1 uses per-shot pitch/yaw kick instead of an authored recoil pattern curve; a pattern can be added later without changing the weapon code. Audio and animation profiles arrive with the audio pass and real weapon models.
 
 Milestone 1 ships `data/weapons/rifle_suppressed.tres`. New weapons are new `.tres` files; core weapon code does not change.
 
@@ -337,7 +344,8 @@ WeaponHolder
 
 - Projectiles are **plain data records** in a pooled array inside `BallisticsSystem` (a node in the level), not scene instances.
 - Each physics tick, each projectile advances in `projectile_steps_per_tick` segments: `velocity += gravity * dt`, raycast from previous to next position.
-- First hit → build `DamageInfo` → `HealthComponent.apply_damage()` if the collider has one → spawn impact effect from the hit `SurfaceProfile`.
+- First hit → build `DamageInfo` → `HealthComponent.apply_damage()` if the collider has one (the child named `HealthComponent`) → place an impact mark (pooled, 64). Per-surface effects (`SurfaceProfile`) arrive with penetration in Milestone 2.
+- The `BallisticsSystem` registers in the `ballistics` group on entering the tree, so weapons find it regardless of node order.
 - Projectile removed on hit, on exceeding `max_range`, or after 2 s.
 - Bullet travel time is short at these ranges, but the system is in place for penetration/ricochet in Milestone 2.
 

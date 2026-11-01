@@ -1,6 +1,7 @@
 extends Node3D
-## WP 3 movement test course: stairs, steps too high to climb, walkable and too-steep ramps,
-## crouch tunnel, low cover, a corner for leaning and jump boxes. Shows a live tuning readout.
+## Movement and gunplay test course: stairs, steps too high to climb, walkable and too-steep ramps,
+## crouch tunnel, low cover, a corner for leaning, jump boxes (WP 3) and a shooting range with
+## targets at 10, 25 and 40 m on the right (WP 4). Shows a live tuning readout.
 
 @onready var _player: Player = $Player
 
@@ -18,7 +19,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	_readout.text = "%.2f m/s  %s%s  lean %+.2f  %s\nWASD move · Shift sprint · C crouch · Q/E lean · Space jump · Esc pause" % [
+	_readout.text = "%.2f m/s  %s%s  lean %+.2f  %s\nWASD move · Shift sprint · C crouch · Q/E lean · Space jump · LMB fire · RMB aim · R reload · X fire mode · Esc pause" % [
 		_player.horizontal_speed,
 		StanceComponent.Stance.keys()[_player.stance],
 		"  SPRINT" if _player.is_sprinting else "",

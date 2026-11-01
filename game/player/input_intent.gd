@@ -11,6 +11,13 @@ var crouch_toggled: bool = false
 ## -1 left, 0 none, 1 right.
 var lean: int = 0
 var jump: bool = false
+## Trigger held (only after a press made while the mouse was captured).
+var fire: bool = false
+## Trigger went down this tick.
+var fire_pressed: bool = false
+var aim: bool = false
+var reload: bool = false
+var fire_mode_toggled: bool = false
 
 
 func clear() -> void:
@@ -19,3 +26,8 @@ func clear() -> void:
 	crouch_toggled = false
 	lean = 0
 	jump = false
+	fire = false
+	fire_pressed = false
+	aim = false
+	reload = false
+	fire_mode_toggled = false

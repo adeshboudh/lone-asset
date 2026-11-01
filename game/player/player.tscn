@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://data/player/player_movement.tres" id="2_settings"]
@@ -6,6 +6,10 @@
 [ext_resource type="Script" path="res://game/player/movement_component.gd" id="4_movement"]
 [ext_resource type="Script" path="res://game/player/stance_component.gd" id="5_stance"]
 [ext_resource type="Script" path="res://game/player/lean_component.gd" id="6_lean"]
+[ext_resource type="Script" path="res://game/weapons/weapon.gd" id="7_weapon"]
+[ext_resource type="Resource" path="res://data/weapons/rifle_suppressed.tres" id="8_rifle"]
+[ext_resource type="Script" path="res://game/damage/health_component.gd" id="9_health"]
+[ext_resource type="PackedScene" path="res://game/ui/hud/hud.tscn" id="10_hud"]
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
@@ -26,6 +30,11 @@ current = true
 fov = 80.0
 near = 0.05
 
+[node name="Weapon" type="Node3D" parent="Head/LeanPivot/Camera"]
+unique_name_in_owner = true
+script = ExtResource("7_weapon")
+definition = ExtResource("8_rifle")
+
 [node name="PlayerInput" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("3_input")
@@ -41,3 +50,10 @@ script = ExtResource("5_stance")
 [node name="LeanComponent" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("6_lean")
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("9_health")
+
+[node name="Hud" parent="." instance=ExtResource("10_hud")]
+unique_name_in_owner = true

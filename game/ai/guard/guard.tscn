@@ -1,0 +1,140 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://game/ai/guard/guard.gd" id="1_guard"]
+[ext_resource type="Script" path="res://game/damage/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://game/ai/guard/guard_brain.gd" id="3_brain"]
+[ext_resource type="Resource" path="res://data/ai/guard_default.tres" id="4_profile"]
+
+[sub_resource type="StandardMaterial3D" id="mat_uniform"]
+albedo_color = Color(0.32, 0.38, 0.22, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="mat_skin"]
+albedo_color = Color(0.78, 0.6, 0.48, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="mat_nose"]
+albedo_color = Color(0.9, 0.85, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="mesh_nose"]
+material = SubResource("mat_nose")
+size = Vector3(0.08, 0.08, 0.16)
+
+[sub_resource type="SphereShape3D" id="shape_Head"]
+radius = 0.12
+
+[sub_resource type="SphereMesh" id="mesh_Head"]
+material = SubResource("mat_skin")
+radius = 0.12
+height = 0.24
+
+[sub_resource type="BoxShape3D" id="shape_Torso"]
+size = Vector3(0.46, 0.62, 0.26)
+
+[sub_resource type="BoxMesh" id="mesh_Torso"]
+material = SubResource("mat_uniform")
+size = Vector3(0.46, 0.62, 0.26)
+
+[sub_resource type="BoxShape3D" id="shape_Legs"]
+size = Vector3(0.36, 0.88, 0.22)
+
+[sub_resource type="BoxMesh" id="mesh_Legs"]
+material = SubResource("mat_uniform")
+size = Vector3(0.36, 0.88, 0.22)
+
+[sub_resource type="BoxShape3D" id="shape_ArmL"]
+size = Vector3(0.1, 0.6, 0.12)
+
+[sub_resource type="BoxMesh" id="mesh_ArmL"]
+material = SubResource("mat_uniform")
+size = Vector3(0.1, 0.6, 0.12)
+
+[sub_resource type="BoxShape3D" id="shape_ArmR"]
+size = Vector3(0.1, 0.6, 0.12)
+
+[sub_resource type="BoxMesh" id="mesh_ArmR"]
+material = SubResource("mat_uniform")
+size = Vector3(0.1, 0.6, 0.12)
+
+[node name="Guard" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_guard")
+profile = ExtResource("4_profile")
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_health")
+
+[node name="Brain" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_brain")
+
+[node name="NavigationAgent" type="NavigationAgent3D" parent="."]
+unique_name_in_owner = true
+path_desired_distance = 0.4
+target_desired_distance = 0.5
+radius = 0.4
+height = 1.8
+
+[node name="Model" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+mesh = SubResource("mesh_Head")
+
+[node name="TorsoMesh" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.19, 0)
+mesh = SubResource("mesh_Torso")
+
+[node name="LegsMesh" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.44, 0)
+mesh = SubResource("mesh_Legs")
+
+[node name="ArmLMesh" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 1.18, 0)
+mesh = SubResource("mesh_ArmL")
+
+[node name="ArmRMesh" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.18, 0)
+mesh = SubResource("mesh_ArmR")
+
+[node name="Nose" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, -0.16)
+mesh = SubResource("mesh_nose")
+
+[node name="Head" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+shape = SubResource("shape_Head")
+metadata/hit_zone = &"head"
+
+[node name="Torso" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.19, 0)
+shape = SubResource("shape_Torso")
+metadata/hit_zone = &"torso"
+
+[node name="Legs" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.44, 0)
+shape = SubResource("shape_Legs")
+metadata/hit_zone = &"limb"
+
+[node name="ArmL" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 1.18, 0)
+shape = SubResource("shape_ArmL")
+metadata/hit_zone = &"limb"
+
+[node name="ArmR" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.18, 0)
+shape = SubResource("shape_ArmR")
+metadata/hit_zone = &"limb"
+
+[node name="StateLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+pixel_size = 0.006
+font_size = 32
+outline_size = 10

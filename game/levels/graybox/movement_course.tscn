@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://game/levels/graybox/movement_course.gd" id="1_course"]
 [ext_resource type="Shader" path="res://game/levels/graybox/blockout_grid.gdshader" id="2_grid"]
@@ -9,6 +9,10 @@
 [ext_resource type="Script" path="res://game/ai/stealth/level_lighting.gd" id="7_lighting"]
 [ext_resource type="Script" path="res://game/ai/stealth/light_volume.gd" id="8_volume"]
 [ext_resource type="PackedScene" path="res://game/ai/stealth/noise_sensor.tscn" id="9_sensor"]
+[ext_resource type="NavigationMesh" path="res://game/levels/graybox/movement_course_navmesh.tres" id="10_navmesh"]
+[ext_resource type="PackedScene" path="res://game/ai/guard/guard.tscn" id="11_guard"]
+[ext_resource type="Script" path="res://game/ai/navigation/patrol_route.gd" id="12_route"]
+[ext_resource type="Script" path="res://game/ai/navigation/patrol_point.gd" id="13_point"]
 
 [sub_resource type="ShaderMaterial" id="mat_floor"]
 render_priority = 0
@@ -60,7 +64,7 @@ environment = SubResource("environment")
 transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.556670, 0, 10, 0)
 shadow_enabled = true
 
-[node name="Geometry" type="CSGCombiner3D" parent="."]
+[node name="Geometry" type="CSGCombiner3D" parent="." groups=["navigation_geometry"]]
 use_collision = true
 
 [node name="Floor" type="CSGBox3D" parent="Geometry"]
@@ -285,7 +289,7 @@ outline_size = 10
 text = "Stand on the marker (7 m from each post).
 Sprint, jump or shoot: the post behind the wall hears less."
 
-[node name="Surfaces" type="Node3D" parent="."]
+[node name="Surfaces" type="Node3D" parent="." groups=["navigation_geometry"]]
 
 [node name="MetalPlate" type="StaticBody3D" parent="Surfaces"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.04, 22)
@@ -326,3 +330,71 @@ font_size = 36
 outline_size = 10
 text = "GRASS
 footsteps carry 0.7x"
+
+[node name="NavigationRegion" type="NavigationRegion3D" parent="."]
+navigation_mesh = ExtResource("10_navmesh")
+
+[node name="Patrols" type="Node3D" parent="."]
+
+[node name="RouteA" type="Node3D" parent="Patrols"]
+script = ExtResource("12_route")
+mode = 0
+
+[node name="P1" type="Marker3D" parent="Patrols/RouteA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 16)
+script = ExtResource("13_point")
+wait_time = 1.5
+
+[node name="P2" type="Marker3D" parent="Patrols/RouteA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 16)
+script = ExtResource("13_point")
+wait_time = 1.5
+
+[node name="P3" type="Marker3D" parent="Patrols/RouteA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 26)
+script = ExtResource("13_point")
+wait_time = 2.0
+use_look_direction = true
+look_yaw_deg = 180
+
+[node name="P4" type="Marker3D" parent="Patrols/RouteA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 26)
+script = ExtResource("13_point")
+wait_time = 2.0
+use_look_direction = true
+look_yaw_deg = 0
+
+[node name="RouteB" type="Node3D" parent="Patrols"]
+script = ExtResource("12_route")
+mode = 1
+
+[node name="P1" type="Marker3D" parent="Patrols/RouteB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
+script = ExtResource("13_point")
+wait_time = 3.0
+use_look_direction = true
+look_yaw_deg = 90
+
+[node name="P2" type="Marker3D" parent="Patrols/RouteB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -16)
+script = ExtResource("13_point")
+wait_time = 0.5
+
+[node name="P3" type="Marker3D" parent="Patrols/RouteB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, -16)
+script = ExtResource("13_point")
+wait_time = 3.0
+use_look_direction = true
+look_yaw_deg = -90
+
+[node name="Guards" type="Node3D" parent="."]
+
+[node name="GuardA" parent="Guards" node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 16)
+guard_id = &"guard_a"
+patrol_route = NodePath("../../Patrols/RouteA")
+
+[node name="GuardB" parent="Guards" node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
+guard_id = &"guard_b"
+patrol_route = NodePath("../../Patrols/RouteB")

@@ -395,6 +395,8 @@ Guard (CharacterBody3D, class Guard)
 
 Tuning lives in `GuardProfile` resources (`data/ai/guard_default.tres`): speeds, vision ranges, suspicion rates, accuracy, reaction time.
 
+WP 6 implements: `Guard` (movement, navigation, hit-zone shapes), `HealthComponent`, `NavigationAgent3D`, `GuardBrain` with the blackboard, the Patrol and Dead states, a blockout model, and a state label shown by the F3 debug views. Perception, suspicion, noise hearing and the remaining states join in WP 7 and WP 8. Each guard has a stable `guard_id` for missions. Guards live on physics layer 2 and block the player and bullets until they die.
+
 ### 7.2 Decision model
 
 Milestone 1 uses a **hierarchical finite state machine** (HFSM): simple, debuggable, and enough for one guard type. Each state is a class with `enter()`, `exit()`, `tick(delta) -> StringName` (next state or empty).
@@ -556,11 +558,13 @@ The `SuspicionComponent` is pure logic (no scene dependencies), so the formulas 
 
 ## 10. Navigation
 
-- `NavigationRegion3D` per level, baked in editor; baked navmesh saved as a resource (no runtime baking in Milestone 1).
-- Agent: radius 0.4 m, height 1.8 m, max climb 0.35 m, max slope 40°.
-- Doors: `NavigationLink3D` through each doorway; guards open closed, unlocked doors via the interaction system (same `Interactable` as the player).
-- `PatrolRoute` node: ordered child `PatrolPoint` markers (`wait_time`, optional `look_direction`, optional animation tag). Supports loop and ping-pong.
-- `NavigationAgent3D` avoidance off in Milestone 1 (≤3 guards); path recompute throttled to max 2 Hz per agent.
+- `NavigationRegion3D` per level with a navmesh baked ahead of time and saved as a resource (no runtime baking in Milestone 1). The movement course's mesh is baked by `dev/bake_navmesh.gd` (`godot --headless --path . -s res://dev/bake_navmesh.gd`) from the nodes in the `navigation_geometry` group; re-bake after changing that geometry. A scenario test checks that every patrol leg is connected on the baked mesh. `dev/` is excluded from exports.
+- Agent: radius 0.4 m, height 1.8 m, max climb 0.35 m, max slope 40°. Guards climb ledges with the same `StepUp` helper as the player.
+- Doors: `NavigationLink3D` through each doorway; guards open closed, unlocked doors via the interaction system (same `Interactable` as the player). **Doors arrive with the interaction system in WP 9**, so WP 6 patrols stay in the open.
+- `PatrolRoute` node: ordered child `PatrolPoint` markers (`wait_time`, optional look direction as `look_yaw_deg`). Supports loop and ping-pong (`PatrolSequence`, unit-tested).
+- `NavigationAgent3D` avoidance off in Milestone 1 (≤3 guards). Targets are set once per leg, so no repeated path requests.
+- **The baked mesh floats above the floor** (0.5 m in the course). Consequences, all handled in `Guard`: navigation targets are snapped onto the mesh with `map_get_closest_point`; a target more than 1 m (horizontally) from the mesh is unreachable; waypoints are consumed in order using ground-plane distance, because the agent's own 3D reached-test never passes the first waypoint when the mesh is 0.5 m above the guard's feet.
+- A guard that cannot reach a patrol point, or makes less than 0.15 m of progress in 2.5 s, logs a warning and skips to the next point.
 - Search point generation: random points via `NavigationServer3D.map_get_closest_point` around the last known position, rejecting points closer than 3 m to each other.
 
 ---
@@ -1069,7 +1073,7 @@ Each step ends with a web build on the preview URL.
 | 3 | Player controller (move, stance, lean, jump), graybox level | 2 | Movement tuning playtest |
 | 4 | Weapon framework, ballistics, damage, target dummies | 3 | Gunplay playtest; unit tests green |
 | 5 | Noise system, light volumes, exposure | 3 | Debug views show noise and light |
-| 6 | Guard: navigation, patrol, HFSM skeleton | 3 | Guard patrols with doors |
+| 6 | Guard: navigation, patrol, HFSM skeleton | 3 | Guard patrols a route (doors follow in WP 9) |
 | 7 | Perception + scheduler + suspicion | 5, 6 | Scenario tests green |
 | 8 | Guard investigate / search / combat | 4, 7 | Full AI loop playtest |
 | 9 | Interaction (door, terminal), mission framework, M1 mission | 6 | Mission completes end-to-end |

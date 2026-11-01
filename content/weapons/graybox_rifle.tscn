@@ -1,0 +1,73 @@
+[gd_scene load_steps=9 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat_metal"]
+albedo_color = Color(0.16, 0.17, 0.18, 1)
+metallic = 0.6
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="mesh_Receiver"]
+material = SubResource("mat_metal")
+size = Vector3(0.05, 0.075, 0.32)
+
+[sub_resource type="BoxMesh" id="mesh_Stock"]
+material = SubResource("mat_metal")
+size = Vector3(0.045, 0.085, 0.2)
+
+[sub_resource type="BoxMesh" id="mesh_Grip"]
+material = SubResource("mat_metal")
+size = Vector3(0.035, 0.09, 0.04)
+
+[sub_resource type="BoxMesh" id="mesh_Magazine"]
+material = SubResource("mat_metal")
+size = Vector3(0.03, 0.13, 0.065)
+
+[sub_resource type="BoxMesh" id="mesh_Sight"]
+material = SubResource("mat_metal")
+size = Vector3(0.028, 0.028, 0.09)
+
+[sub_resource type="CylinderMesh" id="mesh_Barrel"]
+material = SubResource("mat_metal")
+top_radius = 0.011
+bottom_radius = 0.011
+height = 0.2
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="mesh_Suppressor"]
+material = SubResource("mat_metal")
+top_radius = 0.02
+bottom_radius = 0.02
+height = 0.17
+radial_segments = 16
+
+[node name="GrayboxRifle" type="Node3D"]
+
+[node name="Receiver" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 0, -0.05)
+mesh = SubResource("mesh_Receiver")
+
+[node name="Stock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, -0.015, 0.2)
+mesh = SubResource("mesh_Stock")
+
+[node name="Grip" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, -0.258819, 0, 0.258819, 0.965926, 0, -0.07, 0.06)
+mesh = SubResource("mesh_Grip")
+
+[node name="Magazine" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.990268, 0.139173, 0, -0.139173, 0.990268, 0, -0.09, -0.08)
+mesh = SubResource("mesh_Magazine")
+
+[node name="Sight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 0.052, -0.02)
+mesh = SubResource("mesh_Sight")
+
+[node name="Barrel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.000000, 1.000000, 0, -1.000000, 0.000000, 0, 0.01, -0.31)
+mesh = SubResource("mesh_Barrel")
+
+[node name="Suppressor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.000000, 1.000000, 0, -1.000000, 0.000000, 0, 0.01, -0.48)
+mesh = SubResource("mesh_Suppressor")
+
+[node name="Muzzle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -0.58)

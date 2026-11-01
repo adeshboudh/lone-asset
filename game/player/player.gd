@@ -20,8 +20,17 @@ var lean_amount: float:
 var horizontal_speed: float:
 	get:
 		return Vector2(velocity.x, velocity.z).length()
+var weapon: Weapon:
+	get:
+		return _weapon
+var health: HealthComponent:
+	get:
+		return _health
 
 var _pitch: float = 0.0
+## Recoil offset on top of the aim pitch; recovers toward 0.
+var _recoil_pitch: float = 0.0
+var _base_fov: float = 0.0
 var _bob_phase: float = 0.0
 
 @onready var _input: PlayerInput = %PlayerInput
@@ -32,6 +41,9 @@ var _bob_phase: float = 0.0
 @onready var _head: Node3D = %Head
 @onready var _lean_pivot: Node3D = %LeanPivot
 @onready var _camera: Camera3D = %Camera
+@onready var _weapon: Weapon = %Weapon
+@onready var _health: HealthComponent = %HealthComponent
+@onready var _hud: Hud = %Hud
 
 
 func _ready() -> void:
@@ -39,6 +51,10 @@ func _ready() -> void:
 	floor_snap_length = settings.step_height + 0.05
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
+	_base_fov = _camera.fov
+	_movement.landed.connect(_on_landed)
+	_health.died.connect(_on_died)
+	_hud.setup(self)
 
 
 ## Scripted input for tests and AI dummies; null returns control to the devices.
@@ -47,11 +63,15 @@ func set_scripted_intent(intent: InputIntent) -> void:
 
 
 func _process(delta: float) -> void:
-	var look: Vector2 = _input.take_look_delta() * settings.mouse_sensitivity
+	var aim_fov: float = lerpf(_base_fov, _weapon.definition.ads_fov, smoothstep(0.0, 1.0, _weapon.aim_blend))
+	_camera.fov = aim_fov
+	# Same on-screen mouse speed when zoomed in.
+	var look: Vector2 = _input.take_look_delta() * settings.mouse_sensitivity * (aim_fov / _base_fov)
 	rotate_y(-look.x)
 	var max_pitch: float = deg_to_rad(settings.max_pitch_deg)
 	_pitch = clampf(_pitch - look.y, -max_pitch, max_pitch)
-	_head.rotation.x = _pitch
+	_recoil_pitch = move_toward(_recoil_pitch, 0.0, deg_to_rad(_weapon.definition.recoil_recovery_deg_per_s) * delta)
+	_head.rotation.x = clampf(_pitch + _recoil_pitch, -max_pitch, max_pitch)
 	_head.position.y = _stance.eye_height + _head_bob_offset(delta)
 	_lean.apply(_lean_pivot, settings)
 
@@ -61,6 +81,26 @@ func _physics_process(delta: float) -> void:
 	_stance.physics_update(self, intent, settings, delta)
 	_movement.physics_update(self, intent, _stance, settings, delta)
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
+	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
+	var kick: Vector2 = _weapon.physics_update(intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
+	_recoil_pitch += kick.x
+	rotate_y(kick.y)
+
+
+func _on_landed(fall_height: float) -> void:
+	var amount: float = DamageRules.fall_damage(fall_height, _health.max_health)
+	if amount <= 0.0:
+		return
+	var info: DamageInfo = DamageInfo.new()
+	info.type = &"fall"
+	info.amount = amount
+	info.hit_position = global_position
+	_health.apply_damage(info)
+
+
+func _on_died(info: DamageInfo) -> void:
+	# Player death and mission failure arrive with the mission framework (WP 9).
+	Log.info(&"player", "Died (%s)" % info.type)
 
 
 func _head_bob_offset(delta: float) -> float:

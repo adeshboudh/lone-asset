@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
+[ext_resource type="Resource" path="res://data/player/player_movement.tres" id="2_settings"]
+[ext_resource type="Script" path="res://game/player/player_input.gd" id="3_input"]
+[ext_resource type="Script" path="res://game/player/movement_component.gd" id="4_movement"]
+[ext_resource type="Script" path="res://game/player/stance_component.gd" id="5_stance"]
+[ext_resource type="Script" path="res://game/player/lean_component.gd" id="6_lean"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+settings = ExtResource("2_settings")
+
+[node name="CollisionShape" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Head" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="LeanPivot" type="Node3D" parent="Head"]
+unique_name_in_owner = true
+
+[node name="Camera" type="Camera3D" parent="Head/LeanPivot"]
+unique_name_in_owner = true
+current = true
+fov = 80.0
+near = 0.05
+
+[node name="PlayerInput" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_input")
+
+[node name="MovementComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_movement")
+
+[node name="StanceComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_stance")
+
+[node name="LeanComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("6_lean")

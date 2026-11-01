@@ -1,0 +1,181 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/levels/graybox/movement_course.gd" id="1_course"]
+[ext_resource type="Shader" path="res://game/levels/graybox/blockout_grid.gdshader" id="2_grid"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="3_player"]
+
+[sub_resource type="ShaderMaterial" id="mat_floor"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.55, 0.57, 0.6, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_wall"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.42, 0.46, 0.52, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_cover"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.62, 0.52, 0.38, 1)
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_material"]
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_material")
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+sky = SubResource("sky")
+tonemap_mode = 2
+
+[node name="MovementCourse" type="Node3D"]
+script = ExtResource("1_course")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.556670, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Geometry" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Floor" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, -0.5, 0)
+size = Vector3(60, 1, 60)
+material = SubResource("mat_floor")
+
+[node name="OuterWall0" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 2, -30)
+size = Vector3(60, 4, 1)
+material = SubResource("mat_wall")
+
+[node name="OuterWall1" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 2, 30)
+size = Vector3(60, 4, 1)
+material = SubResource("mat_wall")
+
+[node name="OuterWall2" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -30, 2, 0)
+size = Vector3(1, 4, 60)
+material = SubResource("mat_wall")
+
+[node name="OuterWall3" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 30, 2, 0)
+size = Vector3(1, 4, 60)
+material = SubResource("mat_wall")
+
+[node name="StepA0" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.125, -4.0)
+size = Vector3(3, 0.25, 0.35)
+material = SubResource("mat_floor")
+
+[node name="StepA1" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.25, -4.35)
+size = Vector3(3, 0.5, 0.35)
+material = SubResource("mat_floor")
+
+[node name="StepA2" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.375, -4.7)
+size = Vector3(3, 0.75, 0.35)
+material = SubResource("mat_floor")
+
+[node name="StepA3" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.5, -5.05)
+size = Vector3(3, 1.0, 0.35)
+material = SubResource("mat_floor")
+
+[node name="StepA4" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.625, -5.4)
+size = Vector3(3, 1.25, 0.35)
+material = SubResource("mat_floor")
+
+[node name="StepA5" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.75, -5.75)
+size = Vector3(3, 1.5, 0.35)
+material = SubResource("mat_floor")
+
+[node name="StairPlatformA" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.75, -7.6)
+size = Vector3(3, 1.5, 3)
+material = SubResource("mat_floor")
+
+[node name="StepB0" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7, 0.225, -4.0)
+size = Vector3(3, 0.45, 0.5)
+material = SubResource("mat_cover")
+
+[node name="StepB1" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7, 0.45, -4.5)
+size = Vector3(3, 0.9, 0.5)
+material = SubResource("mat_cover")
+
+[node name="StepB2" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7, 0.675, -5.0)
+size = Vector3(3, 1.35, 0.5)
+material = SubResource("mat_cover")
+
+[node name="Ramp30" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.500000, 0, 0.500000, 0.866025, -2, 1.4, -6)
+size = Vector3(3, 0.2, 6)
+material = SubResource("mat_floor")
+
+[node name="Ramp50" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0.642788, -0.766044, 0, 0.766044, 0.642788, 3, 2.2, -6)
+size = Vector3(3, 0.2, 6)
+material = SubResource("mat_cover")
+
+[node name="TunnelWallL" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 8.85, 0.65, -6)
+size = Vector3(0.3, 1.3, 6)
+material = SubResource("mat_wall")
+
+[node name="TunnelWallR" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 11.15, 0.65, -6)
+size = Vector3(0.3, 1.3, 6)
+material = SubResource("mat_wall")
+
+[node name="TunnelRoof" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 10, 1.45, -6)
+size = Vector3(2.6, 0.3, 6)
+material = SubResource("mat_wall")
+
+[node name="LowCover0" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.5, 8)
+size = Vector3(3, 1.0, 0.4)
+material = SubResource("mat_cover")
+
+[node name="LowCover1" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -6, 0.5, 8)
+size = Vector3(3, 1.0, 0.4)
+material = SubResource("mat_cover")
+
+[node name="LowCover2" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 0.5, 8)
+size = Vector3(3, 1.0, 0.4)
+material = SubResource("mat_cover")
+
+[node name="CornerA" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 10, 1.5, 6)
+size = Vector3(6, 3, 0.4)
+material = SubResource("mat_wall")
+
+[node name="CornerB" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 7.2, 1.5, 9)
+size = Vector3(0.4, 3, 6)
+material = SubResource("mat_wall")
+
+[node name="JumpBox06" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 16, 0.3, 0)
+size = Vector3(1.5, 0.6, 1.5)
+material = SubResource("mat_cover")
+
+[node name="JumpBox12" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 19, 0.6, 0)
+size = Vector3(1.5, 1.2, 1.5)
+material = SubResource("mat_cover")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)

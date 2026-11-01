@@ -10,7 +10,7 @@ extends Node
 signal state_changed(old_state: GameStateMachine.State, new_state: GameStateMachine.State)
 
 const TITLE_SCENE: String = "res://game/ui/title/title_screen.tscn"
-const FIRST_LEVEL_SCENE: String = "res://game/levels/sandbox/sandbox.tscn"
+const FIRST_LEVEL_SCENE: String = "res://game/levels/graybox/movement_course.tscn"
 const PAUSE_MENU_SCENE: PackedScene = preload("res://game/ui/pause/pause_menu.tscn")
 
 var state: GameStateMachine.State:

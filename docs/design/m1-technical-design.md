@@ -252,6 +252,7 @@ Equipment weight multiplies speeds (`1.0 − 0.01 × kg_over_free_limit`, clampe
 ### 4.2 Rules
 
 - `CharacterBody3D.move_and_slide()` in `_physics_process`.
+- The collider is a **cylinder**, not a capsule: its flat bottom steps cleanly onto ledges. Step-up probes at least 10 cm forward so the body never balances on a step edge.
 - Uncrouch and lean are blocked by a shape cast if there is no space.
 - Lean is blocked while sprinting; sprint cancels when aiming, firing or crouching.
 - Camera look is applied in `_process` from accumulated mouse delta for responsiveness; body yaw syncs in physics.

@@ -20,3 +20,9 @@ SPDX-License-Identifier = "CC-BY-4.0"
 # precedence = "override"
 # SPDX-FileCopyrightText = "Poly Haven"
 # SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "addons/gdUnit4/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Mike Schulze and gdUnit4 contributors"
+SPDX-License-Identifier = "MIT"

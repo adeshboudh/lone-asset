@@ -12,3 +12,6 @@
 # Tests
 /tests/browser/node_modules/
 /tests/browser/test-results/
+
+# Test reports
+/reports/

@@ -21,6 +21,9 @@ var fire_mode_toggled: bool = false
 ## Interact key held, and went down this tick.
 var interact: bool = false
 var interact_pressed: bool = false
+## Binoculars key went down this tick, and mouse wheel steps (+1 in, -1 out) since the last tick.
+var binoculars_toggled: bool = false
+var zoom_step: int = 0
 
 
 func clear() -> void:
@@ -36,3 +39,5 @@ func clear() -> void:
 	fire_mode_toggled = false
 	interact = false
 	interact_pressed = false
+	binoculars_toggled = false
+	zoom_step = 0

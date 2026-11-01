@@ -677,6 +677,12 @@ class_name EquipmentDefinition extends Resource
 - Equipment scenes implement `equip()`, `unequip()`, `use_primary(pressed)`, `use_secondary(pressed)`.
 - Milestone 1: **Binoculars** — 4× and 8× zoom (camera FOV change), mouse sensitivity scaled by zoom, slight vignette shader, **tag guards** by aiming at them for 0.5 s (tagged guards show an outline/marker through walls for 60 s). Tagging is the first recon mechanic and reuses perception raycasts.
 
+**Implemented in WP 10** (a lean version: the binoculars are a player component, not yet a general `EquipmentHolder`; that arrives with a second gadget in Milestone 2)
+
+- `Binoculars` (`game/equipment/`) and `BinocularsRules` (pure rules, unit-tested). B raises and lowers them; the mouse wheel switches 4x and 8x. The camera field of view eases to the zoom, look sensitivity scales with it (shared with aiming), and a vignette and reticle appear in the HUD. The weapon is hidden and ignores input while raised.
+- Tagging: keep a guard within 2° of the view centre, in range (200 m) and in line of sight (world geometry blocks it) for 0.5 s. Progress drains twice as fast as it fills. A tag lasts 60 s and is lost when the guard dies.
+- Tag markers are drawn on screen over the guard (a triangle and the distance), so walls do not hide them. Tags are keyed by `guard_id`, which WP 12 will save.
+
 ---
 
 ## 14. Audio (Milestone 1)

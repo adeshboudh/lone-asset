@@ -24,6 +24,7 @@ var _toast_remaining: float = 0.0
 @onready var _prompt_label: Label = %PromptLabel
 @onready var _hold_bar: ProgressBar = %HoldBar
 @onready var _toast_label: Label = %ToastLabel
+@onready var _vignette: ColorRect = %Vignette
 
 ## Where the suspicion arcs sit, in pixels from the crosshair.
 const INDICATOR_RADIUS: float = 130.0
@@ -65,6 +66,7 @@ func _process(delta: float) -> void:
 		hit["age"] += delta
 	_hits_taken = _hits_taken.filter(func(hit: Dictionary) -> bool: return hit["age"] < HIT_ARC_TIME_S)
 	_update_prompt()
+	_vignette.modulate.a = _player.binoculars.raise_blend
 	_toast_remaining = maxf(_toast_remaining - delta, 0.0)
 	_toast_label.modulate.a = clampf(_toast_remaining, 0.0, 1.0)
 	_crosshair.queue_redraw()
@@ -116,8 +118,42 @@ func _on_damage_applied(target: Node, info: DamageInfo, killed: bool) -> void:
 		Audio.play_2d(&"hit_marker", &"UI", 0.0, 0.8 if killed else 1.0)
 
 
+## Thin cross, a ring that fills while a guard is being tagged, and the zoom level.
+func _draw_binocular_reticle(center: Vector2, binoculars: Binoculars) -> void:
+	var color: Color = Color(1.0, 1.0, 1.0, 0.8)
+	for direction: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
+		_crosshair.draw_line(center + direction * 6.0, center + direction * 40.0, color, 1.5)
+	_crosshair.draw_arc(center, 20.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 0.25), 1.5)
+	if binoculars.tag_progress > 0.0:
+		_crosshair.draw_arc(center, 20.0, -PI * 0.5, -PI * 0.5 + TAU * binoculars.tag_progress, 32, Color(1.0, 0.8, 0.2), 4.0)
+	var font: Font = ThemeDB.fallback_font
+	_crosshair.draw_string(font, center + Vector2(50.0, 50.0), "%dx" % int(binoculars.zoom), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, color)
+
+
+## Markers over tagged guards. They are drawn on screen, so walls do not hide them.
+func _draw_tags() -> void:
+	var camera: Camera3D = _player.camera
+	var font: Font = ThemeDB.fallback_font
+	for node: Node in get_tree().get_nodes_in_group(&"guards"):
+		var guard: Guard = node as Guard
+		var time_left: float = _player.binoculars.tag_time_left(guard)
+		if time_left <= 0.0 or guard.is_dead:
+			continue
+		var spot: Vector3 = guard.global_position + Vector3.UP * 2.2
+		if camera.is_position_behind(spot):
+			continue
+		var at: Vector2 = camera.unproject_position(spot)
+		var fade: float = clampf(time_left / 5.0, 0.3, 1.0)
+		var color: Color = Color(1.0, 0.8, 0.2, fade)
+		var points: PackedVector2Array = [at + Vector2(0, 8), at + Vector2(-8, -4), at + Vector2(8, -4)]
+		_indicators.draw_colored_polygon(points, color)
+		var distance: float = camera.global_position.distance_to(guard.global_position)
+		_indicators.draw_string(font, at + Vector2(-16.0, -10.0), "%d m" % roundi(distance), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, color)
+
+
 ## One arc around the crosshair per suspicious guard, pointing at it. A fuller, thicker arc means more suspicion.
 func _draw_indicators() -> void:
+	_draw_tags()
 	var camera: Camera3D = _player.camera
 	var center: Vector2 = _indicators.size * 0.5
 	var forward: Vector3 = -camera.global_basis.z
@@ -151,6 +187,10 @@ func _draw_indicators() -> void:
 
 func _draw_crosshair() -> void:
 	var center: Vector2 = _crosshair.size * 0.5
+	var binoculars: Binoculars = _player.binoculars
+	if binoculars.raise_blend > 0.5:
+		_draw_binocular_reticle(center, binoculars)
+		return
 	var weapon: Weapon = _player.weapon
 	var color: Color = Color(1.0, 1.0, 1.0, 0.85 * (1.0 - weapon.aim_blend))
 	# Gap in pixels where the spread cone meets the screen.

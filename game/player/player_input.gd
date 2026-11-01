@@ -16,6 +16,8 @@ var _fire_pressed: bool = false
 var _reload_pressed: bool = false
 var _fire_mode_pressed: bool = false
 var _interact_pressed: bool = false
+var _binoculars_pressed: bool = false
+var _zoom_step: int = 0
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -39,6 +41,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fire_mode_pressed = true
 	elif event.is_action_pressed(&"interact"):
 		_interact_pressed = true
+	elif event.is_action_pressed(&"binoculars"):
+		_binoculars_pressed = true
+	elif event.is_action_pressed(&"zoom_in"):
+		_zoom_step += 1
+	elif event.is_action_pressed(&"zoom_out"):
+		_zoom_step -= 1
 
 
 ## Mouse movement since the last call, in pixels.
@@ -64,10 +72,14 @@ func read_intent() -> InputIntent:
 	_intent.fire_mode_toggled = _fire_mode_pressed
 	_intent.interact = Input.is_action_pressed(&"interact") and Platform.is_mouse_captured()
 	_intent.interact_pressed = _interact_pressed
+	_intent.binoculars_toggled = _binoculars_pressed
+	_intent.zoom_step = _zoom_step
 	_crouch_pressed = false
 	_jump_pressed = false
 	_fire_pressed = false
 	_reload_pressed = false
 	_fire_mode_pressed = false
 	_interact_pressed = false
+	_binoculars_pressed = false
+	_zoom_step = 0
 	return _intent

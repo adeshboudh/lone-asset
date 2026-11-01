@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://game/ai/stealth/exposure_component.gd" id="12_exposure"]
 [ext_resource type="Script" path="res://game/player/player_audio.gd" id="13_audio"]
 [ext_resource type="Script" path="res://game/interaction/interactor.gd" id="14_interactor"]
+[ext_resource type="Script" path="res://game/equipment/binoculars.gd" id="15_binoculars"]
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
@@ -79,3 +80,7 @@ script = ExtResource("13_audio")
 [node name="Interactor" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("14_interactor")
+
+[node name="Binoculars" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("15_binoculars")

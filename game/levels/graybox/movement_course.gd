@@ -31,7 +31,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_player):
 		return
-	_readout.text = "%.2f m/s  %s%s  lean %+.2f  %s\nWASD move · Shift sprint · C crouch · Q/E lean · Space jump · LMB fire · RMB aim · R reload · X fire mode · F use · F3 debug · Esc pause" % [
+	_readout.text = "%.2f m/s  %s%s  lean %+.2f  %s\nWASD move · Shift sprint · C crouch · Q/E lean · Space jump · LMB fire · RMB aim · R reload · X fire mode · F use · B binoculars (wheel zoom, hold on a guard to tag) · F3 debug · Esc pause" % [
 		_player.horizontal_speed,
 		StanceComponent.Stance.keys()[_player.stance],
 		"  SPRINT" if _player.is_sprinting else "",

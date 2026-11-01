@@ -4,7 +4,7 @@ An open-source tactical stealth FPS that runs in the web browser (Godot 4, WebAs
 
 Observe, plan, infiltrate, complete the objective, extract. Stealth is systemic: guards react to light, stance, movement, sound and line of sight.
 
-> Status: Milestone 1 (core prototype), work package 6 — guards that patrol a baked navigation mesh.
+> Status: Milestone 1 (core prototype), work package 7 — guard perception and suspicion.
 
 ## Design
 

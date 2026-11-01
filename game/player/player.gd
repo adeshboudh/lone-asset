@@ -29,6 +29,9 @@ var health: HealthComponent:
 var exposure: ExposureComponent:
 	get:
 		return _exposure
+var is_crouched: bool:
+	get:
+		return _stance.is_crouched
 
 var _pitch: float = 0.0
 ## Recoil offset on top of the aim pitch; recovers toward 0.
@@ -64,6 +67,17 @@ func _ready() -> void:
 	_weapon.fired.connect(_on_weapon_fired)
 	_health.died.connect(_on_died)
 	_hud.setup(self)
+
+
+## Where guards look when checking whether they can see the player (design §8.1): head, chest and
+## pelvis. The head is the camera, so leaning around a corner exposes only the head.
+func perception_points() -> PackedVector3Array:
+	var eye_height: float = _stance.eye_height
+	return PackedVector3Array([
+		_camera.global_position,
+		global_position + Vector3.UP * (eye_height - 0.35),
+		global_position + Vector3.UP * (eye_height * 0.55),
+	])
 
 
 ## Scripted input for tests and AI dummies; null returns control to the devices.

@@ -98,6 +98,29 @@ func test_skips_a_point_that_is_off_the_navigation_mesh() -> void:
 	assert_float(guard.global_position.x).is_less(20.0)
 
 
+func test_a_curious_guard_slows_down_looks_at_the_noise_then_recovers() -> void:
+	var guard: Guard = _guard(_route(PatrolSequence.Mode.LOOP, [[-15, 0, 0.1], [15, 0, 0.1]]), Vector3.INF, 0.0)
+	await _ticks(90)
+	var normal_speed: float = Vector2(guard.velocity.x, guard.velocity.z).length()
+	assert_float(normal_speed).is_equal_approx(guard.profile.patrol_speed, 0.1)
+
+	# Three footsteps off to the side: suspicion 30, which is Curious.
+	var noise_at: Vector3 = guard.global_position + Vector3(0.0, 0.0, 6.0)
+	for i: int in 3:
+		NoiseSystem.emit_noise(NoiseEvent.FOOTSTEP_SPRINT, noise_at, 12.0)
+	assert_int(guard.suspicion.band).is_equal(SuspicionRules.Band.CURIOUS)
+	await _ticks(45)
+	var curious_speed: float = Vector2(guard.velocity.x, guard.velocity.z).length()
+	assert_float(curious_speed).is_equal_approx(guard.profile.patrol_speed * guard.profile.curious_speed_factor, 0.1)
+	assert_bool(guard.is_facing(noise_at - guard.global_position, 25.0)).is_true()
+
+	# After the quiet period suspicion decays below 20 and the guard walks normally again.
+	await _ticks(420)
+	assert_int(guard.suspicion.band).is_equal(SuspicionRules.Band.NORMAL)
+	var recovered_speed: float = Vector2(guard.velocity.x, guard.velocity.z).length()
+	assert_float(recovered_speed).is_equal_approx(guard.profile.patrol_speed, 0.1)
+
+
 func test_guard_without_a_route_stands_still() -> void:
 	var guard: Guard = _guard(null)
 	var start: Vector3 = guard.global_position

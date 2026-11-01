@@ -25,6 +25,7 @@ EventBus="*res://game/autoload/event_bus.gd"
 Game="*res://game/autoload/game.gd"
 NoiseSystem="*res://game/autoload/noise_system.gd"
 Audio="*res://game/autoload/audio.gd"
+PerceptionScheduler="*res://game/autoload/perception_scheduler.gd"
 DebugViews="*res://game/debug/debug_views.gd"
 
 [audio]

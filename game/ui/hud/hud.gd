@@ -13,11 +13,23 @@ var _hit_marker_killed: bool = false
 @onready var _ammo_label: Label = %AmmoLabel
 @onready var _health_label: Label = %HealthLabel
 @onready var _exposure_bar: ProgressBar = %ExposureBar
+@onready var _indicators: Control = %Indicators
+
+## Where the suspicion arcs sit, in pixels from the crosshair.
+const INDICATOR_RADIUS: float = 130.0
+## Arc colour by suspicion band (design §9.5). Normal shows nothing.
+const BAND_COLORS: Dictionary[SuspicionRules.Band, Color] = {
+	SuspicionRules.Band.CURIOUS: Color(1.0, 1.0, 1.0),
+	SuspicionRules.Band.SUSPICIOUS: Color(1.0, 0.9, 0.2),
+	SuspicionRules.Band.SEARCHING: Color(1.0, 0.55, 0.1),
+	SuspicionRules.Band.COMBAT: Color(1.0, 0.2, 0.15),
+}
 
 
 func setup(player: Player) -> void:
 	_player = player
 	_crosshair.draw.connect(_draw_crosshair)
+	_indicators.draw.connect(_draw_indicators)
 	EventBus.damage_applied.connect(_on_damage_applied)
 
 
@@ -32,6 +44,7 @@ func _process(delta: float) -> void:
 	_exposure_bar.value = _player.exposure.exposure
 	_hit_marker_remaining = maxf(_hit_marker_remaining - delta, 0.0)
 	_crosshair.queue_redraw()
+	_indicators.queue_redraw()
 
 
 func _on_damage_applied(_target: Node, info: DamageInfo, killed: bool) -> void:
@@ -39,6 +52,29 @@ func _on_damage_applied(_target: Node, info: DamageInfo, killed: bool) -> void:
 		_hit_marker_remaining = HIT_MARKER_TIME_S
 		_hit_marker_killed = killed
 		Audio.play_2d(&"hit_marker", &"UI", 0.0, 0.8 if killed else 1.0)
+
+
+## One arc around the crosshair per suspicious guard, pointing at it. A fuller, thicker arc means more suspicion.
+func _draw_indicators() -> void:
+	var camera: Camera3D = _player.camera
+	var center: Vector2 = _indicators.size * 0.5
+	var forward: Vector3 = -camera.global_basis.z
+	forward.y = 0.0
+	for node: Node in get_tree().get_nodes_in_group(&"guards"):
+		var guard: Guard = node as Guard
+		if guard.is_dead or not BAND_COLORS.has(guard.suspicion.band):
+			continue
+		var to_guard: Vector3 = guard.global_position - camera.global_position
+		to_guard.y = 0.0
+		if to_guard.length() < 0.01:
+			continue
+		# Up on screen is -PI/2; a guard to the left (positive signed angle) is counter-clockwise from there.
+		var angle: float = -PI * 0.5 - forward.signed_angle_to(to_guard, Vector3.UP)
+		var t: float = guard.suspicion.value / SuspicionRules.MAX_SUSPICION
+		var color: Color = BAND_COLORS[guard.suspicion.band]
+		color.a = lerpf(0.5, 1.0, t)
+		var half_span: float = lerpf(0.12, 0.45, t)
+		_indicators.draw_arc(center, INDICATOR_RADIUS, angle - half_span, angle + half_span, 14, color, lerpf(3.0, 11.0, t))
 
 
 func _draw_crosshair() -> void:

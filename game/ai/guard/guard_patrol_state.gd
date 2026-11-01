@@ -56,7 +56,11 @@ func _tick_moving(delta: float) -> void:
 	if guard.is_at(point.global_position):
 		_arrive(point)
 		return
-	guard.move_along_path(guard.profile.patrol_speed)
+	if _is_curious():
+		guard.look_towards(guard.stimulus_position() - guard.global_position)
+	else:
+		guard.clear_look()
+	guard.move_along_path(guard.profile.patrol_speed * (guard.profile.curious_speed_factor if _is_curious() else 1.0))
 	if not guard.is_target_reachable():
 		Log.warn(&"ai", "Guard '%s' cannot reach patrol point %d; skipping it" % [guard.guard_id, _sequence.index])
 		_next_point()
@@ -73,12 +77,22 @@ func _tick_moving(delta: float) -> void:
 func _tick_waiting(delta: float) -> void:
 	var point: PatrolPoint = _points[_sequence.index]
 	guard.stop()
-	if point.use_look_direction:
+	var curious: bool = _is_curious()
+	if curious:
+		guard.look_towards(guard.stimulus_position() - guard.global_position)
+	elif point.use_look_direction:
 		guard.look_towards(point.look_direction)
+	else:
+		guard.clear_look()
 	_wait_remaining -= delta
-	var facing_ok: bool = not point.use_look_direction or guard.is_facing(point.look_direction, FACING_TOLERANCE_DEG)
+	var facing_ok: bool = curious or not point.use_look_direction or guard.is_facing(point.look_direction, FACING_TOLERANCE_DEG)
 	if _wait_remaining <= 0.0 and facing_ok:
 		_next_point()
+
+
+## Curious (suspicion 20–40): the guard slows down and looks toward whatever it noticed (design §9.5).
+func _is_curious() -> bool:
+	return guard.suspicion.band == SuspicionRules.Band.CURIOUS and guard.has_stimulus()
 
 
 func _arrive(point: PatrolPoint) -> void:

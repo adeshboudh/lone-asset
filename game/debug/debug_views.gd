@@ -69,6 +69,9 @@ func _process(_delta: float) -> void:
 		var volume: LightVolume = player.exposure.active_volume
 		lines.append("light level %.2f   exposure %.2f" % [player.exposure.light_level, player.exposure.exposure])
 		lines.append("light source: %s" % (String(volume.name) if volume != null else "ambient"))
+	lines.append("perception: %.2f ms, %d rays this tick (most %d, budget %d)" % [
+		PerceptionScheduler.average_ms, PerceptionScheduler.rays_last_tick,
+		PerceptionScheduler.max_rays_per_tick, PerceptionScheduler.RAY_BUDGET])
 	if _last_noise != null:
 		lines.append("last noise: %s  %.1f m" % [_last_noise.type, _last_noise.radius_m])
 	_readout.text = "\n".join(lines)

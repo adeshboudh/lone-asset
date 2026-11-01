@@ -1,7 +1,7 @@
 class_name Hud
 extends CanvasLayer
 ## In-game HUD (design §15), Milestone 1 subset: crosshair that follows weapon spread, ammo and fire
-## mode, health, and a hit marker when the player damages something.
+## mode, health, light exposure and a hit marker when the player damages something.
 
 const HIT_MARKER_TIME_S: float = 0.15
 
@@ -12,6 +12,7 @@ var _hit_marker_killed: bool = false
 @onready var _crosshair: Control = %Crosshair
 @onready var _ammo_label: Label = %AmmoLabel
 @onready var _health_label: Label = %HealthLabel
+@onready var _exposure_bar: ProgressBar = %ExposureBar
 
 
 func setup(player: Player) -> void:
@@ -28,6 +29,7 @@ func _process(delta: float) -> void:
 	var status: String = "RELOADING" if logic.is_reloading else String(logic.fire_mode).to_upper()
 	_ammo_label.text = "%d / %d   %s" % [logic.magazine, logic.reserve, status]
 	_health_label.text = "%d" % ceili(_player.health.health)
+	_exposure_bar.value = _player.exposure.exposure
 	_hit_marker_remaining = maxf(_hit_marker_remaining - delta, 0.0)
 	_crosshair.queue_redraw()
 
@@ -36,6 +38,7 @@ func _on_damage_applied(_target: Node, info: DamageInfo, killed: bool) -> void:
 	if _player != null and info.source == _player:
 		_hit_marker_remaining = HIT_MARKER_TIME_S
 		_hit_marker_killed = killed
+		Audio.play_2d(&"hit_marker", &"UI", 0.0, 0.8 if killed else 1.0)
 
 
 func _draw_crosshair() -> void:

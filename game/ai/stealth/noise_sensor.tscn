@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/ai/stealth/noise_sensor.gd" id="1_sensor"]
+[ext_resource type="Script" path="res://game/noise/noise_listener.gd" id="2_listener"]
+
+[sub_resource type="CylinderMesh" id="mesh_post"]
+top_radius = 0.12
+bottom_radius = 0.12
+height = 1.6
+
+[node name="NoiseSensor" type="Node3D"]
+script = ExtResource("1_sensor")
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("mesh_post")
+
+[node name="Label" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+billboard = 1
+no_depth_test = true
+fixed_size = false
+pixel_size = 0.006
+font_size = 36
+outline_size = 10
+
+[node name="NoiseListener" type="Node" parent="."]
+script = ExtResource("2_listener")

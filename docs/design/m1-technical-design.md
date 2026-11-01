@@ -54,6 +54,7 @@ Data structures are designed so deferred features slot in without rewriting Mile
 |---|---|---|
 | Rendering method (all platforms) | **Compatibility** | Editor matches the web build visually and in performance |
 | 3D physics engine | **Jolt Physics** | Faster, more stable than Godot Physics |
+| Physics layers | 1 = `world`, 2 = `characters` | World geometry blocks sound and sight; characters and targets do not block sound. Bullets hit both (mask 3); light volumes detect layer 2 |
 | Physics ticks per second | 60 | Gameplay runs in `_physics_process` |
 | Max physics steps per frame | 4 | Avoid spiral of death on slow frames |
 | GDScript warning: untyped declaration | **Error** | Enforce typed GDScript |
@@ -471,10 +472,10 @@ Visibility for one check = fraction of sample points with clear LOS (0, 0.33, 0.
 
 ### 8.2 Hearing
 
-- Gameplay noise is separate from audio playback. `NoiseEvent { position, radius_m, type, source, loudness }`.
+- Gameplay noise is separate from audio playback. `NoiseEvent { type, position, radius_m, source }`. (The `loudness` field in the earlier draft was dropped: the radius already carries it.)
 - Types and default radii: footstep walk 4 m, sprint 12 m, crouch 1.5 m, landing 8 m, suppressed shot 18 m, unsuppressed shot 80 m, door 10 m, impact 12 m.
-- Surface multiplier on footsteps (metal 1.5, grass 0.7).
-- `NoiseSystem` delivers events to guards within `radius_m`. Each wall between source and listener (one raycast) multiplies effective radius by 0.5.
+- Surface multiplier on footsteps (metal 1.5, grass 0.7): a ray below the feet reads the floor's `surface` metadata; unlisted surfaces count as 1. Footsteps are emitted once per stride (walk 1.8 m, sprint 2.4 m, crouch 1.2 m) while moving faster than 0.5 m/s on the ground. Landings under 0.3 m of fall make no noise. Bullet impacts make a 12 m noise.
+- `NoiseSystem` delivers events to guards within `radius_m`. Each wall between source and listener multiplies effective radius by 0.5, up to 3 walls. Walls are counted with up to three rays at ear height (1.2 m), so low cover does not muffle sound and a thick wall counts once. Listeners register through the `noise_listeners` group (`NoiseListener` component), so the system has no dependency on guard code.
 - A heard noise sets `investigate_position` and adds suspicion (§9.3).
 
 ### 8.3 Scheduler (frame budget)
@@ -498,8 +499,8 @@ Cheap tests first: distance → angle → (only then) raycasts. Timings are reco
 
 The web renderer cannot cheaply read back lighting, so light level is **authored**:
 
-- `LightVolume` nodes (`Area3D` + box/sphere shape) with `light_level: float` (0 = pitch black, 1 = fully lit) and `priority`.
-- The level sets an `ambient_light_level` (e.g. night 0.15, day 0.9).
+- `LightVolume` nodes (`Area3D` with a box sized by `size`) with `light_level: float` (0 = pitch black, 1 = fully lit) and `light_priority` (`priority` is already an `Area3D` property). Among overlapping volumes the highest priority wins; ties go to the most recently entered.
+- The level sets an `ambient_light_level` (e.g. night 0.15, day 0.9) with a `LevelLighting` node. The movement course uses 0.6 with a 0.1 tunnel, a 0.25 shadow strip behind the low cover, and a 1.0 floodlit range.
 - `ExposureComponent` on the player takes the highest-priority volume it overlaps, else ambient. Re-evaluated on area enter/exit, not per frame.
 - A flashlight or muzzle flash temporarily raises exposure (muzzle flash: 1.0 for 0.1 s).
 - Level art and light volumes are checked together (debug view colours the volumes); mismatches are a bug.
@@ -647,11 +648,17 @@ class_name EquipmentDefinition extends Resource
 
 ## 14. Audio (Milestone 1)
 
-- Buses: `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
-- `AudioStreamPlayer3D` for world sounds; pooled players for footsteps and impacts (max 24 concurrent 3D voices).
-- Occlusion: one raycast from listener to source on play (and 4 Hz for looping sources); occluded sounds get volume −6 dB and use an occluded variant bus with low-pass. **Validate early** that the low-pass bus effect works in the single-threaded web build; if not, fall back to pre-filtered "muffled" sample variants.
+Implemented early (with WP 5) because silence made the prototype hard to judge.
+
+- **Buses** (`game/audio/default_bus_layout.tres`): `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
+- **`Audio` autoload**: `play_2d` (the player's own weapon, footsteps and landings, 8 pooled voices), `play_3d` (positional sounds such as bullet impacts, at most 24 pooled voices), `play_ui` (plays while paused) and `make_loop` (level ambience, e.g. wind).
+- **Sound bank** (`data/audio/sound_bank.tres`): sound id → variants, picked at random so footsteps and shots do not repeat exactly. Weapons name their sounds in their `WeaponDefinition` (fire, dry fire, reload, reload from empty).
+- **Placeholder sounds** are synthesised by `tools/audio/make_placeholder_sounds.py` (our own work, CC BY 4.0). Replace a file and keep its name to swap in a real recording.
+- **Web playback mode**: Godot plays sounds as *samples* on the web by default. That mode has no bus effects (so no low-pass filters, reverb or Doppler), but avoids garbled sound in single-threaded builds. Decision: stay in sample mode.
+- **Occlusion**: for positional sounds, `NoiseSystem.walls_between()` counts walls (ear height) between the camera and the source. Behind a wall the sound plays a pre-muffled copy (`<id>_muffled`, low-passed at 900 Hz) at −6 dB per wall, up to 3 walls. Sounds closer than 2 m are never occluded. This replaces the earlier bus low-pass plan.
+- **Format**: 16-bit mono WAV (32 kHz) for the placeholders, because WAV is the format sample playback is built around. Before switching real recordings to Ogg Vorbis to save download size, test Ogg on the web (sample mode, looping).
 - Audio unlocks on the click-to-start screen.
-- Format: Ogg Vorbis for everything except very short UI sounds (WAV).
+- **Not yet**: weapon/footstep sounds for guards (WP 8), door sounds (WP 9), music, voice, volume sliders (WP 11).
 
 ---
 
@@ -661,11 +668,11 @@ class_name EquipmentDefinition extends Resource
 |---|---|
 | HTML loader (`web/shell.html`) | Logo, progress bar from Godot's loader callbacks, browser-compatibility message if WebGL 2 is missing |
 | Title / click-to-start | "Click to play" (unlocks audio + pointer lock), Continue (if checkpoint), New Game, Settings |
-| HUD | Crosshair (spread-reactive), ammo/fire mode, health, stance icon, exposure meter, suspicion indicators, objective text, damage direction, interaction prompt + hold progress |
+| HUD | Crosshair (spread-reactive), ammo/fire mode, health, stance icon, exposure meter ("LIGHT" bar, done in WP 5), suspicion indicators, objective text, damage direction, interaction prompt + hold progress |
 | Pause | Resume (re-acquires pointer lock), Settings, Restart from checkpoint, Quit to title |
 | Settings | Mouse sensitivity, invert Y, FOV (70–100), quality preset, render scale, master/music/SFX volume, head bob, key rebinding |
 | Mission end | Success/fail, time, detected yes/no, optional objective result, Retry / Title |
-| Debug overlay (F3, dev) | FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states |
+| Debug overlay (F3) | WP 5: noise rings (radius by type, fading), light-volume boxes coloured by level, light level / exposure / active volume / last noise. Later: FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states. Enabled in all Milestone 1 previews; restricted to development builds before a public release |
 
 Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()` keys from day one.
 
@@ -1117,7 +1124,7 @@ Milestone 1 is complete when **all** of the following hold in the **deployed web
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Single-threaded performance insufficient for AI + physics + rendering | Medium | High | Budgets from day 1, AI LOD, GDExtension path proven early |
-| Web audio bus effects limited in single-threaded build | Medium | Medium | Validate in WP 2–3; pre-filtered sample fallback |
+| Web audio: sample mode has no bus effects; Ogg/looping behaviour unverified | Medium | Medium | Occlusion uses pre-muffled WAV copies (§14); placeholders are WAV; test Ogg on the web before adopting it |
 | WebGL 2 visual quality feels dated | Medium | Medium | Strong art direction, baked lighting, post-processing; WebGPU later |
 | Pointer lock behaviour differs across browsers | Medium | Medium | Manual matrix each milestone; tolerant resume logic |
 | Developer is the only playtester (bias, blind spots) | High | Medium | Recorded sessions, 3-day gap between ratings, fresh-eyes checks (§18.6); recruit 1–2 outside testers before Milestone 2 |

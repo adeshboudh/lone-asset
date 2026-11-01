@@ -29,6 +29,7 @@ var _viewmodel: Node3D
 var _flash: OmniLight3D
 var _kick: float = 0.0
 var _flash_remaining: float = 0.0
+var _was_reloading: bool = false
 
 
 func _ready() -> void:
@@ -54,15 +55,22 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	if intent.reload:
 		logic.start_reload()
 
+	if intent.fire_pressed and logic.magazine == 0 and logic.reserve == 0 and not logic.is_reloading:
+		Audio.play_2d(definition.dry_fire_sound, &"Weapons")
+
 	spread.update(definition, delta)
 	var aiming: bool = aim_blend > 0.5
 	current_spread_deg = spread.current_deg(definition, aiming, moving, crouched)
 
 	var kick: Vector2 = Vector2.ZERO
 	var shots: int = logic.update(delta, intent.fire, intent.fire_pressed) if _ballistics != null else 0
+	if logic.is_reloading and not _was_reloading:
+		Audio.play_2d(definition.reload_empty_sound if logic.magazine == 0 else definition.reload_sound, &"Weapons")
+	_was_reloading = logic.is_reloading
 	for i: int in shots:
 		var direction: Vector3 = WeaponSpread.random_direction(-aim.basis.z, current_spread_deg, _rng)
 		_ballistics.fire(aim.origin, direction, definition, shooter)
+		Audio.play_2d(definition.fire_sound, &"Weapons", 0.0, _rng.randf_range(0.96, 1.04))
 		spread.on_shot(definition)
 		current_spread_deg = spread.current_deg(definition, aiming, moving, crouched)
 		var recoil_scale: float = lerpf(1.0, definition.recoil_ads_mult, aim_blend)

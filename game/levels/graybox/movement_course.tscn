@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://game/levels/graybox/movement_course.gd" id="1_course"]
 [ext_resource type="Shader" path="res://game/levels/graybox/blockout_grid.gdshader" id="2_grid"]
@@ -6,6 +6,9 @@
 [ext_resource type="Script" path="res://game/weapons/ballistics_system.gd" id="4_ballistics"]
 [ext_resource type="Resource" path="res://data/damage/hit_zones.tres" id="5_zones"]
 [ext_resource type="PackedScene" path="res://game/targets/target_dummy.tscn" id="6_dummy"]
+[ext_resource type="Script" path="res://game/ai/stealth/level_lighting.gd" id="7_lighting"]
+[ext_resource type="Script" path="res://game/ai/stealth/light_volume.gd" id="8_volume"]
+[ext_resource type="PackedScene" path="res://game/ai/stealth/noise_sensor.tscn" id="9_sensor"]
 
 [sub_resource type="ShaderMaterial" id="mat_floor"]
 render_priority = 0
@@ -31,6 +34,21 @@ sky_material = SubResource("sky_material")
 background_mode = 2
 sky = SubResource("sky")
 tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="mat_metal_plate"]
+albedo_color = Color(0.5, 0.55, 0.6, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="mat_grass_patch"]
+albedo_color = Color(0.25, 0.5, 0.2, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="mesh_patch"]
+size = Vector3(4, 0.08, 4)
+
+[sub_resource type="BoxShape3D" id="shape_patch"]
+size = Vector3(4, 0.08, 4)
 
 [node name="MovementCourse" type="Node3D"]
 script = ExtResource("1_course")
@@ -210,3 +228,101 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -11)
 
 [node name="Dummy40m" parent="Range" instance=ExtResource("6_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -26)
+
+[node name="LevelLighting" type="Node" parent="."]
+script = ExtResource("7_lighting")
+ambient_light_level = 0.6
+
+[node name="Lighting" type="Node3D" parent="."]
+
+[node name="DarkTunnel" type="Area3D" parent="Lighting"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.2, -6)
+script = ExtResource("8_volume")
+light_level = 0.1
+light_priority = 1
+size = Vector3(3.2, 2.4, 6.4)
+
+[node name="CoverShadow" type="Area3D" parent="Lighting"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.1, 9.8)
+script = ExtResource("8_volume")
+light_level = 0.25
+light_priority = 1
+size = Vector3(16, 2.2, 2.4)
+
+[node name="FloodlitRange" type="Area3D" parent="Lighting"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2, 13)
+script = ExtResource("8_volume")
+light_level = 1.0
+light_priority = 2
+size = Vector3(10, 4, 6)
+
+[node name="AcousticsLab" type="Node3D" parent="."]
+
+[node name="SeparatingWall" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2, 22)
+size = Vector3(0.4, 4, 10)
+material = SubResource("mat_wall")
+
+[node name="Marker" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 0.02, 22)
+size = Vector3(0.8, 0.04, 0.8)
+material = SubResource("mat_cover")
+
+[node name="SensorOpen" parent="AcousticsLab" instance=ExtResource("9_sensor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.5, 0, 22)
+title = "OPEN"
+
+[node name="SensorBehindWall" parent="AcousticsLab" instance=ExtResource("9_sensor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 0, 22)
+title = "BEHIND WALL"
+
+[node name="Hint" type="Label3D" parent="AcousticsLab"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 3.2, 22)
+billboard = 1
+pixel_size = 0.006
+font_size = 36
+outline_size = 10
+text = "Stand on the marker (7 m from each post).
+Sprint, jump or shoot: the post behind the wall hears less."
+
+[node name="Surfaces" type="Node3D" parent="."]
+
+[node name="MetalPlate" type="StaticBody3D" parent="Surfaces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.04, 22)
+metadata/surface = &"metal"
+
+[node name="Mesh" type="MeshInstance3D" parent="Surfaces/MetalPlate"]
+mesh = SubResource("mesh_patch")
+surface_material_override/0 = SubResource("mat_metal_plate")
+
+[node name="Shape" type="CollisionShape3D" parent="Surfaces/MetalPlate"]
+shape = SubResource("shape_patch")
+
+[node name="MetalLabel" type="Label3D" parent="Surfaces/MetalPlate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+billboard = 1
+pixel_size = 0.006
+font_size = 36
+outline_size = 10
+text = "METAL
+footsteps carry 1.5x"
+
+[node name="GrassPatch" type="StaticBody3D" parent="Surfaces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.04, 22)
+metadata/surface = &"grass"
+
+[node name="Mesh" type="MeshInstance3D" parent="Surfaces/GrassPatch"]
+mesh = SubResource("mesh_patch")
+surface_material_override/0 = SubResource("mat_grass_patch")
+
+[node name="Shape" type="CollisionShape3D" parent="Surfaces/GrassPatch"]
+shape = SubResource("shape_patch")
+
+[node name="GrassLabel" type="Label3D" parent="Surfaces/GrassPatch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+billboard = 1
+pixel_size = 0.006
+font_size = 36
+outline_size = 10
+text = "GRASS
+footsteps carry 0.7x"

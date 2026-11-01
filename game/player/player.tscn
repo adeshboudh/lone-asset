@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://data/player/player_movement.tres" id="2_settings"]
@@ -10,8 +10,13 @@
 [ext_resource type="Resource" path="res://data/weapons/rifle_suppressed.tres" id="8_rifle"]
 [ext_resource type="Script" path="res://game/damage/health_component.gd" id="9_health"]
 [ext_resource type="PackedScene" path="res://game/ui/hud/hud.tscn" id="10_hud"]
+[ext_resource type="Script" path="res://game/noise/noise_emitter_component.gd" id="11_noise"]
+[ext_resource type="Script" path="res://game/ai/stealth/exposure_component.gd" id="12_exposure"]
+[ext_resource type="Script" path="res://game/player/player_audio.gd" id="13_audio"]
 
 [node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 3
 script = ExtResource("1_player")
 settings = ExtResource("2_settings")
 
@@ -57,3 +62,15 @@ script = ExtResource("9_health")
 
 [node name="Hud" parent="." instance=ExtResource("10_hud")]
 unique_name_in_owner = true
+
+[node name="NoiseEmitterComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("11_noise")
+
+[node name="ExposureComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("12_exposure")
+
+[node name="PlayerAudio" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("13_audio")

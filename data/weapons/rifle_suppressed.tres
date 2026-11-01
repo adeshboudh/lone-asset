@@ -7,4 +7,5 @@
 script = ExtResource("1_def")
 id = &"rifle_suppressed"
 display_name = "Suppressed rifle"
+flash_exposure = 0.3
 viewmodel_scene = ExtResource("2_view")

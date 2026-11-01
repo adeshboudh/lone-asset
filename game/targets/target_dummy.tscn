@@ -48,6 +48,7 @@ material = SubResource("mat_body")
 size = Vector3(0.1, 0.6, 0.12)
 
 [node name="TargetDummy" type="StaticBody3D"]
+collision_layer = 2
 script = ExtResource("1_dummy")
 
 [node name="HealthComponent" type="Node" parent="."]

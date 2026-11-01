@@ -1,0 +1,70 @@
+[gd_resource type="Resource" script_class="SoundBank" load_steps=44 format=3]
+
+[ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_1.wav" id="2_rifle_shot_suppressed_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_2.wav" id="3_rifle_shot_suppressed_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_3.wav" id="4_rifle_shot_suppressed_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_1_muffled.wav" id="5_rifle_shot_suppressed_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_2_muffled.wav" id="6_rifle_shot_suppressed_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_3_muffled.wav" id="7_rifle_shot_suppressed_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_1.wav" id="8_footstep_concrete_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_2.wav" id="9_footstep_concrete_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_3.wav" id="10_footstep_concrete_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_1_muffled.wav" id="11_footstep_concrete_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_2_muffled.wav" id="12_footstep_concrete_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_3_muffled.wav" id="13_footstep_concrete_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_metal_1.wav" id="14_footstep_metal_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_metal_2.wav" id="15_footstep_metal_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_metal_3.wav" id="16_footstep_metal_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_metal_1_muffled.wav" id="17_footstep_metal_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_metal_2_muffled.wav" id="18_footstep_metal_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_metal_3_muffled.wav" id="19_footstep_metal_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_grass_1.wav" id="20_footstep_grass_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_grass_2.wav" id="21_footstep_grass_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_grass_3.wav" id="22_footstep_grass_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_grass_1_muffled.wav" id="23_footstep_grass_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_grass_2_muffled.wav" id="24_footstep_grass_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_grass_3_muffled.wav" id="25_footstep_grass_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/landing.wav" id="26_landing"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/landing_muffled.wav" id="27_landing_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_reload.wav" id="28_rifle_reload"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_reload_empty.wav" id="29_rifle_reload_empty"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_dry.wav" id="30_rifle_dry"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_1.wav" id="31_impact_world_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_2.wav" id="32_impact_world_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_3.wav" id="33_impact_world_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_1_muffled.wav" id="34_impact_world_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_2_muffled.wav" id="35_impact_world_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_3_muffled.wav" id="36_impact_world_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_1.wav" id="37_impact_body_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_2.wav" id="38_impact_body_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_1_muffled.wav" id="39_impact_body_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_2_muffled.wav" id="40_impact_body_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/hit_marker.wav" id="41_hit_marker"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/ui_click.wav" id="42_ui_click"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/wind_loop.wav" id="43_wind_loop"]
+
+[resource]
+script = ExtResource("1_bank")
+sounds = {
+&"rifle_shot_suppressed": [ExtResource("2_rifle_shot_suppressed_1"), ExtResource("3_rifle_shot_suppressed_2"), ExtResource("4_rifle_shot_suppressed_3")],
+&"rifle_shot_suppressed_muffled": [ExtResource("5_rifle_shot_suppressed_1_muffled"), ExtResource("6_rifle_shot_suppressed_2_muffled"), ExtResource("7_rifle_shot_suppressed_3_muffled")],
+&"footstep_concrete": [ExtResource("8_footstep_concrete_1"), ExtResource("9_footstep_concrete_2"), ExtResource("10_footstep_concrete_3")],
+&"footstep_concrete_muffled": [ExtResource("11_footstep_concrete_1_muffled"), ExtResource("12_footstep_concrete_2_muffled"), ExtResource("13_footstep_concrete_3_muffled")],
+&"footstep_metal": [ExtResource("14_footstep_metal_1"), ExtResource("15_footstep_metal_2"), ExtResource("16_footstep_metal_3")],
+&"footstep_metal_muffled": [ExtResource("17_footstep_metal_1_muffled"), ExtResource("18_footstep_metal_2_muffled"), ExtResource("19_footstep_metal_3_muffled")],
+&"footstep_grass": [ExtResource("20_footstep_grass_1"), ExtResource("21_footstep_grass_2"), ExtResource("22_footstep_grass_3")],
+&"footstep_grass_muffled": [ExtResource("23_footstep_grass_1_muffled"), ExtResource("24_footstep_grass_2_muffled"), ExtResource("25_footstep_grass_3_muffled")],
+&"landing": [ExtResource("26_landing")],
+&"landing_muffled": [ExtResource("27_landing_muffled")],
+&"rifle_reload": [ExtResource("28_rifle_reload")],
+&"rifle_reload_empty": [ExtResource("29_rifle_reload_empty")],
+&"rifle_dry": [ExtResource("30_rifle_dry")],
+&"impact_world": [ExtResource("31_impact_world_1"), ExtResource("32_impact_world_2"), ExtResource("33_impact_world_3")],
+&"impact_world_muffled": [ExtResource("34_impact_world_1_muffled"), ExtResource("35_impact_world_2_muffled"), ExtResource("36_impact_world_3_muffled")],
+&"impact_body": [ExtResource("37_impact_body_1"), ExtResource("38_impact_body_2")],
+&"impact_body_muffled": [ExtResource("39_impact_body_1_muffled"), ExtResource("40_impact_body_2_muffled")],
+&"hit_marker": [ExtResource("41_hit_marker")],
+&"ui_click": [ExtResource("42_ui_click")],
+&"wind_loop": [ExtResource("43_wind_loop")]
+}

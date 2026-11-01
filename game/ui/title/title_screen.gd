@@ -7,6 +7,7 @@ extends Control
 
 func _ready() -> void:
 	_version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version")
+	_play_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
 	_play_button.pressed.connect(Game.start_game)
 	_play_button.grab_focus()
 	Game.enter_title()

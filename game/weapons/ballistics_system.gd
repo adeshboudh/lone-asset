@@ -22,7 +22,8 @@ class Projectile:
 
 
 @export var hit_zones: HitZoneTable
-@export_flags_3d_physics var collision_mask: int = 1
+## World (1) and characters/targets (2).
+@export_flags_3d_physics var collision_mask: int = 3
 
 var active_count: int:
 	get:
@@ -107,6 +108,7 @@ func _resolve_hit(projectile: Projectile, hit: Dictionary) -> void:
 	var position: Vector3 = hit["position"]
 	var normal: Vector3 = hit["normal"]
 	_place_mark(collider as Node3D, position, normal)
+	NoiseSystem.emit_noise(NoiseEvent.IMPACT, position, NoiseSystem.profiles.impact_m, projectile.source)
 
 	var health: HealthComponent = HealthComponent.of(collider)
 	if health == null:

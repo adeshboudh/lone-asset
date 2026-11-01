@@ -26,6 +26,9 @@ var weapon: Weapon:
 var health: HealthComponent:
 	get:
 		return _health
+var exposure: ExposureComponent:
+	get:
+		return _exposure
 
 var _pitch: float = 0.0
 ## Recoil offset on top of the aim pitch; recovers toward 0.
@@ -44,6 +47,8 @@ var _bob_phase: float = 0.0
 @onready var _weapon: Weapon = %Weapon
 @onready var _health: HealthComponent = %HealthComponent
 @onready var _hud: Hud = %Hud
+@onready var _noise: NoiseEmitterComponent = %NoiseEmitterComponent
+@onready var _exposure: ExposureComponent = %ExposureComponent
 
 
 func _ready() -> void:
@@ -52,7 +57,9 @@ func _ready() -> void:
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
 	_base_fov = _camera.fov
+	add_to_group(&"player")
 	_movement.landed.connect(_on_landed)
+	_weapon.fired.connect(_on_weapon_fired)
 	_health.died.connect(_on_died)
 	_hud.setup(self)
 
@@ -80,6 +87,7 @@ func _physics_process(delta: float) -> void:
 	var intent: InputIntent = _input.read_intent()
 	_stance.physics_update(self, intent, settings, delta)
 	_movement.physics_update(self, intent, _stance, settings, delta)
+	_noise.physics_update(self, is_on_floor(), horizontal_speed, _stance.is_crouched, _movement.is_sprinting, delta)
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
 	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
 	var kick: Vector2 = _weapon.physics_update(intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
@@ -87,7 +95,13 @@ func _physics_process(delta: float) -> void:
 	rotate_y(kick.y)
 
 
+func _on_weapon_fired(_origin: Vector3, _direction: Vector3) -> void:
+	_noise.emit_shot(self, _weapon.definition)
+	_exposure.flash(_weapon.definition.flash_exposure)
+
+
 func _on_landed(fall_height: float) -> void:
+	_noise.on_landed(self, fall_height)
 	var amount: float = DamageRules.fall_damage(fall_height, _health.max_health)
 	if amount <= 0.0:
 		return

@@ -54,6 +54,7 @@ Data structures are designed so deferred features slot in without rewriting Mile
 |---|---|---|
 | Rendering method (all platforms) | **Compatibility** | Editor matches the web build visually and in performance |
 | 3D physics engine | **Jolt Physics** | Faster, more stable than Godot Physics |
+| Physics layers | 1 = `world`, 2 = `characters` | World geometry blocks sound and sight; characters and targets do not block sound. Bullets hit both (mask 3); light volumes detect layer 2 |
 | Physics ticks per second | 60 | Gameplay runs in `_physics_process` |
 | Max physics steps per frame | 4 | Avoid spiral of death on slow frames |
 | GDScript warning: untyped declaration | **Error** | Enforce typed GDScript |
@@ -471,10 +472,10 @@ Visibility for one check = fraction of sample points with clear LOS (0, 0.33, 0.
 
 ### 8.2 Hearing
 
-- Gameplay noise is separate from audio playback. `NoiseEvent { position, radius_m, type, source, loudness }`.
+- Gameplay noise is separate from audio playback. `NoiseEvent { type, position, radius_m, source }`. (The `loudness` field in the earlier draft was dropped: the radius already carries it.)
 - Types and default radii: footstep walk 4 m, sprint 12 m, crouch 1.5 m, landing 8 m, suppressed shot 18 m, unsuppressed shot 80 m, door 10 m, impact 12 m.
-- Surface multiplier on footsteps (metal 1.5, grass 0.7).
-- `NoiseSystem` delivers events to guards within `radius_m`. Each wall between source and listener (one raycast) multiplies effective radius by 0.5.
+- Surface multiplier on footsteps (metal 1.5, grass 0.7): a ray below the feet reads the floor's `surface` metadata; unlisted surfaces count as 1. Footsteps are emitted once per stride (walk 1.8 m, sprint 2.4 m, crouch 1.2 m) while moving faster than 0.5 m/s on the ground. Landings under 0.3 m of fall make no noise. Bullet impacts make a 12 m noise.
+- `NoiseSystem` delivers events to guards within `radius_m`. Each wall between source and listener multiplies effective radius by 0.5, up to 3 walls. Walls are counted with up to three rays at ear height (1.2 m), so low cover does not muffle sound and a thick wall counts once. Listeners register through the `noise_listeners` group (`NoiseListener` component), so the system has no dependency on guard code.
 - A heard noise sets `investigate_position` and adds suspicion (§9.3).
 
 ### 8.3 Scheduler (frame budget)
@@ -498,8 +499,8 @@ Cheap tests first: distance → angle → (only then) raycasts. Timings are reco
 
 The web renderer cannot cheaply read back lighting, so light level is **authored**:
 
-- `LightVolume` nodes (`Area3D` + box/sphere shape) with `light_level: float` (0 = pitch black, 1 = fully lit) and `priority`.
-- The level sets an `ambient_light_level` (e.g. night 0.15, day 0.9).
+- `LightVolume` nodes (`Area3D` with a box sized by `size`) with `light_level: float` (0 = pitch black, 1 = fully lit) and `light_priority` (`priority` is already an `Area3D` property). Among overlapping volumes the highest priority wins; ties go to the most recently entered.
+- The level sets an `ambient_light_level` (e.g. night 0.15, day 0.9) with a `LevelLighting` node. The movement course uses 0.6 with a 0.1 tunnel, a 0.25 shadow strip behind the low cover, and a 1.0 floodlit range.
 - `ExposureComponent` on the player takes the highest-priority volume it overlaps, else ambient. Re-evaluated on area enter/exit, not per frame.
 - A flashlight or muzzle flash temporarily raises exposure (muzzle flash: 1.0 for 0.1 s).
 - Level art and light volumes are checked together (debug view colours the volumes); mismatches are a bug.
@@ -661,11 +662,11 @@ class_name EquipmentDefinition extends Resource
 |---|---|
 | HTML loader (`web/shell.html`) | Logo, progress bar from Godot's loader callbacks, browser-compatibility message if WebGL 2 is missing |
 | Title / click-to-start | "Click to play" (unlocks audio + pointer lock), Continue (if checkpoint), New Game, Settings |
-| HUD | Crosshair (spread-reactive), ammo/fire mode, health, stance icon, exposure meter, suspicion indicators, objective text, damage direction, interaction prompt + hold progress |
+| HUD | Crosshair (spread-reactive), ammo/fire mode, health, stance icon, exposure meter ("LIGHT" bar, done in WP 5), suspicion indicators, objective text, damage direction, interaction prompt + hold progress |
 | Pause | Resume (re-acquires pointer lock), Settings, Restart from checkpoint, Quit to title |
 | Settings | Mouse sensitivity, invert Y, FOV (70–100), quality preset, render scale, master/music/SFX volume, head bob, key rebinding |
 | Mission end | Success/fail, time, detected yes/no, optional objective result, Retry / Title |
-| Debug overlay (F3, dev) | FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states |
+| Debug overlay (F3) | WP 5: noise rings (radius by type, fading), light-volume boxes coloured by level, light level / exposure / active volume / last noise. Later: FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states. Enabled in all Milestone 1 previews; restricted to development builds before a public release |
 
 Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()` keys from day one.
 

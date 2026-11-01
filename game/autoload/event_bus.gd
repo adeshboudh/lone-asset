@@ -3,3 +3,4 @@ extends Node
 
 ## target: the damaged node (parent of its HealthComponent).
 signal damage_applied(target: Node, info: DamageInfo, killed: bool)
+signal noise_emitted(event: NoiseEvent)

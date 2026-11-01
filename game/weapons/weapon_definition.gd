@@ -50,8 +50,10 @@ extends Resource
 
 @export_group("Stealth")
 @export var suppressed: bool = true
-## Gameplay noise radius heard by AI (used from WP 5).
+## Gameplay noise radius heard by AI. Unsuppressed weapons: 80 m.
 @export var noise_radius_m: float = 18.0
+## Exposure (0–1) while the muzzle flashes; a suppressor hides most of it.
+@export_range(0.0, 1.0) var flash_exposure: float = 1.0
 
 @export_group("Presentation")
 ## First-person model. Must contain a Node3D named "Muzzle".

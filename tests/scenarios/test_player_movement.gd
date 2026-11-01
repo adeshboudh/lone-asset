@@ -13,6 +13,8 @@ func before_test() -> void:
 	_arena = auto_free(Node3D.new())
 	add_child(_arena)
 	_add_box(Vector3(40.0, 1.0, 40.0), Vector3(0.0, -0.5, 0.0))
+	_arena.add_child(LevelLighting.new())
+	_arena.add_child(BallisticsSystem.new())
 	_player = PLAYER_SCENE.instantiate()
 	_arena.add_child(_player)
 	_intent = InputIntent.new()

@@ -9,6 +9,7 @@ const FALL_TIME_S: float = 0.35
 @onready var _health: HealthComponent = $HealthComponent
 @onready var _model: Node3D = $Model
 
+## Characters and targets live on physics layer 2 (world geometry is layer 1).
 var _collision_layer: int
 
 

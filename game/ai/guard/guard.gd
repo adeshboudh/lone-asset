@@ -20,6 +20,7 @@ var health: HealthComponent:
 var is_dead: bool:
 	get:
 		return _brain.current_name == GuardState.DEAD
+var suspicion: SuspicionModel
 
 var _desired_velocity: Vector3 = Vector3.ZERO
 ## Zero = face the direction of travel.
@@ -36,6 +37,8 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var _brain: GuardBrain = %Brain
 @onready var _model: Node3D = %Model
 @onready var _state_label: Label3D = %StateLabel
+@onready var _perception: PerceptionComponent = %PerceptionComponent
+@onready var _ears: NoiseListener = %NoiseListener
 
 
 func _ready() -> void:
@@ -45,6 +48,11 @@ func _ready() -> void:
 	_health.max_health = profile.max_health
 	_health.reset()
 	_health.died.connect(_on_died)
+	_health.damaged.connect(_on_damaged)
+
+	suspicion = SuspicionModel.new(profile)
+	suspicion.band_changed.connect(_on_band_changed)
+	_ears.heard.connect(_on_noise_heard)
 
 	_state_label.add_to_group(&"debug_view_nodes")
 	_state_label.visible = bool(get_tree().get_meta(&"debug_views_enabled", false))
@@ -58,10 +66,73 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_dead:
+		suspicion.update(delta)
 	_brain.tick(delta)
 	_integrate_movement(delta)
 	if _state_label.visible:
-		_state_label.text = "%s\n%s" % [guard_id, _brain.current_name]
+		_state_label.text = "%s\n%s\n%d  %s" % [guard_id, _brain.current_name, roundi(suspicion.value),
+			SuspicionRules.Band.keys()[suspicion.band]]
+
+
+# --- Senses ------------------------------------------------------------------------------------------
+
+## Where the eyes are.
+func eye_position() -> Vector3:
+	return global_position + Vector3.UP * profile.eye_height_m
+
+
+## The direction the guard faces, on the ground plane.
+func facing() -> Vector3:
+	return -global_basis.z
+
+
+## The last thing that raised suspicion, for looking at it: a noise position or where the player was seen.
+func stimulus_position() -> Vector3:
+	if _brain.blackboard.alerted_by == &"noise":
+		return _brain.blackboard.investigate_position
+	return _brain.blackboard.last_known_position
+
+
+func has_stimulus() -> bool:
+	return _brain.blackboard.alerted_by != &""
+
+
+## Called by the PerceptionComponent after a check in which the player was at least partly visible.
+func on_player_seen(player: Player, visibility: float, distance: float, cone: PerceptionRules.Cone, sighting_s: float) -> void:
+	var motion: PerceptionRules.Motion = PerceptionRules.motion_of(player.horizontal_speed, player.is_sprinting)
+	suspicion.add_sight(visibility, distance, player.exposure.exposure, player.is_crouched, motion, cone,
+		_brain.current_name, sighting_s)
+	var blackboard: GuardBlackboard = _brain.blackboard
+	blackboard.target = player
+	blackboard.last_known_position = player.global_position
+	blackboard.last_known_time = Time.get_ticks_msec() / 1000.0
+	blackboard.confidence = visibility
+	blackboard.alerted_by = &"sight"
+
+
+func _on_noise_heard(event: NoiseEvent, _distance: float, _walls: int) -> void:
+	if is_dead or event.source == self:
+		return
+	suspicion.add_noise(event.type)
+	_brain.blackboard.investigate_position = event.position
+	_brain.blackboard.alerted_by = &"noise"
+
+
+func _on_damaged(info: DamageInfo, _amount: float) -> void:
+	suspicion.on_damage()
+	var blackboard: GuardBlackboard = _brain.blackboard
+	blackboard.alerted_by = &"damage"
+	var attacker: Node3D = info.source as Node3D
+	if attacker != null:
+		blackboard.target = attacker
+		blackboard.last_known_position = attacker.global_position
+		blackboard.last_known_time = Time.get_ticks_msec() / 1000.0
+		blackboard.confidence = 1.0
+
+
+func _on_band_changed(old_band: SuspicionRules.Band, new_band: SuspicionRules.Band) -> void:
+	EventBus.guard_alert_band_changed.emit(self, old_band, new_band)
 
 
 # --- Movement API used by states -------------------------------------------------------------------
@@ -130,7 +201,7 @@ func on_death() -> void:
 	# Dead guards no longer block the player or stop bullets; they stay in the level.
 	collision_layer = 0
 	collision_mask = 0
-	_state_label.add_to_group(&"debug_view_nodes")
+	_perception.on_guard_died()
 	var tween: Tween = create_tween()
 	tween.tween_property(_model, "rotation:x", -PI * 0.5, 0.4).set_ease(Tween.EASE_IN)
 

@@ -385,7 +385,7 @@ Guard (CharacterBody3D, class Guard)
 ├── NavigationAgent3D
 ├── HealthComponent
 ├── PerceptionComponent
-├── SuspicionComponent
+├── SuspicionModel (pure logic, owned by the guard)
 ├── Brain (class GuardBrain — hierarchical state machine)
 ├── Blackboard (RefCounted, owned by Brain)
 ├── GuardWeapon (uses a WeaponDefinition)
@@ -552,7 +552,15 @@ suspicion = min(100, suspicion + gain_per_second × dt_since_last_update)
 
 HUD shows a directional suspicion indicator per guard (arc around crosshair pointing to the guard) plus a small player exposure meter (light level).
 
-The `SuspicionComponent` is pure logic (no scene dependencies), so the formulas are unit-tested directly.
+The suspicion maths is pure logic (`SuspicionRules` and `SuspicionModel`, no scene dependencies), so it is unit-tested directly. All numbers (base rate, caps, decay, vision ranges) live in `GuardProfile`.
+
+**Implemented in WP 7**
+
+- `PerceptionComponent` (guard) checks the player: distance, then facing angle and the vertical limit, then three rays (head, chest, pelvis) against world geometry. The player's head is the camera, so a lean exposes only the head. The cone and distance are judged from the chest.
+- `PerceptionScheduler` (autoload, because the ray budget is shared by every guard) runs due checks, most overdue first, within 24 rays per tick. A sighting covers the time since that guard's previous check (0.02–1 s), so a delayed check is not undercounted. Measured cost in the movement course with 2 guards: about 0.04 ms per tick; the `ai/perception_ms` monitor and the F3 overlay show it.
+- Hearing: the guard's `NoiseListener` feeds `SuspicionModel.add_noise`. Doors count like footsteps (+10, cap 45). Noises set `investigate_position` and `alerted_by` on the blackboard; sight sets `target`, `last_known_position`, `last_known_time` and `confidence`; damage sets suspicion to 100 and records the attacker.
+- **Curious** (20–40) is the only reaction in WP 7: the patrolling guard walks at half speed and turns toward what it noticed. Suspicious, Searching and Combat bands are tracked, shown and announced (`guard_alert_band_changed`) but the guard does not yet change behaviour; Investigate, Search and Combat arrive in WP 8.
+- Feedback: a coloured arc around the crosshair points at each guard in the Curious band or above; it gets thicker and wider as suspicion rises (white, yellow, orange, red). With F3: vision cones on the ground (yellow primary, orange peripheral), and each guard's suspicion value and band in its label.
 
 ---
 
@@ -982,8 +990,8 @@ lone-asset/
 │   ├── damage/                    # DamageInfo, HealthComponent, hit zones
 │   ├── ai/
 │   │   ├── guard/                 # guard.tscn, brain, states
-│   │   ├── perception/            # PerceptionComponent, scheduler
-│   │   ├── stealth/               # SuspicionComponent, LightVolume, ExposureComponent
+│   │   ├── perception/            # (WP 7: lives in stealth/; the scheduler is an autoload)
+│   │   ├── stealth/               # PerceptionComponent, SuspicionModel, LightVolume, ExposureComponent
 │   │   └── navigation/            # PatrolRoute, search point generation
 │   ├── noise/                     # NoiseEvent, NoiseSystem, emitters
 │   ├── missions/                  # MissionService, objective handlers
@@ -1103,7 +1111,7 @@ Milestone 1 is complete when **all** of the following hold in the **deployed web
 
 **Stealth and AI**
 8. A crouched, still player in a dark volume at 15 m is not detected (suspicion < 40) by a patrolling guard.
-9. A standing, moving player in a lit area within 10 m in the primary cone is detected (≥ 80) within 1.5 s.
+9. A standing, moving player in a fully lit area about 10 m away in the primary cone is detected (≥ 80) within 2.5 s. (The sight formula gives about 42 per second there; the earlier 1.5 s target was not reachable with the 45 per second base rate. Closer than 3 m is instant.)
 10. Leaning around a corner fills suspicion more slowly than standing fully exposed.
 11. Sprinting near a guard (within 12 m, no LOS) triggers Investigate toward the noise.
 12. Guard goes Patrol → Investigate → Search → ReturnToPatrol → Patrol when the player hides, and Combat → Search when LOS is lost.

@@ -12,6 +12,7 @@ signal state_changed(old_state: GameStateMachine.State, new_state: GameStateMach
 const TITLE_SCENE: String = "res://game/ui/title/title_screen.tscn"
 const FIRST_LEVEL_SCENE: String = "res://game/levels/graybox/movement_course.tscn"
 const PAUSE_MENU_SCENE: PackedScene = preload("res://game/ui/pause/pause_menu.tscn")
+const DEATH_SCREEN_SCENE: PackedScene = preload("res://game/ui/death/death_screen.tscn")
 
 var state: GameStateMachine.State:
 	get:
@@ -19,6 +20,7 @@ var state: GameStateMachine.State:
 
 var _machine: GameStateMachine = GameStateMachine.new()
 var _pause_menu: PauseMenu
+var _death_screen: DeathScreen
 
 
 func _ready() -> void:
@@ -29,6 +31,12 @@ func _ready() -> void:
 	add_child(_pause_menu)
 	_pause_menu.resume_requested.connect(resume)
 	_pause_menu.quit_requested.connect(go_to_title)
+
+	_death_screen = DEATH_SCREEN_SCENE.instantiate()
+	add_child(_death_screen)
+	_death_screen.retry_requested.connect(restart_level)
+	_death_screen.quit_requested.connect(go_to_title)
+	EventBus.player_died.connect(_on_player_died)
 
 	Platform.mouse_captured.connect(_on_mouse_captured)
 	Platform.mouse_capture_lost.connect(pause)
@@ -50,6 +58,15 @@ func enter_title() -> void:
 
 ## Called from the "Play" click, which is the user gesture that allows mouse capture and audio.
 func start_game() -> void:
+	_load_level()
+
+
+## Called from the death screen's Retry click.
+func restart_level() -> void:
+	_load_level()
+
+
+func _load_level() -> void:
 	if not _machine.transition(GameStateMachine.State.LOADING):
 		return
 	Platform.capture_mouse()
@@ -93,11 +110,20 @@ func _on_state_changed(old_state: GameStateMachine.State, new_state: GameStateMa
 		_pause_menu.open()
 	else:
 		_pause_menu.close()
+	if new_state == GameStateMachine.State.MISSION_END:
+		_death_screen.open()
+	else:
+		_death_screen.close()
 
 	var name_text: String = GameStateMachine.state_name(new_state)
 	Log.info(&"game", "%s -> %s" % [GameStateMachine.state_name(old_state), name_text])
 	Platform.set_test_hook("state", name_text)
 	state_changed.emit(old_state, new_state)
+
+
+func _on_player_died() -> void:
+	if state == GameStateMachine.State.PLAYING:
+		_machine.transition(GameStateMachine.State.MISSION_END)
 
 
 func _on_mouse_captured() -> void:

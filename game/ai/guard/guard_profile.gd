@@ -55,3 +55,55 @@ extends Resource
 @export var decay_rate: float = 8.0
 ## Walking speed multiplier while Curious (suspicion 20–40).
 @export_range(0.1, 1.0) var curious_speed_factor: float = 0.5
+
+@export_group("Investigate and search")
+@export var investigate_speed: float = 2.0
+@export var search_speed: float = 2.0
+## Seconds spent turning toward a stimulus before walking to it.
+@export var turn_to_stimulus_s: float = 0.6
+## Minimum seconds spent looking around at the place being investigated.
+@export var investigate_look_s: float = 4.0
+## While scanning, seconds between changes of direction, and how far each side to look.
+@export var scan_step_s: float = 1.3
+@export var scan_angle_deg: float = 60.0
+@export var search_points_min: int = 4
+@export var search_points_max: int = 6
+@export var search_radius_m: float = 12.0
+@export var search_min_separation_m: float = 3.0
+## Seconds spent scanning at each search point.
+@export var search_scan_s: float = 2.5
+## A search ends after this many seconds without any new stimulus.
+@export var search_timeout_s: float = 45.0
+## After any search suspicion stays at least this high for search_floor_duration_s...
+@export var search_floor: float = 10.0
+@export var search_floor_duration_s: float = 60.0
+## ...and after any combat at least this high for the rest of the session ("guards stay wary").
+@export var combat_floor: float = 30.0
+## Walking back to the patrol route.
+@export var return_speed: float = 2.0
+
+@export_group("Combat")
+@export var weapon: WeaponDefinition
+## Combat ends (and a search starts) when the target has not been seen or felt for this long.
+@export var target_lost_s: float = 8.0
+## Seconds between first having a clear view and the first shot.
+@export var reaction_delay_s: float = 0.35
+## Aim error (cone half-angle) when the fight starts, settling to the minimum over aim_settle_s.
+@export var aim_error_start_deg: float = 6.0
+@export var aim_error_min_deg: float = 1.0
+@export var aim_settle_s: float = 3.0
+## Error multiplier while the target is moving.
+@export var moving_target_error_mult: float = 1.5
+@export var burst_min: int = 2
+@export var burst_max: int = 4
+@export var burst_pause_min_s: float = 0.7
+@export var burst_pause_max_s: float = 1.5
+## A guard fires only when facing the target to within this many degrees.
+@export var fire_alignment_deg: float = 12.0
+## Every this many seconds (random in the range) a guard looks for a new firing position.
+@export var reposition_interval_min_s: float = 4.0
+@export var reposition_interval_max_s: float = 7.0
+@export var reposition_min_m: float = 4.0
+@export var reposition_max_m: float = 9.0
+@export var reposition_samples: int = 10
+@export var reposition_timeout_s: float = 4.0

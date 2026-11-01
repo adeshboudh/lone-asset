@@ -8,6 +8,10 @@ const HIT_MARKER_TIME_S: float = 0.15
 var _player: Player
 var _hit_marker_remaining: float = 0.0
 var _hit_marker_killed: bool = false
+## Recent hits on the player: {position: Vector3 (where the shot came from), age: float}.
+var _hits_taken: Array[Dictionary] = []
+## 1 right after being hurt, fading to 0.
+var _hurt_flash: float = 0.0
 
 @onready var _crosshair: Control = %Crosshair
 @onready var _ammo_label: Label = %AmmoLabel
@@ -17,6 +21,9 @@ var _hit_marker_killed: bool = false
 
 ## Where the suspicion arcs sit, in pixels from the crosshair.
 const INDICATOR_RADIUS: float = 130.0
+const HIT_ARC_RADIUS: float = 105.0
+const HIT_ARC_TIME_S: float = 1.5
+const HURT_FLASH_RATE: float = 1.8
 ## Arc colour by suspicion band (design §9.5). Normal shows nothing.
 const BAND_COLORS: Dictionary[SuspicionRules.Band, Color] = {
 	SuspicionRules.Band.CURIOUS: Color(1.0, 1.0, 1.0),
@@ -43,11 +50,20 @@ func _process(delta: float) -> void:
 	_health_label.text = "%d" % ceili(_player.health.health)
 	_exposure_bar.value = _player.exposure.exposure
 	_hit_marker_remaining = maxf(_hit_marker_remaining - delta, 0.0)
+	_hurt_flash = maxf(_hurt_flash - HURT_FLASH_RATE * delta, 0.0)
+	for hit: Dictionary in _hits_taken:
+		hit["age"] += delta
+	_hits_taken = _hits_taken.filter(func(hit: Dictionary) -> bool: return hit["age"] < HIT_ARC_TIME_S)
 	_crosshair.queue_redraw()
 	_indicators.queue_redraw()
 
 
-func _on_damage_applied(_target: Node, info: DamageInfo, killed: bool) -> void:
+func _on_damage_applied(target: Node, info: DamageInfo, killed: bool) -> void:
+	if _player != null and target == _player:
+		_hurt_flash = 1.0
+		var shooter: Node3D = info.source as Node3D
+		if shooter != null:
+			_hits_taken.append({"position": shooter.global_position, "age": 0.0})
 	if _player != null and info.source == _player:
 		_hit_marker_remaining = HIT_MARKER_TIME_S
 		_hit_marker_killed = killed
@@ -60,6 +76,16 @@ func _draw_indicators() -> void:
 	var center: Vector2 = _indicators.size * 0.5
 	var forward: Vector3 = -camera.global_basis.z
 	forward.y = 0.0
+	if _hurt_flash > 0.0:
+		_indicators.draw_rect(Rect2(Vector2.ZERO, _indicators.size), Color(0.8, 0.0, 0.0, _hurt_flash * 0.22))
+	for hit: Dictionary in _hits_taken:
+		var from_shooter: Vector3 = hit["position"] - camera.global_position
+		from_shooter.y = 0.0
+		if from_shooter.length() < 0.01:
+			continue
+		var hit_angle: float = -PI * 0.5 - forward.signed_angle_to(from_shooter, Vector3.UP)
+		var fade: float = 1.0 - float(hit["age"]) / HIT_ARC_TIME_S
+		_indicators.draw_arc(center, HIT_ARC_RADIUS, hit_angle - 0.35, hit_angle + 0.35, 12, Color(1.0, 0.1, 0.1, fade), 8.0)
 	for node: Node in get_tree().get_nodes_in_group(&"guards"):
 		var guard: Guard = node as Guard
 		if guard.is_dead or not BAND_COLORS.has(guard.suspicion.band):

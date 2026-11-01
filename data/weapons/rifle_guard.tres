@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"rifle_guard"
+display_name = "Guard rifle"
+damage = 12.0
+fire_rate_rpm = 600.0
+fire_modes = Array[StringName]([&"auto"])
+magazine_size = 30
+reserve_ammo = 9999
+reload_time = 2.4
+reload_time_empty = 2.4
+muzzle_velocity = 700.0
+max_range = 150.0
+suppressed = false
+noise_radius_m = 80.0
+flash_exposure = 1.0
+fire_sound = &"rifle_shot_loud"

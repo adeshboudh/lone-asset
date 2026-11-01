@@ -35,8 +35,14 @@ func test_weapon_sound_ids_exist() -> void:
 		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
 
 
+func test_guard_rifle_sound_exists() -> void:
+	var guard_profile: GuardProfile = load("res://data/ai/guard_default.tres")
+	assert_bool(BANK.has_sound(guard_profile.weapon.fire_sound)).is_true()
+	assert_bool(BANK.has_sound(StringName(String(guard_profile.weapon.fire_sound) + "_muffled"))).is_true()
+
+
 func test_gameplay_sounds_exist_with_muffled_copies() -> void:
-	for id: StringName in [&"footstep_concrete", &"footstep_metal", &"footstep_grass", &"landing", &"impact_world", &"impact_body", &"rifle_shot_suppressed"]:
+	for id: StringName in [&"footstep_concrete", &"footstep_metal", &"footstep_grass", &"landing", &"impact_world", &"impact_body", &"rifle_shot_suppressed", &"rifle_shot_loud"]:
 		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
 		assert_bool(BANK.has_sound(StringName(String(id) + "_muffled"))).override_failure_message("missing muffled '%s'" % id).is_true()
 	for id: StringName in [&"hit_marker", &"ui_click", &"wind_loop"]:

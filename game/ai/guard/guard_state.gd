@@ -26,3 +26,8 @@ func exit() -> void:
 ## Returns the name of the state to switch to, or &"" to stay.
 func tick(_delta: float) -> StringName:
 	return &""
+
+
+## Extra detail for the F3 debug label.
+func debug_text() -> String:
+	return ""

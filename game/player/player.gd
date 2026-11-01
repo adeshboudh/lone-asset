@@ -130,8 +130,8 @@ func _on_landed(fall_height: float) -> void:
 
 
 func _on_died(info: DamageInfo) -> void:
-	# Player death and mission failure arrive with the mission framework (WP 9).
 	Log.info(&"player", "Died (%s)" % info.type)
+	EventBus.player_died.emit()
 
 
 func _head_bob_offset(delta: float) -> float:

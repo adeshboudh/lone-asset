@@ -11,6 +11,7 @@ signal state_changed(old_state: GameStateMachine.State, new_state: GameStateMach
 
 const LOADING_TIMEOUT_S: float = 20.0
 const TITLE_SCENE: String = "res://game/ui/title/title_screen.tscn"
+const BENCHMARK_SCENE: String = "res://game/benchmark/benchmark.tscn"
 const FIRST_LEVEL_SCENE: String = "res://game/levels/graybox/movement_course.tscn"
 const PAUSE_MENU_SCENE: PackedScene = preload("res://game/ui/pause/pause_menu.tscn")
 const DEATH_SCREEN_SCENE: PackedScene = preload("res://game/ui/death/death_screen.tscn")
@@ -23,6 +24,8 @@ var _machine: GameStateMachine = GameStateMachine.new()
 var _pause_menu: PauseMenu
 var _death_screen: DeathScreen
 var _mission_succeeded: bool = false
+## True while the benchmark runs: no mouse capture needed, no checkpoints.
+var is_benchmark: bool = false
 
 
 func _ready() -> void:
@@ -62,6 +65,7 @@ func enter_title() -> void:
 
 ## Called from the "Play" click, which is the user gesture that allows mouse capture and audio.
 func start_game() -> void:
+	is_benchmark = false
 	Saves.delete_checkpoint()
 	Saves.pending = {}
 	_load_level()
@@ -69,6 +73,7 @@ func start_game() -> void:
 
 ## Continue / restart from the last checkpoint.
 func continue_game() -> void:
+	is_benchmark = false
 	Saves.pending = Saves.read_checkpoint()
 	_load_level()
 
@@ -81,14 +86,29 @@ func restart_level() -> void:
 		start_game()
 
 
-func _load_level() -> void:
+## Runs the remote benchmark (design §18.4.1) from the title or pause menu.
+func start_benchmark() -> void:
+	is_benchmark = true
+	Saves.pending = {}
+	_load_level(BENCHMARK_SCENE)
+
+
+## Called by the benchmark when its run is over: the result screen needs the mouse.
+func end_benchmark() -> void:
+	if state == GameStateMachine.State.PLAYING:
+		_machine.transition(GameStateMachine.State.MISSION_END)
+		_death_screen.close()
+
+
+func _load_level(scene_path: String = FIRST_LEVEL_SCENE) -> void:
 	if not _machine.transition(GameStateMachine.State.LOADING):
 		return
 	_watch_loading()
-	Platform.capture_mouse()
-	var error: Error = get_tree().change_scene_to_file(FIRST_LEVEL_SCENE)
+	if not is_benchmark:
+		Platform.capture_mouse()
+	var error: Error = get_tree().change_scene_to_file(scene_path)
 	if error != OK:
-		Log.error(&"game", "Could not load %s (%s)" % [FIRST_LEVEL_SCENE, error_string(error)])
+		Log.error(&"game", "Could not load %s (%s)" % [scene_path, error_string(error)])
 		_machine.transition(GameStateMachine.State.TITLE)
 
 
@@ -109,7 +129,8 @@ func level_ready() -> void:
 	if not Saves.pending.is_empty():
 		Saves.apply(Saves.pending)
 		Saves.pending = {}
-	if not entered:
+	Settings.apply_graphics()
+	if not entered or is_benchmark:
 		return
 	if not Platform.is_mouse_captured() and not Platform.is_capture_pending():
 		pause()
@@ -127,6 +148,7 @@ func resume() -> void:
 
 
 func go_to_title() -> void:
+	is_benchmark = false
 	if _machine.transition(GameStateMachine.State.TITLE):
 		get_tree().change_scene_to_file(TITLE_SCENE)
 

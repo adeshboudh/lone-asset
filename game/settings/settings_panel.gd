@@ -38,6 +38,12 @@ func _ready() -> void:
 	_add_slider("Field of view", SettingsRules.FOV_MIN, SettingsRules.FOV_MAX, 1.0,
 		func() -> float: return Settings.fov_deg,
 		func(v: float) -> void: Settings.fov_deg = v)
+	_add_option("Graphics quality", ["Low", "Medium", "High"],
+		func() -> int: return Settings.quality,
+		func(v: int) -> void: Settings.quality = v)
+	_add_slider("Render scale", SettingsRules.RENDER_SCALE_MIN, SettingsRules.RENDER_SCALE_MAX, 0.05,
+		func() -> float: return Settings.render_scale,
+		func(v: float) -> void: Settings.render_scale = v)
 	_add_check("Head bob",
 		func() -> bool: return Settings.head_bob,
 		func(v: bool) -> void: Settings.head_bob = v)
@@ -50,6 +56,14 @@ func _ready() -> void:
 	_add_slider("Effects volume", 0.0, 1.0, 0.05,
 		func() -> float: return Settings.sfx_volume,
 		func(v: float) -> void: Settings.sfx_volume = v)
+
+	var benchmark_button: Button = Button.new()
+	benchmark_button.text = "Run benchmark (60 s)"
+	benchmark_button.pressed.connect(func() -> void:
+		Audio.play_ui(&"ui_click")
+		close()
+		Game.start_benchmark())
+	_rows.add_child(benchmark_button)
 
 	var folder_button: Button = Button.new()
 	folder_button.text = "Open save folder"
@@ -97,6 +111,24 @@ func _add_slider(label_text: String, low: float, high: float, step: float, gette
 		setter.call(v)
 		readout.text = _format(v, high)
 		Settings.commit())
+	_rows.add_child(row)
+
+
+func _add_option(label_text: String, choices: Array[String], getter: Callable, setter: Callable) -> void:
+	var row: HBoxContainer = HBoxContainer.new()
+	var label: Label = Label.new()
+	label.text = label_text
+	label.custom_minimum_size = Vector2(200.0, 0.0)
+	row.add_child(label)
+	var option: OptionButton = OptionButton.new()
+	for choice: String in choices:
+		option.add_item(choice)
+	option.selected = getter.call()
+	option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	option.item_selected.connect(func(index: int) -> void:
+		setter.call(index)
+		Settings.commit())
+	row.add_child(option)
 	_rows.add_child(row)
 
 

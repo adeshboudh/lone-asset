@@ -7,6 +7,9 @@ extends Control
 @onready var _version_label: Label = %VersionLabel
 
 
+static var _benchmark_started: bool = false
+
+
 func _ready() -> void:
 	_version_label.text = "build %s" % ProjectSettings.get_setting("application/config/version")
 	_play_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
@@ -23,4 +26,7 @@ func _ready() -> void:
 	settings.closed.connect(func() -> void: _continue_button.visible = Saves.has_checkpoint())
 	(_continue_button if _continue_button.visible else _play_button).grab_focus()
 	Game.enter_title()
+	if OS.get_cmdline_user_args().has("--benchmark") and not _benchmark_started:
+		_benchmark_started = true
+		Game.start_benchmark.call_deferred()
 	Platform.mark_ready()

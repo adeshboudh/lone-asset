@@ -712,7 +712,8 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 
 - `Settings` autoload (`game/autoload/settings.gd`, rules in `game/settings/settings_rules.gd`): mouse sensitivity scale (0.25–3), invert Y, FOV (70–100), head bob, master / music / effects volume. Saved to `user://settings.cfg`, applied immediately (bus volumes here, the player reads the rest). `SettingsPanel` is shared by the title and pause menus.
 - The HUD gained a stance line; the end screen shows time, detected yes/no, guards eliminated and the stealth bonus.
-- **Deferred**: key rebinding, quality preset and render scale (WP 13 decides them with the performance numbers), and the `tr()` translation keys (all text is still literal).
+- WP 13 added **graphics quality** (Low / Medium / High: shadow map size, soft shadows, MSAA or FXAA, SSAO, glow; table in `SettingsRules.PRESETS`) and **render scale** (50–100 %, FSR 1 upscaling below 100 %), applied by `Settings.apply_graphics()` to the window and every `WorldEnvironment`, and again whenever a level becomes ready.
+- **Deferred**: key rebinding and the `tr()` translation keys (all text is still literal).
 
 ---
 
@@ -937,15 +938,23 @@ Tests run with a fixed physics tick and seeded RNG for determinism.
 
 ### 18.4 Performance tests
 
-- `tests/perf/perf_flythrough.tscn`: fixed camera path through the level with 3 guards in Combat, run for 60 s in the exported build.
-- Reports average FPS, 1 % low, frame-time histogram, draw calls, primitives, memory, and AI/perception ms to a JSON file under `user://benchmarks/`.
+- The benchmark (below) runs a fixed route through the level for 60 s in the exported build.
+- It reports average FPS, 1 % low, frame-time histogram, draw calls, primitives, memory, and AI/perception ms to a JSON file under `user://benchmarks/`.
 - GPU-dependent numbers are only meaningful on reference hardware (§19); CI tracks trends, runs on reference hardware gate the milestone (see §18.4.1).
+
+**Implemented in WP 13**
+
+- `game/benchmark/` (`Benchmark`, `BenchmarkResults`, pure `BenchmarkStats`). Instead of a free camera, the benchmark moves the real player (made unkillable) along a 169 m loop through the course: spawn, compound (both rooms), north yard, tunnel, range, extraction. The guards see the player and react, so AI, perception, guard gunfire and physics are all in the measurement. 2 s warm-up, then 60 s measured.
+- Report fields: build, OS, CPU, GPU, vendor, graphics API, renderer and driver, resolution, settings, frames, average FPS, 1 % low (99th-percentile frame time), p50/p95/p99 frame time, histogram (120/90/60/45/30 FPS buckets), draw calls, primitives, process / physics / perception ms (average and max of 0.5 s samples), peak static and video memory, pass/fail against §19.1.
+- Checkpoints are not written during a run, and the player's own graphics settings are restored afterwards.
+- Command line: `LoneAsset -- --benchmark --quit-when-done` runs it straight from launch and prints the JSON report.
+- CI checks the measurable budgets (zip size, PNG texture size) with `tools/ci/check_budgets.sh`. GPU numbers come only from real hardware.
 
 #### 18.4.1 Remote benchmark (friends' machines)
 
 Minimum-tier hardware is borrowed from friends, so the benchmark must run without the developer present:
 
-- Title screen → Settings → **Run benchmark**: plays `perf_flythrough` for 60 s at the minimum-tier settings (1080p, render scale 0.75, Medium).
+- Title screen → Settings → **Run benchmark (60 s)**: plays the benchmark route for 60 s at the minimum-tier settings (1080p, render scale 0.75, Medium).
 - Result screen shows pass/fail against §19 and a **Copy results** button that copies a JSON report: build ID, GPU and driver (`RenderingServer.get_video_adapter_name()` / `_vendor()`), renderer (Vulkan or OpenGL fallback), OS, resolution, settings, average FPS, 1 % low, frame-time histogram, per-system ms, peak memory.
 - Friends paste the report into a message; reports are stored in `docs/benchmarks/`.
 - One benchmark round per work package from WP 8 onward, and a final round for acceptance.

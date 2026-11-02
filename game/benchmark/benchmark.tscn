@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/benchmark/benchmark.gd" id="1_bench"]
+[ext_resource type="Script" path="res://game/benchmark/benchmark_results.gd" id="2_results"]
+
+[node name="Benchmark" type="Node"]
+script = ExtResource("1_bench")
+
+[node name="Results" type="CanvasLayer" parent="."]
+script = ExtResource("2_results")

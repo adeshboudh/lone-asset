@@ -49,6 +49,6 @@ text = "Quit to title"
 [node name="CaptureHint" type="Label" parent="Center/Box"]
 unique_name_in_owner = true
 visible = false
-text = "The browser needs a moment after Esc.
+text = "The mouse could not be captured.
 Click Resume again."
 horizontal_alignment = 1

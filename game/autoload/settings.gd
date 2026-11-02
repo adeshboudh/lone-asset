@@ -1,5 +1,5 @@
 extends Node
-## Player settings (design §15), saved to user://settings.cfg (browser storage on the web) and applied
+## Player settings (design §15), saved to user://settings.cfg and applied
 ## at once: bus volumes here, the rest read by the player and HUD.
 
 signal changed

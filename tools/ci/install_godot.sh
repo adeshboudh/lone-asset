@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs the pinned Godot editor and the web export templates. Usage: install_godot.sh 4.7.2-stable
+# Installs the pinned Godot editor and the Windows and Linux export templates. Usage: install_godot.sh 4.7.2-stable
 set -euo pipefail
 
 version="$1"
@@ -16,8 +16,8 @@ if [[ ! -x "$cache/godot" ]]; then
 fi
 if [[ ! -d "$cache/templates" ]]; then
 	curl -fsSL -o "$cache/templates.tpz" "$base/Godot_v${version}_export_templates.tpz"
-	# Only the web templates are needed; the full archive is large.
-	unzip -q -o "$cache/templates.tpz" "templates/web_*" "templates/version.txt" -d "$cache"
+	# Only the desktop templates are needed; the full archive is large.
+	unzip -q -o "$cache/templates.tpz" "templates/windows_*_x86_64*" "templates/linux_*.x86_64" "templates/version.txt" -d "$cache"
 	rm "$cache/templates.tpz"
 fi
 

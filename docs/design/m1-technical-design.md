@@ -1,18 +1,20 @@
-# Lone Asset — Milestone 1 Technical Design Document (Web / WASM)
+# Lone Asset — Milestone 1 Technical Design Document (Desktop)
 
 Status: Draft v0.2 (open questions from v0.1 resolved, see §25)
 Date: 2026-10-20
-Parent document: [Lone Asset — Modern Tactical Stealth FPS](overview.md) (Web / WebAssembly Edition)
+Parent document: [Lone Asset — Modern Tactical Stealth FPS](overview.md) (Desktop Edition)
 
 ---
 
 ## 0. Purpose and Scope
 
-This document specifies how to build **Milestone 1 — Core Prototype** of Lone Asset as a browser game (Godot 4 web export, WASM + WebGL 2).
+This document specifies how to build **Milestone 1 — Core Prototype** of Lone Asset as a desktop game (Godot 4, Windows and Linux).
+
+> **Platform change (2026-11-02):** work packages 1–12 were built and tested as a browser game (WebAssembly + WebGL 2). The project then moved to desktop only (overview §36). Sections below describe the desktop setup; web-only details that were removed are summarised in §1.4.
 
 Milestone 1 goal (from the parent document):
 
-> Prove that movement, shooting and stealth feel good — in the browser.
+> Prove that movement, shooting and stealth feel good.
 
 ### 0.1 In scope
 
@@ -28,9 +30,9 @@ Milestone 1 goal (from the parent document):
 | Interaction | Door, terminal |
 | Equipment | Framework + binoculars |
 | UI | Loading, click-to-start, HUD, prompts, pause, settings, end screen |
-| Save | Settings + one checkpoint slot in IndexedDB |
+| Save | Settings + one checkpoint slot (files under `user://`) |
 | Level | One small graybox compound (~80 m × 80 m) with **one finished-art hero area** (see §17.3) |
-| Platform | Web build deployed to a public URL (Chrome, Edge, Firefox desktop) |
+| Platform | Windows and Linux builds from CI (GitHub Releases) |
 
 ### 0.2 Out of scope (deferred)
 
@@ -46,48 +48,43 @@ Data structures are designed so deferred features slot in without rewriting Mile
 
 - Use the **latest stable Godot 4.x** at kickoff. Pin the exact version (e.g. `4.x.y-stable`) in `ENGINE_VERSION` at repo root.
 - Export templates must match the editor version exactly.
-- Version upgrades only by explicit decision, on a branch, with the full test suite and a browser smoke test.
+- Version upgrades only by explicit decision, on a branch, with the full test suite and a smoke test of both exported builds.
 
 ### 1.2 Project settings (key values)
 
 | Setting | Value | Reason |
 |---|---|---|
-| Rendering method (all platforms) | **Compatibility** | Editor matches the web build visually and in performance |
+| Rendering method | **Forward+**, with `rendering_device/fallback_to_opengl3` | Full desktop feature set; machines without Vulkan fall back to the OpenGL 3.3 Compatibility renderer |
 | 3D physics engine | **Jolt Physics** | Faster, more stable than Godot Physics |
 | Physics layers | 1 = `world`, 2 = `characters` | World geometry blocks sound and sight; characters and targets do not block sound. Bullets hit both (mask 3); light volumes detect layer 2 |
 | Physics ticks per second | 60 | Gameplay runs in `_physics_process` |
 | Max physics steps per frame | 4 | Avoid spiral of death on slow frames |
 | GDScript warning: untyped declaration | **Error** | Enforce typed GDScript |
 | GDScript warning: unsafe property/method access | Warning | Catch dynamic access |
-| Window stretch mode | `canvas_items`, aspect `expand` | UI scales with browser window |
+| Window stretch mode | `canvas_items`, aspect `expand` | UI scales with the window |
 | Audio: default bus layout | `res://game/audio/default_bus_layout.tres` | See §13 |
-| Texture import: VRAM compression | Desktop formats (S3TC/BPTC) | Web desktop GPUs |
+| Texture import: VRAM compression | Desktop formats (S3TC/BPTC) | Desktop GPUs |
 
-### 1.3 Web export preset ("Web")
+### 1.3 Export presets ("Windows", "Linux")
 
 | Option | Value |
 |---|---|
-| Thread support | **Off** (single-threaded; no COOP/COEP headers needed) |
-| Extensions support (GDExtension) | Off in Milestone 1 (see §2.3) |
-| VRAM texture compression | Desktop: on; Mobile: off |
-| Custom HTML shell | Default Godot shell until WP 11; then `res://web/shell.html` (custom loader UI) |
-| Head include | Page background styling; test hooks (`window.__lone_asset`) are set from GDScript by `Platform` |
-| Export path | `build/web/index.html` |
+| Architecture | x86_64 |
+| PCK | Embedded in the executable (`binary_format/embed_pck`), so each build is one file |
+| VRAM texture compression | S3TC / BPTC |
+| Windows resources (icon, version info via rcedit) | Off for now (`application/modify_resources=false`); CI runs on Linux without rcedit |
+| Code signing | Off (unsigned; testers allow the SmartScreen warning) |
+| Excluded from export | `addons/gdUnit4/*, tests/*, reports/*, dev/*` |
+| Export paths | `build/windows/LoneAsset.exe`, `build/linux/LoneAsset.x86_64` |
 
-Export command (CI and local):
+Export command (CI and local): `tools/ci/export_desktop.sh build` (exports both, zips them).
 
-```bash
-godot --headless --export-release "Web" build/web/index.html
-```
+### 1.4 Distribution
 
-### 1.4 Hosting
-
-- **Cloudflare Pages** (direct upload from GitHub Actions via Wrangler), HTTPS, Cloudflare CDN compression.
-- `.wasm` served as `application/wasm`.
-- Brotli pre-compression of `.wasm`, `.pck`, `.js` in CI (`*.br`), with gzip fallback.
-- Godot export file names are not content-hashed, so `index.html` is `no-cache` and `.wasm`/`.pck`/`.js` use a short `max-age` with ETag revalidation (`web/_headers`).
-- **Cloudflare Pages limits each file to 25 MiB.** CI fails if any file exceeds it. The Godot 4.7 engine `.wasm` is ~38 MiB (6.6 MiB Brotli), so only `index.wasm.br` is deployed and a Pages advanced-mode worker (`web/_worker.js`) serves it at `/index.wasm` with `Content-Encoding: br`. Size-optimised custom web templates remain a later option to cut download size further. The `.pck` stays under the limit through split resource packs.
-- Every pull request deploys a preview URL; `main` deploys to the staging URL.
+- Every pull request's CI run uploads `LoneAsset-windows.zip` and `LoneAsset-linux.zip` as artifacts (14 days; GitHub login needed to download).
+- Every push to `main` replaces the public pre-release **`preview`** on GitHub Releases with fresh zips (no login needed), for outside testers and the remote benchmark.
+- Saves and settings live under Godot's `user://` (Windows: `%APPDATA%\Godot\app_userdata\Lone Asset`; Linux: `~/.local/share/godot/app_userdata/Lone Asset`).
+- Removed with the web build: Cloudflare Pages hosting, Brotli pre-compression and the 25 MiB file-size worker, the browser test hooks (`window.__lone_asset`), tab-visibility pause, `navigator.storage.persist()` and browser save export/import. The Cloudflare Pages project can be deleted.
 
 ---
 
@@ -131,14 +128,13 @@ Keep this list short. Adding an autoload needs a written reason in the commit me
 | `PerceptionScheduler` | Per-frame raycast budget for all perception components |
 | `MissionService` | Runs the active `MissionDefinition` |
 | `AIDirector` | Stub in Milestone 1: tracks global alert level only |
-| `Platform` | Web glue: pointer lock state, visibility changes, storage persistence, test hooks |
+| `Platform` | Mouse capture state and window focus loss |
 
 ### 2.3 GDScript / C++ boundary
 
 - Milestone 1 ships **100 % typed GDScript**.
-- `native/` contains a GDExtension skeleton that CI compiles for Linux (tests) and WASM, so the toolchain is proven, but it is not enabled in the web export.
+- `native/` contains a GDExtension skeleton that CI can compile for Linux and Windows when it is first needed; not enabled in Milestone 1.
 - A system moves to C++ only if, after GDScript optimisation, it exceeds its frame budget (§19) on reference hardware. Likely candidates: perception ray batching, ballistics stepping, tactical queries.
-- Enabling GDExtension on web switches to the "extensions" export templates (larger download); measure before and after.
 
 ### 2.4 Communication rules
 
@@ -212,14 +208,14 @@ var use_equipment: bool
 |---|---|---|
 | Move | W A S D | |
 | Sprint | Shift (hold) | |
-| Crouch | C (toggle) | Ctrl not used: Ctrl combos conflict with browser shortcuts |
+| Crouch | C (toggle) | Ctrl kept free for now (crouch toggle on C was chosen in the web era; rebinding comes later) |
 | Lean | Q / E (hold) | |
 | Jump | Space | |
 | Fire / Aim | LMB / RMB | |
 | Reload | R | |
 | Interact | F (hold where required) | |
 | Equipment | B (binoculars) | |
-| Pause | Esc / P | Esc always releases pointer lock in browsers |
+| Pause | Esc / P | Esc releases the mouse and opens the pause menu |
 | Fire mode | X | |
 | Debug overlay | F3 | Dev builds only |
 
@@ -259,22 +255,20 @@ Equipment weight multiplies speeds (`1.0 − 0.01 × kg_over_free_limit`, clampe
 - Camera look is applied in `_process` from accumulated mouse delta for responsiveness; body yaw syncs in physics.
 - Head bob and weapon sway are cosmetic, driven by velocity, and can be disabled in settings.
 
-### 4.3 Pointer lock (web)
+### 4.3 Mouse capture
 
 ```text
 Title / Pause screen
-      │ user click (inside an input event handler)
+      │ click
       ▼
-Input.mouse_mode = MOUSE_MODE_CAPTURED  →  browser grants pointer lock
+Input.mouse_mode = MOUSE_MODE_CAPTURED
       │
-      │ user presses Esc / alt-tabs / browser revokes lock
+      │ Esc / alt-tab / window loses focus
       ▼
 Platform detects mouse_mode != CAPTURED  →  Game.pause()  →  pause menu
 ```
 
-- Capture is requested **only** from a click handler; browsers reject it otherwise.
-- After Esc releases the lock, browsers enforce a short cooldown before re-locking is allowed; the "Resume" button must tolerate a failed first attempt and retry on the next click.
-- `Platform` also listens for `document.visibilitychange` (via `JavaScriptBridge`) and pauses when the tab is hidden.
+- The tolerant resume logic (retry on a refused capture) was written for browsers; on desktop the capture is granted at once, but the logic stays because it is harmless.
 
 ---
 
@@ -511,7 +505,7 @@ Cheap tests first: distance → angle → (only then) raycasts. Timings are reco
 
 ### 9.1 Player exposure (light level)
 
-The web renderer cannot cheaply read back lighting, so light level is **authored**:
+Reading lighting back from the GPU is slow and a frame late, so light level is **authored**:
 
 - `LightVolume` nodes (`Area3D` with a box sized by `size`) with `light_level: float` (0 = pitch black, 1 = fully lit) and `light_priority` (`priority` is already an `Area3D` property). Among overlapping volumes the highest priority wins; ties go to the most recently entered.
 - The level sets an `ambient_light_level` (e.g. night 0.15, day 0.9) with a `LevelLighting` node. The movement course uses 0.6 with a 0.1 tunnel, a 0.25 shadow strip behind the low cover, and a 1.0 floodlit range.
@@ -693,9 +687,9 @@ Implemented early (with WP 5) because silence made the prototype hard to judge.
 - **`Audio` autoload**: `play_2d` (the player's own weapon, footsteps and landings, 8 pooled voices), `play_3d` (positional sounds such as bullet impacts, at most 24 pooled voices), `play_ui` (plays while paused) and `make_loop` (level ambience, e.g. wind).
 - **Sound bank** (`data/audio/sound_bank.tres`): sound id → variants, picked at random so footsteps and shots do not repeat exactly. Weapons name their sounds in their `WeaponDefinition` (fire, dry fire, reload, reload from empty).
 - **Placeholder sounds** are synthesised by `tools/audio/make_placeholder_sounds.py` (our own work, CC BY 4.0). Replace a file and keep its name to swap in a real recording.
-- **Web playback mode**: Godot plays sounds as *samples* on the web by default. That mode has no bus effects (so no low-pass filters, reverb or Doppler), but avoids garbled sound in single-threaded builds. Decision: stay in sample mode.
+- **Playback**: built while targeting the web, whose sample playback has no bus effects. On desktop, bus effects work; occlusion can move to a real low-pass filter later, and the pre-muffled copies can then go.
 - **Occlusion**: for positional sounds, `NoiseSystem.walls_between()` counts walls (ear height) between the camera and the source. Behind a wall the sound plays a pre-muffled copy (`<id>_muffled`, low-passed at 900 Hz) at −6 dB per wall, up to 3 walls. Sounds closer than 2 m are never occluded. This replaces the earlier bus low-pass plan.
-- **Format**: 16-bit mono WAV (32 kHz) for the placeholders, because WAV is the format sample playback is built around. Before switching real recordings to Ogg Vorbis to save download size, test Ogg on the web (sample mode, looping).
+- **Format**: 16-bit mono WAV (32 kHz) for the placeholders, because they are small and need no decoding. Real recordings can use Ogg Vorbis.
 - Audio unlocks on the click-to-start screen.
 - Door, terminal and objective sounds arrived in WP 9; guard footsteps (one positional sound per 1.8 m stride, occluded by walls like any positional sound) and the volume settings in WP 11. **Not yet**: music and voice, which have no assets (Milestone 2).
 
@@ -705,10 +699,9 @@ Implemented early (with WP 5) because silence made the prototype hard to judge.
 
 | Screen | Content |
 |---|---|
-| HTML loader (`web/shell.html`) | Logo, progress bar from Godot's loader callbacks, browser-compatibility message if WebGL 2 is missing |
-| Title / click-to-start | "Click to play" (unlocks audio + pointer lock), Continue (if checkpoint), New Game, Settings |
+| Title | Continue (if checkpoint), New game, Settings |
 | HUD | Crosshair (spread-reactive), ammo/fire mode, health, stance icon, exposure meter ("LIGHT" bar, done in WP 5), suspicion indicators, objective text, damage direction, interaction prompt + hold progress |
-| Pause | Resume (re-acquires pointer lock), Settings, Restart from checkpoint, Quit to title |
+| Pause | Resume (re-captures the mouse), Settings, Restart from checkpoint, Quit to title |
 | Settings | Mouse sensitivity, invert Y, FOV (70–100), quality preset, render scale, master/music/SFX volume, head bob, key rebinding |
 | Mission end | Success/fail, time, detected yes/no, optional objective result, Retry / Title |
 | Debug overlay (F3) | WP 5: noise rings (radius by type, fading), light-volume boxes coloured by level, light level / exposure / active volume / last noise. Later: FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states. Enabled in all Milestone 1 previews; restricted to development builds before a public release |
@@ -717,7 +710,7 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 
 **Implemented in WP 11**
 
-- `Settings` autoload (`game/autoload/settings.gd`, rules in `game/settings/settings_rules.gd`): mouse sensitivity scale (0.25–3), invert Y, FOV (70–100), head bob, master / music / effects volume. Saved to `user://settings.cfg` (browser storage on the web), applied immediately (bus volumes here, the player reads the rest). `SettingsPanel` is shared by the title and pause menus.
+- `Settings` autoload (`game/autoload/settings.gd`, rules in `game/settings/settings_rules.gd`): mouse sensitivity scale (0.25–3), invert Y, FOV (70–100), head bob, master / music / effects volume. Saved to `user://settings.cfg`, applied immediately (bus volumes here, the player reads the rest). `SettingsPanel` is shared by the title and pause menus.
 - The HUD gained a stance line; the end screen shows time, detected yes/no, guards eliminated and the stealth bonus.
 - **Deferred**: key rebinding, quality preset and render scale (WP 13 decides them with the performance numbers), and the `tr()` translation keys (all text is still literal).
 
@@ -727,7 +720,7 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 
 ### 16.1 Storage
 
-- `user://` maps to **IndexedDB** in the web build.
+- `user://` is the per-user application data folder (§1.4).
 - Settings: `user://settings.cfg` (ConfigFile).
 - Checkpoint: `user://saves/checkpoint.json`.
 - When the first checkpoint is written (WP 12), `Platform` calls `navigator.storage.persist()` through `JavaScriptBridge` to reduce eviction risk. (Firefox shows a permission prompt, so it is not requested on first launch.)
@@ -738,7 +731,7 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 - `SaveService` autoload (`Saves`, `game/autoload/save_service.gd`) with pure `SaveRules` (version check, migration hook, JSON, vectors). A checkpoint is written (deferred one frame, so the next objective is already active) whenever an objective with `checkpoint_on_complete` finishes, and deleted when the mission is completed. Writes go to a temp file that is then swapped in.
 - Saveable nodes implement `save_state()` / `load_state()`: `Player` (position, yaw, stance, health, ammo), `Guard` (alive, position, suspicion floor; a guard that was alive restarts its patrol calm but wary), `Door` (open or closed), `Terminal` (downloaded), `Binoculars` (tags), `Mission` (objective statuses, time, eliminations, combat flag).
 - Flow: **Continue** on the title (shown when a checkpoint exists), **New game** (deletes the checkpoint), **Retry from checkpoint** on the death screen and **Restart from checkpoint** in the pause menu. `Game.level_ready()` applies the pending checkpoint once the level exists.
-- Settings has **Export save** (browser download) and **Import save** (file picker, validated before it is stored) on the web build. `navigator.storage.persist()` is requested once, at the first checkpoint. The browser parts cannot run in headless tests; they are covered by manual playtest.
+- Settings has **Open save folder**, so players can back up or copy in `checkpoint.json` (on load it is validated; an unusable file is ignored). `SaveService.import_text()` validates a save before storing it, ready for an in-game import later. (The web build had browser download / file-picker export and import and a `navigator.storage.persist()` request; removed with the move to desktop.)
 - Not saved in Milestone 1: guards' exact patrol position index and in-progress searches (a restored guard resumes its route), and bullets or sounds in flight.
 
 ### 16.2 Checkpoint schema
@@ -790,22 +783,21 @@ Naming: `snake_case`, prefix by type (`sm_` static mesh, `sk_` skinned, `t_` tex
 
 | Budget | Limit |
 |---|---|
-| Total compressed download (engine + content) | **≤ 60 MB** (target 45 MB) |
-| Engine WASM + JS (Brotli) | measured each build; reported, not owned by content |
+| Download (zipped build, per platform) | **≤ 250 MB** |
 | Visible triangles (worst view, High) | ≤ 1.0 M |
 | Draw calls (worst view, High) | ≤ 400 |
 | Unique materials in level | ≤ 60 |
 | Texture memory | ≤ 384 MB |
 | Shadow-casting lights | 1 directional + 2 omni/spot |
 | Max texture size | 2048 (characters/hero props), 1024 default |
-| WASM heap peak | ≤ 1.5 GB |
+| RAM peak | ≤ 3 GB |
 | Concurrent 3D audio voices | 24 |
 
 CI fails the build when a budget is exceeded (size and texture checks automated; triangle/draw-call checks via the performance scene in §18.4).
 
 ### 17.3 Finished-art hero area
 
-Milestone 1 includes **one finished-art area** to prove that WebGL 2 visuals are good enough for the game, before content production is planned around them.
+Milestone 1 includes **one finished-art area** to prove that the visuals are good enough for the game, before content production is planned around them.
 
 | Item | Decision |
 |---|---|
@@ -937,20 +929,16 @@ Checkpoint_Reload                → state restored exactly
 
 Tests run with a fixed physics tick and seeded RNG for determinism.
 
-### 18.3 Browser tests (Playwright, CI on Chromium + Firefox)
+### 18.3 Exported-build checks
 
-- Page loads, Godot reports ready (`window.__lone_asset.ready === true` set via `JavaScriptBridge`).
-- No uncaught console errors during load and 30 s of auto-play.
-- Click-to-start transitions to gameplay.
-- Save → reload page → Continue restores the checkpoint (IndexedDB).
-- Tab hidden → game paused.
-
-Pointer lock and real GPU performance cannot be fully tested headless; they are covered by the manual checklist.
+- CI exports Windows and Linux builds on every pull request; an export failure fails the build.
+- Manual per release: both builds start from the zip, on Vulkan and on the OpenGL fallback (`--rendering-driver opengl3`); Save → quit → Continue restores the checkpoint.
+- Automated start-up checks of the exported binaries (run headless, wait for the "Ready" log line) are a later addition.
 
 ### 18.4 Performance tests
 
-- `tests/perf/perf_flythrough.tscn`: fixed camera path through the level with 3 guards in Combat, run for 60 s in the web build.
-- Reports average FPS, 1 % low, frame-time histogram, draw calls, primitives, memory, and AI/perception ms to `window.__lone_asset.perf`, which Playwright collects into a CI artifact.
+- `tests/perf/perf_flythrough.tscn`: fixed camera path through the level with 3 guards in Combat, run for 60 s in the exported build.
+- Reports average FPS, 1 % low, frame-time histogram, draw calls, primitives, memory, and AI/perception ms to a JSON file under `user://benchmarks/`.
 - GPU-dependent numbers are only meaningful on reference hardware (§19); CI tracks trends, runs on reference hardware gate the milestone (see §18.4.1).
 
 #### 18.4.1 Remote benchmark (friends' machines)
@@ -958,13 +946,13 @@ Pointer lock and real GPU performance cannot be fully tested headless; they are 
 Minimum-tier hardware is borrowed from friends, so the benchmark must run without the developer present:
 
 - Title screen → Settings → **Run benchmark**: plays `perf_flythrough` for 60 s at the minimum-tier settings (1080p, render scale 0.75, Medium).
-- Result screen shows pass/fail against §19 and a **Copy results** button that copies a JSON report: build ID, browser and version, GPU string (`WEBGL_debug_renderer_info` where available), OS, resolution, settings, average FPS, 1 % low, frame-time histogram, per-system ms, peak memory.
+- Result screen shows pass/fail against §19 and a **Copy results** button that copies a JSON report: build ID, GPU and driver (`RenderingServer.get_video_adapter_name()` / `_vendor()`), renderer (Vulkan or OpenGL fallback), OS, resolution, settings, average FPS, 1 % low, frame-time histogram, per-system ms, peak memory.
 - Friends paste the report into a message; reports are stored in `docs/benchmarks/`.
 - One benchmark round per work package from WP 8 onward, and a final round for acceptance.
 
 ### 18.5 Manual playtest checklist
 
-Pointer lock gain/loss on Chrome, Firefox, Edge; mouse feel at 60/144 Hz displays; audio unlock; fullscreen toggle; window resize; long session (30 min) memory stability; "feel" review notes (movement, gunplay, stealth readability).
+Mouse capture gain/loss (Esc, alt-tab) on Windows and Linux; mouse feel at 60/144 Hz displays; fullscreen toggle; window resize; long session (30 min) memory stability; "feel" review notes (movement, gunplay, stealth readability).
 
 ### 18.6 Solo playtest protocol
 
@@ -976,7 +964,7 @@ The developer is currently the only playtester, so playtests are made more objec
 - **Fresh-eyes checks**: play once with unfamiliar settings (different sensitivity/FOV, Medium preset) and once on the minimum-tier hardware.
 - **Detection log**: in recordings, each time a guard reaches Combat, note whether the cause was visible from the HUD/audio. Unexplained detections are bugs.
 - **Telemetry to a local file** (dev builds): detection events with cause, time to complete, deaths. Downloadable from the debug overlay.
-- Before Milestone 2: recruit 1–2 outside testers via a preview URL.
+- Before Milestone 2: recruit 1–2 outside testers via the `preview` release.
 
 ---
 
@@ -984,10 +972,10 @@ The developer is currently the only playtester, so playtests are made more objec
 
 ### 19.1 Reference hardware
 
-| Tier | Hardware | Browser | Target |
+| Tier | Hardware | OS | Target |
 |---|---|---|---|
-| Minimum | Laptop, integrated GPU (Intel Iris Xe / Radeon 680M class), 16 GB RAM | Chrome stable | 1080p, render scale 0.75, Medium preset: **60 FPS average, 1 % low ≥ 45** |
-| Recommended | Desktop, GTX 1660 / RX 6600 class | Chrome / Firefox stable | 1440p, High preset: **60 FPS, 1 % low ≥ 55** |
+| Minimum | Laptop, integrated GPU (Intel Iris Xe / Radeon 680M class), 16 GB RAM | Windows 10/11 | 1080p, render scale 0.75, Medium preset: **60 FPS average, 1 % low ≥ 45** |
+| Recommended | Desktop, GTX 1660 / RX 6600 class | Windows or Linux | 1440p, High preset: **60 FPS, 1 % low ≥ 55** |
 
 Minimum-tier runs are done on friends' laptops using the remote benchmark (§18.4.1).
 
@@ -1001,14 +989,14 @@ Minimum-tier runs are done on friends' laptops using the remote benchmark (§18.
 | Physics (Jolt) | 2.0 ms |
 | Audio | 0.5 ms |
 | Render CPU submission | 5.0 ms |
-| Headroom (browser, GC, spikes) | 5.1 ms |
+| Headroom (OS, spikes) | 5.1 ms |
 
 ### 19.3 Loading
 
 | Metric | Target |
 |---|---|
-| First visit, 50 Mbps | Playable ≤ 15 s |
-| Repeat visit (cached) | Playable ≤ 5 s |
+| Launch to title screen | ≤ 5 s |
+| New game to playable | ≤ 5 s |
 | Checkpoint reload | ≤ 2 s |
 
 ---
@@ -1041,7 +1029,6 @@ lone-asset/
 │   ├── audio/                     # bus layout, pools, occlusion
 │   ├── ui/                        # title, hud, pause, settings, end, debug
 │   ├── save_system/               # schema, migrations
-│   ├── platform/                  # web glue (JavaScriptBridge)
 │   └── levels/
 │       └── m1_compound/           # level scene, nav, light volumes, routes
 │
@@ -1058,13 +1045,11 @@ lone-asset/
 ├── content/                       # art + audio (LFS)
 ├── native/                        # GDExtension skeleton (C++, SConstruct)
 ├── addons/                        # gdUnit4 + other pinned addons
-├── web/                           # shell.html, loader CSS, hosting header config
 ├── tools/                         # export, compress, budget-check scripts
 └── tests/
     ├── unit/
     ├── scenarios/
     ├── perf/
-    └── browser/                   # Playwright specs
 ```
 
 ---
@@ -1099,21 +1084,21 @@ lone-asset/
 
 - Solo developer: trunk-based with short-lived branches; CI green before merge; self-review of the diff against the checklist in §21.5 before merging.
 - Conventional Commits.
-- Every pull request includes the preview URL and notes on how to test it in the browser.
+- Every pull request links its CI build artifacts and notes on how to test them.
 
 ### 21.5 Self-review checklist (before merge)
 
 - Diff re-read the next day for anything non-trivial.
 - Typed, no new warnings, no magic numbers outside Resources.
 - Tests added/updated; CI green.
-- Tried in the **web** preview build, not only the editor.
+- Tried in an **exported** build, not only the editor.
 - Debug overlay budgets unchanged or improved.
 
 ---
 
 ## 22. Work Breakdown and Order
 
-Each step ends with a web build on the preview URL.
+Work packages 1–12 ended with a web build on a preview URL; from the platform change on, each ends with downloadable Windows and Linux builds.
 
 | # | Work package | Depends on | Exit check |
 |---|---|---|---|
@@ -1137,13 +1122,13 @@ Each step ends with a web build on the preview URL.
 
 ## 23. Acceptance Criteria — Milestone 1
 
-Milestone 1 is complete when **all** of the following hold in the **deployed web build**:
+Milestone 1 is complete when **all** of the following hold in the **exported Windows and Linux builds**:
 
 **Platform**
-1. Loads and is playable in current stable Chrome, Edge and Firefox on desktop. (Safari is not a target.)
-2. Meets §19 performance targets on both reference tiers, and §17.2 download/memory budgets.
-3. Pointer lock, Esc-to-pause, resume, tab-hide pause and fullscreen work on all supported browsers.
-4. No uncaught errors in the browser console during a full mission playthrough.
+1. Starts and is playable on Windows 10/11 and Linux, on Vulkan and on the OpenGL fallback.
+2. Meets §19 performance targets on both reference tiers, and §17.2 size/memory budgets.
+3. Mouse capture, Esc-to-pause, resume, pause on focus loss and fullscreen work on both platforms.
+4. No script errors in the log during a full mission playthrough.
 
 **Movement and gunplay**
 5. Walk, sprint, crouch, lean and jump work with no getting stuck on the graybox geometry.
@@ -1163,10 +1148,10 @@ Milestone 1 is complete when **all** of the following hold in the **deployed web
 15. The M1 mission can be completed both fully undetected and via combat.
 16. Terminal hold interaction is interrupted by damage and resumes correctly.
 17. Binoculars zoom and tag guards; tags display for 60 s.
-18. A checkpoint survives a full page reload and browser restart, and restores mission, player, guards and doors.
+18. A checkpoint survives quitting and restarting the game, and restores mission, player, guards and doors.
 
 **Quality**
-19. All unit, scenario and browser tests pass in CI.
+19. All unit and scenario tests pass in CI, and both platforms export.
 20. Solo playtest protocol (§18.6) completed: all feel criteria rated 4/5 or better in two sessions at least 3 days apart, and every detection in the recorded sessions is explainable from the HUD and audio alone.
 21. The finished-art hero area meets the §17.3 visual and budget criteria on the minimum-tier hardware.
 
@@ -1177,17 +1162,15 @@ Milestone 1 is complete when **all** of the following hold in the **deployed web
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Single-threaded performance insufficient for AI + physics + rendering | Medium | High | Budgets from day 1, AI LOD, GDExtension path proven early |
-| Web audio: sample mode has no bus effects; Ogg/looping behaviour unverified | Medium | Medium | Occlusion uses pre-muffled WAV copies (§14); placeholders are WAV; test Ogg on the web before adopting it |
-| WebGL 2 visual quality feels dated | Medium | Medium | Strong art direction, baked lighting, post-processing; WebGPU later |
-| Pointer lock behaviour differs across browsers | Medium | Medium | Manual matrix each milestone; tolerant resume logic |
+| Integrated-GPU laptops struggle with Forward+ | Medium | Medium | Quality presets, render scale, OpenGL fallback; measured by the remote benchmark |
+| Unsigned builds scare testers (SmartScreen) | Medium | Low | Clear instructions in the release notes; code signing before a public release |
 | Developer is the only playtester (bias, blind spots) | High | Medium | Recorded sessions, 3-day gap between ratings, fresh-eyes checks (§18.6); recruit 1–2 outside testers before Milestone 2 |
 | Solo capacity for finished art and animation | High | Medium | Hero area kept small; CC0 textures, modular kit, procedural FP animation; invite art contributors after Milestone 1 |
 | A non-redistributable asset slips into the public repo | Medium | High | Licence ledger, `reuse lint` in CI, licence check before every import |
 | Name conflict with an existing game or trademark | Low | High | "Lone Asset" had no existing-game matches in an initial search; run formal trademark searches (USPTO, EUIPO, WIPO) before any release |
 | Hosting choice delayed | Medium | Medium | Provider-agnostic build; decide before WP 1 (§25.3) |
 | Download size creep | High | Medium | CI size budget fails builds |
-| IndexedDB eviction loses saves | Low | Medium | Persistence request, save export/import |
-| Godot version upgrade breaks web export | Low | Medium | Pinned version, upgrade only on branch with full test pass |
+| Godot version upgrade breaks an export | Low | Medium | Pinned version, upgrade only on branch with full test pass |
 
 ---
 
@@ -1196,11 +1179,11 @@ Milestone 1 is complete when **all** of the following hold in the **deployed web
 ### 25.1 Art direction — decided
 One finished-art hero area in Milestone 1; rest of the level is graybox. Details in §17.3.
 
-### 25.2 Safari — decided
-Safari is **not** a target for Milestone 1 or Milestone 2. Supported: current stable Chrome, Edge and Firefox on desktop. The HTML shell shows an "unsupported browser" note on Safari but does not block loading. Revisit before any public release.
+### 25.2 Platforms — decided (2026-11-02)
+Desktop only: Windows and Linux (x86_64). macOS when there is a tester for it (it needs signing and notarisation to run without warnings). The browser build is discontinued; see overview §36.
 
 ### 25.3 Hosting — decided
-**Cloudflare Pages**, deployed from GitHub Actions with Wrangler. `main` deploys to production; every other branch and pull request gets its own preview URL. Watch the 25 MiB per-file limit (§1.4).
+**GitHub Releases** (rolling `preview` pre-release from `main`) plus CI artifacts per pull request (§1.4). itch.io is an option for public releases. Cloudflare Pages was used until the platform change.
 
 ### 25.4 Playtesting — decided
 The developer is the only playtester for Milestone 1. Process in §18.6; acceptance item 20 updated accordingly. Recruit 1–2 outside testers before Milestone 2.

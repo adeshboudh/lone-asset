@@ -66,7 +66,7 @@ func test_bus_layout_has_all_buses_routed_correctly() -> void:
 
 
 func test_sounds_are_imported_uncompressed() -> void:
-	# Web builds play samples; uncompressed PCM is the safe format for sample playback.
+	# Uncompressed PCM: the placeholders are tiny and need no decoding.
 	var dir: DirAccess = DirAccess.open("res://content/audio/sfx")
 	var checked: int = 0
 	for file: String in dir.get_files():

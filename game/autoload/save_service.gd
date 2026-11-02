@@ -8,8 +8,6 @@ const TEMP_PATH: String = "user://saves/checkpoint.json.tmp"
 ## A checkpoint to apply once the next level is ready (see Game.level_ready).
 var pending: Dictionary = {}
 
-var _import_callback: JavaScriptObject
-var _persist_requested: bool = false
 
 
 func _ready() -> void:
@@ -66,7 +64,6 @@ func save_checkpoint() -> bool:
 	var ok: bool = _write(data)
 	if ok:
 		Log.info(&"save", "Checkpoint saved")
-		_request_persistent_storage()
 	return ok
 
 
@@ -93,31 +90,11 @@ func apply(data: Dictionary) -> void:
 	Mission.load_state(data.get("mission", {}), data.get("objectives", {}))
 
 
-## Hands the save to the browser as a download (web only).
-func export_to_browser() -> void:
-	var data: Dictionary = read_checkpoint()
-	if data.is_empty() or not Platform.is_web:
-		return
-	JavaScriptBridge.download_buffer(SaveRules.to_text(data).to_utf8_buffer(), "lone-asset-checkpoint.json", "application/json")
-
-
-## Opens the browser's file picker; `done` gets (success: bool, message: String). Web only.
-func import_from_browser(done: Callable) -> void:
-	if not Platform.is_web:
-		done.call(false, "Importing needs the web build.")
-		return
-	_import_callback = JavaScriptBridge.create_callback(func(args: Array) -> void: done.callv(import_text(str(args[0]))))
-	JavaScriptBridge.get_interface("window").__loneImportCallback = _import_callback
-	JavaScriptBridge.eval("""(function () {
-		var input = document.createElement('input');
-		input.type = 'file';
-		input.accept = '.json,application/json';
-		input.onchange = function () {
-			var file = input.files[0];
-			if (file) { file.text().then(function (text) { window.__loneImportCallback(text); }); }
-		};
-		input.click();
-	})()""")
+## Opens the folder holding the checkpoint in the system file manager, so players can back it up or
+## copy a save in.
+func open_save_folder() -> void:
+	DirAccess.make_dir_recursive_absolute(PATH.get_base_dir())
+	OS.shell_open(ProjectSettings.globalize_path(PATH.get_base_dir()))
 
 
 ## Validates and stores a save given as text. Returns [success, message].
@@ -127,7 +104,7 @@ func import_text(text: String) -> Array:
 	if problem.is_empty() and not _write(SaveRules.migrate(data)):
 		problem = "The save could not be written."
 	if problem.is_empty():
-		return [true, "Save imported. Use Continue on the title screen."]
+		return [true, "Save imported."]
 	return [false, problem]
 
 
@@ -143,11 +120,3 @@ func _write(data: Dictionary) -> bool:
 	if FileAccess.file_exists(PATH):
 		DirAccess.remove_absolute(PATH)
 	return DirAccess.rename_absolute(TEMP_PATH, PATH) == OK
-
-
-## Asks the browser not to evict our storage, once the first checkpoint exists (design §16.1).
-func _request_persistent_storage() -> void:
-	if _persist_requested or not Platform.is_web:
-		return
-	_persist_requested = true
-	JavaScriptBridge.eval("if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); }")

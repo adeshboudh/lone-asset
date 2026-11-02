@@ -161,5 +161,5 @@ common/max_physics_steps_per_frame=4
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method="forward_plus"
+rendering_device/fallback_to_opengl3=true

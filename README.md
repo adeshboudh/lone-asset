@@ -1,10 +1,19 @@
 # Lone Asset
 
-An open-source tactical stealth FPS that runs in the web browser (Godot 4, WebAssembly + WebGL 2).
+An open-source tactical stealth FPS for Windows and Linux, built with Godot 4.
 
 Observe, plan, infiltrate, complete the objective, extract. Stealth is systemic: guards react to light, stance, movement, sound and line of sight.
 
-> Status: Milestone 1 (core prototype), work package 8 — guards that investigate, search and fight.
+> Status: Milestone 1 (core prototype), work package 12 — checkpoints. The project moved from a browser build to desktop only on 2026-11-02.
+
+## Play
+
+Download the latest build from the [`preview` release](https://github.com/adeshboudh/lone-asset/releases/tag/preview):
+
+- **Windows:** unzip `LoneAsset-windows.zip` and run `LoneAsset.exe`. The build is not code-signed, so Windows SmartScreen may warn: choose *More info → Run anyway*.
+- **Linux:** unzip `LoneAsset-linux.zip` and run `./LoneAsset.x86_64`.
+
+Needs a GPU with Vulkan support for full graphics; older GPUs fall back to OpenGL 3.3 automatically.
 
 ## Design
 
@@ -34,14 +43,13 @@ Re-bake the movement course's navigation mesh after changing its geometry:
 godot --headless --path . -s res://dev/bake_navmesh.gd
 ```
 
-Web export:
+Desktop export (needs the Windows and Linux export templates for the pinned version):
 
 ```bash
-godot --headless --path . --export-release "Web" build/web/index.html
-python3 -m http.server --directory build/web 8000
+tools/ci/export_desktop.sh build
 ```
 
-Supported browsers: current Chrome, Edge and Firefox on desktop.
+Every pull request's CI run attaches Windows and Linux zips as build artifacts; every push to `main` refreshes the `preview` release.
 
 ## Licence
 

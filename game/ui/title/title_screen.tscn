@@ -58,7 +58,7 @@ custom_minimum_size = Vector2(240, 48)
 layout_mode = 2
 size_flags_horizontal = 4
 action_mode = 0
-text = "Click to play"
+text = "New game"
 
 [node name="SettingsButton" type="Button" parent="Center/Box"]
 unique_name_in_owner = true

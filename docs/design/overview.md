@@ -1,15 +1,15 @@
 # Lone Asset — Modern Tactical Stealth FPS
-## Project Handoff & Development Summary (Web / WebAssembly Edition)
+## Project Handoff & Development Summary (Desktop Edition)
 
 ### 1. Project Objective
 
-Build a modern tactical stealth FPS inspired by the gameplay philosophy of classic covert-operations shooters, delivered in the **web browser via WebAssembly (WASM)**, using modern game-engine technology, AI, animation, graphics, physics, audio, and software-engineering practices.
+Build a modern tactical stealth FPS inspired by the gameplay philosophy of classic covert-operations shooters, delivered as a **desktop game for Windows and Linux**, using modern game-engine technology, AI, animation, graphics, physics, audio, and software-engineering practices.
 
 The project name is:
 
 **Lone Asset**
 
-The game must run in a desktop web browser with no install and no plugin. The player opens a URL and plays.
+The player downloads a zip, unzips it and runs the game; no installer. (Milestone 1 started as a browser game; on 2026-11-02 the project moved to desktop only for better graphics and performance. See Section 36.)
 
 This document describes the technical and gameplay direction only. Story, characters, narrative, dialogue, and specific missions are intentionally excluded.
 
@@ -89,7 +89,7 @@ Example:
 80–100   Combat
 ```
 
-Note for the web build: lighting-based visibility must not depend on reading back GPU lighting (expensive and unreliable in WebGL). Use designer-placed light volumes / light probes sampled on the CPU to compute a player "light level".
+Lighting-based visibility must not depend on reading back GPU lighting (expensive and a frame late). Use designer-placed light volumes / light probes sampled on the CPU to compute a player "light level".
 
 ---
 
@@ -132,7 +132,7 @@ Player tools may include:
 
 The player should be able to learn about an environment before committing to an approach.
 
-Night vision and thermal are implemented as full-screen post-process shaders plus per-material "heat" parameters, which work within the WebGL 2 renderer.
+Night vision and thermal are implemented as full-screen post-process shaders plus per-material "heat" parameters, which work on every renderer including the OpenGL fallback.
 
 ---
 
@@ -246,9 +246,9 @@ AI should detect:
 - suspicious behavior
 - environmental changes
 
-## Web performance budget
+## Performance budget
 
-The browser build may run single-threaded, so AI must be time-sliced:
+AI must stay cheap enough for minimum-spec laptops, so it is time-sliced:
 
 - perception raycasts are spread across frames (round-robin, fixed budget per frame)
 - distant NPCs update at reduced frequency (AI LOD)
@@ -325,19 +325,19 @@ LLMs should not be required for real-time NPC decision making.
 
 # 7. Game Engine
 
-## Godot 4 (Web export)
+## Godot 4 (desktop export)
 
 Primary engine:
 
-**Godot 4.x**, exported to the web. The engine itself is compiled to **WebAssembly** (via Emscripten) and renders through **WebGL 2**.
+**Godot 4.x**, exported as native Windows and Linux applications (macOS later if there are testers for it).
 
 Why Godot for this project:
 
 - full editor for level design (critical for multi-route tactical maps)
-- engine runs as WASM in the browser; no plugin
-- open source (MIT), no royalties, engine source available for fixes
+- open source (MIT), no royalties or fees, engine source available for fixes
 - text-based scene/resource formats that work well with Git
-- native C++ extension path (GDExtension) that also compiles to WASM
+- the Forward+ renderer (Vulkan / Direct3D 12) covers the visual target (Section 9)
+- native C++ extension path (GDExtension) for hot paths
 
 Primary gameplay language:
 
@@ -345,89 +345,73 @@ Primary gameplay language:
 
 Performance-critical systems:
 
-**C++ via GDExtension**, compiled to WASM with Emscripten (e.g. perception queries, ballistics, AI tactical queries) — only where profiling shows GDScript is the bottleneck.
+**C++ via GDExtension** (e.g. perception queries, ballistics, AI tactical queries) — only where profiling shows GDScript is the bottleneck.
 
-Important constraint: **Godot C# projects cannot currently be exported to the web.** Do not use C# for this project.
+C# would now be possible (it was ruled out while the game targeted the web), but the code base is typed GDScript and stays that way.
 
 Alternatives considered:
 
-| Option | Reason not chosen as primary |
+| Option | Reason not chosen |
 |---|---|
-| Unreal Engine 5 | No official web export since UE4.24; Nanite/Lumen unavailable in browsers |
-| Unity 6 Web | Proprietary, large builds, licensing; viable fallback |
-| Rust + Bevy | Excellent WASM/WebGPU support, but no mature level editor |
-| Three.js / Babylon.js + WASM modules | Very web-native, but all engine tooling must be built in-house |
+| Unreal Engine 5 | Best photorealism, but a full rewrite (C++/Blueprints), heavy tooling, not open source; its strengths (Nanite, Lumen, MetaHuman) need content a zero-budget team cannot make |
+| Unity 6 | Full rewrite in C#, proprietary licence with a history of sudden changes |
+| Rust + Bevy | No mature level editor |
 
 Use Godot's existing systems wherever practical instead of reinventing engine functionality.
 
 ---
 
-# 8. Godot / Web Technology Stack
+# 8. Godot Technology Stack
 
 ```text
-Godot 4.x (Web export, WASM + WebGL 2)
+Godot 4.x (Windows / Linux export)
 │
 ├── Typed GDScript
-├── GDExtension (C++ → WASM) for hot paths
-├── Input Map + Pointer Lock (mouse capture)
+├── GDExtension (C++) for hot paths
+├── Input Map + mouse capture
 ├── Custom Ability/Action framework (data-driven Resources)
 ├── Custom Behavior Tree / State Machine (or a vetted addon)
 ├── Custom Tactical Query system (EQS-equivalent)
 ├── NavigationServer3D (navmesh, avoidance)
 ├── Chunked level streaming (resource packs)
-├── Compatibility renderer (WebGL 2)
-├── LightmapGI (baked lighting)
+├── Forward+ renderer (Vulkan / Direct3D 12), OpenGL 3.3 fallback
+├── LightmapGI (baked lighting), SDFGI / VoxelGI where affordable
 ├── GPUParticles3D / CPUParticles3D
-├── Audio buses + AudioStreamPlayer3D (Web Audio backend)
-├── Jolt Physics (built in since Godot 4.4) / Godot Physics
+├── Audio buses + AudioStreamPlayer3D
+├── Jolt Physics (built in since Godot 4.4)
 ├── AnimationTree + blend spaces
 ├── SkeletonModifier3D-based IK
-└── High-level Multiplayer API (WebSocket / WebRTC peers)
-```
-
-Browser platform APIs used:
-
-```text
-WebAssembly
-WebGL 2
-Web Audio API
-Pointer Lock API
-Fullscreen API
-Gamepad API
-IndexedDB (save data, via Godot user://)
-Fetch / HTTP (resource pack streaming)
-WebSocket / WebRTC (multiplayer, later phase)
+└── High-level Multiplayer API (ENet over UDP, later phase)
 ```
 
 ---
 
 # 9. Graphics
 
-Target: good-looking, readable, stylised-realistic visuals that hold **60 FPS on a mid-range laptop** in a browser.
+Target: good-looking, readable, stylised-realistic visuals that hold **60 FPS on a mid-range laptop**.
 
-The web build uses Godot's **Compatibility renderer (WebGL 2)**. The Forward+ and Mobile renderers, SDFGI, VoxelGI, volumetric fog and other high-end features are **not available** on the web.
+The game uses Godot's **Forward+ renderer** (Vulkan on Linux and Windows, Direct3D 12 available on Windows). Machines without Vulkan support fall back to the OpenGL 3.3 Compatibility renderer automatically (`rendering_device/fallback_to_opengl3`), with fewer effects.
 
 Technology:
 
 ```text
-WebGL 2 (Compatibility renderer)
-Baked lightmaps (LightmapGI)
+Forward+ renderer
+Baked lightmaps (LightmapGI) as the base lighting
+SDFGI / VoxelGI, volumetric fog, SSAO / SSIL / SSR (quality presets decide)
 Reflection probes
 Mesh LODs + visibility ranges (HLOD)
 Occlusion culling (baked occluders)
-KTX2 / Basis Universal compressed textures (ETC2/ASTC/S3TC targets)
-Dynamic resolution / render scale
+VRAM-compressed textures (BPTC / S3TC)
+TAA / FSR 2 upscaling, render scale
 Post-process shaders (night vision, thermal, damage)
 ```
 
 Rules:
 
-- prefer baked lighting; limit real-time shadow-casting lights
+- prefer baked lighting for the static world; limit real-time shadow-casting lights
 - strict per-level budgets for triangles, draw calls, materials and texture memory
 - texture atlasing and material sharing to reduce draw calls
-- quality presets (Low / Medium / High) selectable at runtime
-
-Future option: when Godot ships a WebGPU backend, evaluate migrating for better performance. Do not plan Milestone 1 around it.
+- quality presets (Low / Medium / High) selectable at runtime; Low must look acceptable on the OpenGL fallback
 
 Performance must be treated as an engineering requirement rather than something addressed at the end.
 
@@ -515,7 +499,7 @@ Penetration / Ricochet
 Damage
 ```
 
-Implementation: projectiles are simulated as stepped raycasts (no physics body per bullet) to keep cost low in WASM. Candidate for C++ GDExtension if profiling requires it.
+Implementation: projectiles are simulated as stepped raycasts (no physics body per bullet) to keep cost low. Candidate for C++ GDExtension if profiling requires it.
 
 Materials can define behavior for:
 
@@ -594,7 +578,7 @@ Constraints should include:
 - detection risk
 - signal interference
 
-Web note: the drone view switches the active camera rather than rendering a second simultaneous viewport, to avoid doubling GPU cost.
+Performance note: the drone view switches the active camera rather than rendering a second simultaneous viewport, to avoid doubling GPU cost.
 
 ---
 
@@ -707,7 +691,7 @@ Reduced enemy coordination
 
 The system should maintain persistent operational state without requiring an enormous RPG-style branching narrative.
 
-World state is serialised to `user://` (backed by IndexedDB in the browser). See Section 23.
+World state is serialised to `user://` (the per-user application data folder). See Section 23.
 
 ---
 
@@ -739,13 +723,13 @@ Levels should include:
 - tactical chokepoints
 - extraction options
 
-Web constraint: levels must be designed with sight-line blockers and zone boundaries that allow occlusion culling and chunk streaming to work (see Section 20).
+Levels must be designed with sight-line blockers and zone boundaries that allow occlusion culling and chunk streaming to work (see Section 20).
 
 ---
 
 # 20. World Technology
 
-There is no World Partition equivalent on the web, so large environments use a custom **chunk streaming** system:
+Godot has no World Partition equivalent, so large environments use a custom **chunk streaming** system:
 
 ```text
 Level
@@ -754,7 +738,6 @@ Level
 └── Chunks (geometry, props, lighting) loaded by distance / zone
         │
         ├── packaged as separate resource packs (.pck)
-        ├── downloaded on demand over HTTP
         └── loaded with background resource loading
 ```
 
@@ -777,7 +760,7 @@ Potential environment categories:
 
 The campaign should deliberately vary environments to prevent visual and gameplay repetition.
 
-Dense vegetation (forests) is expensive in WebGL; use MultiMeshInstance3D, impostors and aggressive visibility ranges.
+Dense vegetation (forests) is expensive; use MultiMeshInstance3D, impostors and aggressive visibility ranges.
 
 ---
 
@@ -795,7 +778,7 @@ Potential vehicles:
 - helicopters
 - utility vehicles
 
-Vehicles should initially remain secondary to the core infantry/stealth experience, and are out of scope for the first web milestones.
+Vehicles should initially remain secondary to the core infantry/stealth experience, and are out of scope for the first milestones.
 
 ---
 
@@ -803,7 +786,7 @@ Vehicles should initially remain secondary to the core infantry/stealth experien
 
 Use:
 
-**Godot audio buses + AudioStreamPlayer3D**, running on the browser's **Web Audio API** backend.
+**Godot audio buses + AudioStreamPlayer3D**.
 
 Audio should communicate gameplay information.
 
@@ -820,11 +803,10 @@ Important systems:
 - distance
 - direction
 
-Web constraints:
+Notes:
 
-- browsers block audio until the first user interaction; the start screen must require a click/keypress
-- in single-threaded web builds Godot uses Web Audio "sample" playback, where some bus effects are limited — validate the occlusion/reverb approach in Milestone 1
-- use Ogg Vorbis for compressed audio to keep download size small
+- Milestone 1 muffles sounds behind walls with pre-filtered copies (a web-era workaround). On desktop, bus effects (low-pass, reverb) work and can replace it.
+- use Ogg Vorbis for compressed audio to keep the download small
 
 Sound should contribute directly to stealth and situational awareness. The **gameplay** sound-propagation system (what AI hears) is separate from audio playback and does not depend on the audio backend.
 
@@ -832,38 +814,25 @@ Sound should contribute directly to stealth and situational awareness. The **gam
 
 # 23. Backend & Hosting
 
-For the initial single-player game, backend requirements should remain minimal.
-
-Core:
+For the single-player game there is no backend.
 
 ```text
-Static hosting + CDN (the game itself)
-Local Save (IndexedDB via Godot user://)
-Settings (IndexedDB)
-Optional Cloud Save
+Game builds: GitHub Releases (a rolling "preview" pre-release from main; tagged releases later),
+             optionally itch.io
+Local save:  files under Godot user:// (per-user application data folder)
+Settings:    user://settings.cfg
+Optional:    cloud save (later)
 ```
 
-Static hosting requirements:
+Every pull request's CI run attaches Windows and Linux zips as build artifacts (downloadable when signed in to GitHub). The `preview` release needs no login, so outside testers use that.
 
-```text
-Correct MIME type: application/wasm
-Brotli/gzip compression for .wasm, .pck, .js
-Long-lived cache headers with hashed file names
-HTTPS
-Optional: Cross-Origin-Opener-Policy: same-origin
-          Cross-Origin-Embedder-Policy: require-corp
-          (only needed if the thread-enabled web export is used)
-```
-
-Default to the **single-threaded web export** (supported since Godot 4.3) so the game runs on any static host and embeds on game portals without COOP/COEP headers. Evaluate the threaded export only if profiling shows a clear win.
-
-Browser storage can be evicted by the browser; request persistent storage (`navigator.storage.persist()`) and offer save export/import or cloud save.
+Unsigned builds trigger warnings (Windows SmartScreen, "unknown publisher"). Code signing costs money, so testers are told to choose "More info → Run anyway"; revisit before a public release.
 
 If multiplayer/co-op is added:
 
 ```text
-Browser Client
-     ↓ WebSocket / WebRTC
+Desktop Client
+     ↓ ENet (UDP)
 Dedicated Server (headless Godot, Linux)
      ↓
 Backend Services
@@ -897,16 +866,12 @@ Multiplayer/co-op is a possible later phase.
 Architecture:
 
 ```text
-Client A (browser) ─────┐
-Client B (browser) ─────┼── Dedicated Server (headless Godot)
-Client C (browser) ─────┘
+Client A ─────┐
+Client B ─────┼── Dedicated Server (headless Godot)
+Client C ─────┘
 ```
 
-Browsers cannot open raw UDP sockets or host servers, so transport is:
-
-- **WebSocketMultiplayerPeer** (simplest, TCP, higher latency under packet loss), or
-- **WebRTCMultiplayerPeer** (unreliable/unordered channels, better for fast-paced play; requires signalling server)
-- WebTransport may be evaluated later
+Transport: **ENetMultiplayerPeer** (UDP, reliable and unreliable channels), Godot's default.
 
 Server-authoritative systems should control:
 
@@ -932,7 +897,7 @@ Recommended content pipeline:
 - Godot 4.x editor (pinned version for the whole team)
 - VS Code or JetBrains Rider with GDScript support
 - Emscripten SDK (version matching the Godot export templates) for GDExtension builds
-- Browser DevTools (Chrome/Firefox performance and memory profilers)
+- RenderDoc (GPU frame captures)
 
 ### 3D
 
@@ -955,7 +920,7 @@ All tools are free; open-source tools preferred.
 ### Environment
 
 - Blender geometry nodes (procedural props/terrain)
-- Terrain addon for Godot (e.g. Terrain3D) — verify web compatibility before adoption
+- Terrain addon for Godot (e.g. Terrain3D)
 
 ### Animation
 
@@ -1005,13 +970,12 @@ lone-asset/
 │   ├── vfx/
 │   └── audio/
 │
-├── native/                  # GDExtension C++ source (compiled to WASM + desktop)
+├── native/                  # GDExtension C++ source
 │   ├── src/
 │   └── SConstruct
 │
 ├── addons/                  # Third-party Godot addons (pinned versions)
 │
-├── web/                     # Custom HTML shell, loader UI, hosting headers config
 │
 ├── tools/                   # Build, packing, asset-validation scripts
 │
@@ -1040,28 +1004,21 @@ Do not place large binary assets in Git without LFS.
 
 # 28. CI/CD
 
-Use automated builds.
-
-Potential pipeline:
+Pipeline (GitHub Actions):
 
 ```text
 Developer Commit
        ↓
 GitHub
        ↓
-CI (GitHub Actions)
-       ├── Build GDExtension (Emscripten → WASM, plus Linux for server/tests)
-       ├── Static checks (typed GDScript, gdlint/format)
-       ├── Unit Tests (headless Godot)
-       ├── Functional / AI Tests (headless Godot)
-       ├── Asset budget validation (size, triangles, textures)
-       ├── Web Export (headless, release template)
-       ├── Size report (wasm + pck, compressed)
-       ├── Browser smoke test (Playwright: loads, renders, no console errors)
-       └── Deploy preview build to static host / CDN
+CI
+       ├── Licence check (REUSE)
+       ├── Smoke test and unit / scenario tests (headless Godot, GdUnit4)
+       ├── Asset budget validation (later)
+       ├── Windows + Linux export (headless, release templates), zipped
+       ├── Build artifacts on every pull request
+       └── Rolling "preview" GitHub release on every push to main
 ```
-
-Every pull request should produce a playable preview URL.
 
 For dedicated servers (later phase):
 
@@ -1125,14 +1082,13 @@ NPC loses target
 NPC returns to patrol
 ```
 
-## Browser Tests
+## Platform Tests (manual until automated)
 
 ```text
-Game loads in Chrome, Edge, Firefox (desktop)
-Pointer lock acquire / release (Esc) handled correctly
-Audio starts after first user interaction
-Save → reload page → load works (IndexedDB)
-Tab hidden / resumed does not break simulation
+Windows and Linux builds start from the zip
+Vulkan and OpenGL-fallback renderers both start
+Mouse capture / Esc / alt-tab handled correctly
+Save → quit → Continue works
 Window resize / fullscreen toggle
 ```
 
@@ -1145,11 +1101,10 @@ FPS
 Frame Time
 CPU (script / physics / AI) Time
 GPU Time
-WASM heap memory
-JS heap memory
+Memory (RAM, VRAM)
 Draw Calls
 AI Cost
-Initial download size (compressed)
+Download size (zip)
 Time to first playable frame
 Network Bandwidth (multiplayer phase)
 ```
@@ -1164,7 +1119,7 @@ Do not attempt to build the complete game immediately.
 
 The project must be developed through progressively larger validated milestones.
 
-Validate in the **browser from day one**. A feature is not "done" when it works in the editor; it is done when it works in the web export on reference hardware.
+Validate in **exported builds from day one**. A feature is not "done" when it works in the editor; it is done when it works in the exported build on reference hardware.
 
 ---
 
@@ -1187,14 +1142,14 @@ Basic Stealth
 +
 Basic Environment
 +
-Web export deployed to a URL
+Windows + Linux builds from CI
 ```
 
 Goal:
 
-**Prove that movement, shooting and stealth feel good — in the browser.**
+**Prove that movement, shooting and stealth feel good.**
 
-Also prove the web pipeline: export, compression, hosting, pointer lock, audio unlock, save to IndexedDB, and performance on reference hardware.
+Also prove the pipeline: CI exports, downloadable builds, saving, and performance on reference hardware.
 
 ---
 
@@ -1286,7 +1241,7 @@ Production includes:
 - objectives
 - cinematics
 - mission scripting
-- QA (including cross-browser QA)
+- QA (including Windows / Linux and GPU-vendor coverage)
 
 ---
 
@@ -1296,9 +1251,9 @@ The project should initially target:
 
 ### Single-player
 
-### Desktop web browsers (Chrome, Edge, Firefox; Safari not targeted before Milestone 3)
+### Desktop: Windows 10/11 and Linux (x86_64); macOS later
 
-### Godot 4 Web export (WASM + WebGL 2)
+### Godot 4 desktop export (Forward+ renderer, OpenGL fallback)
 
 ### Keyboard + mouse (gamepad optional)
 
@@ -1306,28 +1261,26 @@ The project should initially target:
 
 ### One polished vertical-slice mission
 
-Out of scope for the first milestones: mobile browsers, touch controls, multiplayer, native desktop/console builds, WebGPU, large-scale procedural generation, advanced online infrastructure, vehicles.
-
-Note: because the game is built in Godot, native desktop builds (Windows/Linux/macOS) can be added later from the same project at low cost.
+Out of scope for the first milestones: mobile, consoles, web builds, multiplayer, large-scale procedural generation, advanced online infrastructure, vehicles.
 
 ---
 
-# 36. Browser Platform Constraints
+# 36. Platform Decision
 
-These constraints shape every technical decision:
+Milestone 1's first twelve work packages were built for the browser (WebAssembly + WebGL 2). On **2026-11-02** the project moved to **desktop only**:
 
-| Constraint | Impact | Mitigation |
-|---|---|---|
-| WebGL 2 only (no WebGPU in Godot yet) | Lower GPU feature set | Baked lighting, LODs, Compatibility renderer budgets |
-| WASM 32-bit memory (max 4 GB, practical ~2 GB) | Limits loaded content | Chunk streaming, texture compression, memory budgets |
-| Single-threaded by default | AI/physics/streaming share one thread | Time-slicing, AI LOD, GDExtension hot paths |
-| Download size | Load time, player drop-off | Brotli, KTX2, Ogg, split resource packs, preload screen |
-| Audio autoplay policy | No sound before interaction | Click-to-start screen |
-| Pointer Lock / Esc behaviour | Esc always releases the mouse | Pause menu on pointer-lock loss; don't bind Esc to gameplay |
-| Browser shortcuts (Ctrl+W, Ctrl+T, F5) | Cannot be overridden reliably | Avoid Ctrl-based bindings; confirm-on-leave prompt |
-| Storage eviction | Saves may be lost | `navigator.storage.persist()`, save export, cloud save |
-| Tab backgrounding throttles timers | Simulation pauses | Auto-pause when tab hidden |
-| GPU/driver variance across browsers | Visual bugs, perf variance | Cross-browser CI smoke tests, quality presets |
+| Browser limitation met | Desktop |
+|---|---|
+| WebGL 2 Compatibility renderer: no real-time GI, volumetric fog, SSR; fewer lights | Forward+ renderer |
+| Single-threaded engine and audio "sample" mode (no bus effects) | Multi-threaded; full audio buses |
+| Pointer-lock rules (click to capture, Esc cooldown) | Normal mouse capture |
+| Storage the browser may evict | Normal files |
+| 25 MiB per-file hosting limit, download size pressure | Zip download of any size |
+| Roughly 1.5–3x slower than native | Native speed |
+
+What was given up: play-from-a-link with no install, and per-PR preview URLs. Testers now download a zip from GitHub Releases.
+
+The game code was unaffected: only the renderer setting, export presets, CI, and the small amount of browser glue (test hooks, save export/import through the browser) changed.
 
 ---
 
@@ -1335,69 +1288,38 @@ These constraints shape every technical decision:
 
 | Category | Technology |
 |---|---|
-| Platform | Desktop web browser |
-| Runtime | WebAssembly (Emscripten) + WebGL 2 |
-| Engine | Godot 4.x (Web export) |
+| Platform | Desktop: Windows, Linux (macOS later) |
+| Engine | Godot 4.x |
 | Main Language | Typed GDScript |
-| Native / Hot Paths | C++ via GDExtension (compiled to WASM) |
+| Native / Hot Paths | C++ via GDExtension |
 | AI | Custom Behavior Tree / State Machine + Tactical Queries |
 | Navigation | Godot NavigationServer3D |
-| Rendering | Compatibility renderer, LightmapGI, LODs, occlusion culling |
-| Textures | KTX2 / Basis Universal |
+| Rendering | Forward+ (Vulkan / D3D12), OpenGL 3.3 fallback, LightmapGI, LODs, occlusion culling |
+| Textures | VRAM-compressed (BPTC / S3TC) |
 | Animation | AnimationTree + blend spaces + SkeletonModifier3D IK |
-| Physics | Jolt (built in) / Godot Physics |
+| Physics | Jolt (built in) |
 | VFX | GPUParticles3D / CPUParticles3D + shaders |
-| Audio | Godot audio buses on Web Audio API |
-| Save | IndexedDB (Godot `user://`) |
-| Streaming | Split resource packs (.pck) over HTTP |
+| Audio | Godot audio buses |
+| Save | Files under Godot `user://` |
+| Streaming | Split resource packs (.pck) |
 | 3D | Blender (glTF 2.0) |
 | Sculpting | Blender |
 | Texturing | Material Maker / Blender / Krita |
 | Licence | Code: MIT; original assets: CC BY 4.0; third-party assets: their own (tracked) |
-| Testing | GdUnit4 / GUT + Playwright |
+| Testing | GdUnit4 |
 | Version Control | Git + Git LFS |
 | CI/CD | GitHub Actions |
-| Hosting | Static host + CDN (Brotli, HTTPS) |
+| Distribution | GitHub Releases (optionally itch.io) |
 | Backend (later) | Node.js + TypeScript + Fastify |
 | Database (later) | PostgreSQL |
 | Cache (later) | Redis |
 | Containers (later) | Docker |
-| Multiplayer (later) | Headless Godot server + WebSocket / WebRTC |
-| Cloud | AWS / Azure / GCP / Cloudflare |
+| Multiplayer (later) | Headless Godot server + ENet |
 
 ---
 
 # 38. Immediate Next Step
 
-Do **not** start implementing the entire game.
+The Milestone 1 technical design ([m1-technical-design.md](m1-technical-design.md)) is written and being implemented work package by work package. The implementation stays **incremental, testable, modular, data-driven and production-oriented**.
 
-The next task is to produce a detailed **Technical Design Document for Milestone 1 (Web)**, covering:
-
-1. Godot project setup and pinned engine/export-template versions
-2. Web export configuration (single-threaded, compression, HTML shell, hosting headers)
-3. Code module structure (GDScript + GDExtension boundary)
-4. Player architecture
-5. Character controller (including pointer lock handling)
-6. Weapon framework
-7. Damage system
-8. AI architecture
-9. Perception system (with per-frame budget)
-10. Stealth/suspicion system (including CPU-side light level)
-11. Navigation
-12. Mission/objective framework
-13. Interaction system
-14. Equipment framework
-15. Basic UI (loading screen, click-to-start, HUD, pause)
-16. Save system (IndexedDB, persistence request)
-17. Asset pipeline and budgets (glTF, KTX2, Ogg, download size)
-18. Test strategy (headless + browser)
-19. Development folder structure
-20. Coding conventions
-21. Performance requirements on reference hardware
-22. Acceptance criteria for the vertical slice
-
-The implementation should be **incremental, testable, modular, data-driven, production-oriented, and browser-first**.
-
-The primary goal is not to produce a large amount of code.
-
-The primary goal is to establish a strong gameplay foundation that can scale from a browser prototype into a complete tactical FPS.
+The primary goal is not to produce a large amount of code. It is to establish a strong gameplay foundation that can scale from a prototype into a complete tactical FPS.

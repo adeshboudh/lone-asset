@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  web:
-    name: Lint, test and export web build
+  build:
+    name: Lint, test and export desktop builds
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -29,13 +29,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/godot-ci
-          key: godot-${{ steps.engine.outputs.version }}-web
+          key: godot-${{ steps.engine.outputs.version }}-desktop
 
       - name: Install Godot ${{ steps.engine.outputs.version }}
         run: tools/ci/install_godot.sh "${{ steps.engine.outputs.version }}"
-
-      - name: Install compression tools
-        run: sudo apt-get update -q && sudo apt-get install -y -q brotli
 
       - name: Import project
         run: godot --headless --path . --import
@@ -58,59 +55,46 @@ jobs:
       - name: Stamp build ID
         run: tools/ci/stamp_version.sh "$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
 
-      - name: Export web build
-        run: |
-          mkdir -p build/web
-          godot --headless --path . --export-release "Web" build/web/index.html
-          test -f build/web/index.wasm
+      - name: Export Windows and Linux builds
+        run: tools/ci/export_desktop.sh build | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Compress and report size
-        run: tools/ci/compress_web.sh build/web | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - name: Prepare Cloudflare Pages site
-        run: tools/ci/prepare_site.sh build/web build/site
-
-      - name: Check Cloudflare Pages file size limit
-        run: tools/ci/check_file_sizes.sh build/site
-
-      - name: Upload site
+      - name: Upload Windows build
         uses: actions/upload-artifact@v5
         with:
-          name: web-site-${{ github.sha }}
-          path: build/site
+          name: LoneAsset-windows-${{ github.sha }}
+          path: build/LoneAsset-windows.zip
+          compression-level: 0
           retention-days: 14
 
-  deploy:
-    name: Deploy to Cloudflare Pages
-    needs: web
-    # Fork pull requests have no access to secrets.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+      - name: Upload Linux build
+        uses: actions/upload-artifact@v5
+        with:
+          name: LoneAsset-linux-${{ github.sha }}
+          path: build/LoneAsset-linux.zip
+          compression-level: 0
+          retention-days: 14
+
+  preview-release:
+    name: Publish preview release
+    needs: build
+    # Every push to main replaces the public "preview" pre-release, which needs no GitHub login to download.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
-      deployments: write
+      contents: write
     env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/download-artifact@v5
         with:
-          name: web-site-${{ github.sha }}
-          path: build/site
+          pattern: LoneAsset-*-${{ github.sha }}
+          merge-multiple: true
+          path: build
 
-      - name: Deploy
-        id: deploy
-        if: env.CLOUDFLARE_API_TOKEN != ''
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/site --project-name=lone-asset --branch=${{ github.head_ref || github.ref_name }} --commit-hash=${{ github.sha }}
-
-      - name: Report URL
-        if: steps.deploy.outcome == 'success'
-        run: echo "Deployed to ${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Skipped (no Cloudflare secrets)
-        if: env.CLOUDFLARE_API_TOKEN == ''
-        run: echo "CLOUDFLARE_API_TOKEN not set; deploy skipped." >> "$GITHUB_STEP_SUMMARY"
+      - name: Replace the preview release
+        run: |
+          gh release delete preview --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          gh release create preview build/LoneAsset-windows.zip build/LoneAsset-linux.zip \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "Preview build (${GITHUB_SHA::7})" \
+            --notes "Latest build of main. Windows: unzip and run LoneAsset.exe. Linux: unzip, then run ./LoneAsset.x86_64."

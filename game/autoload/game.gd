@@ -3,8 +3,8 @@ extends Node
 ## The scene tree is paused in every state except PLAYING and TITLE.
 ##
 ## Mouse capture rules (design §4.3):
-## - capture is only requested from a click (browsers reject it otherwise);
-## - PAUSED -> PLAYING only happens once the browser confirms the capture;
+## - capture is requested from a click or key press;
+## - PAUSED -> PLAYING only happens once the capture is confirmed;
 ## - losing the capture while playing (Esc, alt-tab, tab hidden) pauses the game.
 
 signal state_changed(old_state: GameStateMachine.State, new_state: GameStateMachine.State)
@@ -120,7 +120,7 @@ func pause() -> void:
 		_machine.transition(GameStateMachine.State.PAUSED)
 
 
-## Requests mouse capture; the game resumes when the browser confirms it.
+## Requests mouse capture; the game resumes once it is confirmed.
 func resume() -> void:
 	if state == GameStateMachine.State.PAUSED:
 		Platform.capture_mouse()
@@ -148,7 +148,6 @@ func _on_state_changed(old_state: GameStateMachine.State, new_state: GameStateMa
 
 	var name_text: String = GameStateMachine.state_name(new_state)
 	Log.info(&"game", "%s -> %s" % [GameStateMachine.state_name(old_state), name_text])
-	Platform.set_test_hook("state", name_text)
 	state_changed.emit(old_state, new_state)
 
 

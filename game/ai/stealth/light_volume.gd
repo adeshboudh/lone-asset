@@ -1,7 +1,7 @@
 class_name LightVolume
 extends Area3D
 ## Designer-placed box of authored light (design §9.1): the stealth system cannot read GPU lighting
-## cheaply on the web, so light level is data. Overlapping volumes: highest priority wins.
+## cheaply, so light level is data. Overlapping volumes: highest priority wins.
 
 @export_range(0.0, 1.0) var light_level: float = 0.5
 @export var light_priority: int = 0

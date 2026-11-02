@@ -2,7 +2,7 @@ extends Node
 ## Plays sound effects (design §22): pooled players (at most 24 positional voices), buses from
 ## game/audio/default_bus_layout.tres, and wall occlusion for positional sounds.
 ##
-## Web builds play samples, which cannot use bus effects, so occlusion swaps in a pre-muffled copy of
+## Occlusion swaps in a pre-muffled copy of
 ## the sound and lowers its volume instead of low-pass filtering. Gameplay noise (what AI hears) is
 ## separate: see NoiseSystem.
 

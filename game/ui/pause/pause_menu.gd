@@ -1,6 +1,6 @@
 class_name PauseMenu
 extends CanvasLayer
-## Pause overlay. Resume asks Game to re-capture the mouse; the game unpauses once the browser grants it.
+## Pause overlay. Resume asks Game to re-capture the mouse; the game unpauses once the capture is confirmed.
 
 signal resume_requested
 signal quit_requested
@@ -44,6 +44,6 @@ func close() -> void:
 	visible = false
 
 
-## Shown when the browser refused the mouse capture, e.g. clicking Resume right after pressing Esc.
+## Shown when the mouse capture was refused.
 func show_capture_hint() -> void:
 	_capture_hint.visible = true

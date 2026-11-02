@@ -1,5 +1,5 @@
 extends Control
-## Title screen. The Play click is the user gesture that unlocks audio and mouse capture in the browser.
+## Title screen: Continue (when a checkpoint exists), New game and Settings.
 
 @onready var _play_button: Button = %PlayButton
 @onready var _continue_button: Button = %ContinueButton

@@ -6,7 +6,6 @@ signal closed
 
 var _rows: VBoxContainer
 var _back: Button
-var _message: Label
 
 
 func _ready() -> void:
@@ -52,22 +51,10 @@ func _ready() -> void:
 		func() -> float: return Settings.sfx_volume,
 		func(v: float) -> void: Settings.sfx_volume = v)
 
-	if Platform.is_web:
-		var transfer: HBoxContainer = HBoxContainer.new()
-		var export_button: Button = Button.new()
-		export_button.text = "Export save"
-		export_button.pressed.connect(Saves.export_to_browser)
-		transfer.add_child(export_button)
-		var import_button: Button = Button.new()
-		import_button.text = "Import save"
-		transfer.add_child(import_button)
-		_message = Label.new()
-		transfer.add_child(_message)
-		import_button.pressed.connect(func() -> void:
-			Saves.import_from_browser(func(ok: bool, text: String) -> void:
-				_message.text = text
-				_message.modulate = Color.WHITE if ok else Color(1.0, 0.5, 0.4)))
-		_rows.add_child(transfer)
+	var folder_button: Button = Button.new()
+	folder_button.text = "Open save folder"
+	folder_button.pressed.connect(Saves.open_save_folder)
+	_rows.add_child(folder_button)
 
 	_back = Button.new()
 	_back.text = "Back"

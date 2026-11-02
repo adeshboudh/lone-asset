@@ -4,7 +4,7 @@ An open-source tactical stealth FPS for Windows and Linux, built with Godot 4.
 
 Observe, plan, infiltrate, complete the objective, extract. Stealth is systemic: guards react to light, stance, movement, sound and line of sight.
 
-> Status: Milestone 1 (core prototype), work package 12 — checkpoints. The project moved from a browser build to desktop only on 2026-11-02.
+> Status: Milestone 1 (core prototype), work package 14 — acceptance and playtesting. The project moved from a browser build to desktop only on 2026-11-02.
 
 ## Play
 

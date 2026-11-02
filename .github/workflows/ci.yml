@@ -58,6 +58,9 @@ jobs:
       - name: Export Windows and Linux builds
         run: tools/ci/export_desktop.sh build | tee -a "$GITHUB_STEP_SUMMARY"
 
+      - name: Check size budgets
+        run: tools/ci/check_budgets.sh build | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Upload Windows build
         uses: actions/upload-artifact@v5
         with:

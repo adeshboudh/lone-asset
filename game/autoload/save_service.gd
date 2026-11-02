@@ -39,7 +39,7 @@ func delete_checkpoint() -> void:
 ## Collects the state of the running level and writes it. Returns false if there is nothing to save.
 func save_checkpoint() -> bool:
 	var player: Player = get_tree().get_first_node_in_group(&"player") as Player
-	if player == null or Mission.state.is_finished:
+	if player == null or Mission.state.is_finished or Game.is_benchmark:
 		return false
 	var data: Dictionary = {
 		"schema_version": SaveRules.SCHEMA_VERSION,

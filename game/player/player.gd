@@ -92,6 +92,31 @@ func perception_points() -> PackedVector3Array:
 	])
 
 
+func save_state() -> Dictionary:
+	return {
+		"position": SaveRules.vector_to_array(global_position),
+		"yaw": snappedf(rotation.y, 0.001),
+		"stance": "crouch" if _stance.is_crouched else "stand",
+		"health": _health.health,
+		"weapon": {"id": String(_weapon.definition.id), "mag": _weapon.logic.magazine, "reserve": _weapon.logic.reserve},
+	}
+
+
+func load_state(data: Dictionary) -> void:
+	if data.is_empty():
+		return
+	global_position = SaveRules.array_to_vector(data.get("position"))
+	rotation.y = float(data.get("yaw", 0.0))
+	velocity = Vector3.ZERO
+	_pitch = 0.0
+	_stance.restore(data.get("stance", "stand") == "crouch", settings)
+	_head.position.y = _stance.eye_height
+	_health.health = float(data.get("health", _health.max_health))
+	var saved_weapon: Dictionary = data.get("weapon", {})
+	_weapon.logic.magazine = int(saved_weapon.get("mag", _weapon.logic.magazine))
+	_weapon.logic.reserve = int(saved_weapon.get("reserve", _weapon.logic.reserve))
+
+
 ## Scripted input for tests and AI dummies; null returns control to the devices.
 func set_scripted_intent(intent: InputIntent) -> void:
 	_input.scripted_intent = intent

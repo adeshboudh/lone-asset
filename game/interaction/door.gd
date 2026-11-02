@@ -26,6 +26,7 @@ var _idle_time: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group(&"doors")
 	_interactable.interactable_id = door_id
 	_interactable.prompt_text = "Open"
 	_interactable.completed.connect(_on_interacted)
@@ -60,6 +61,18 @@ func close(_actor: Node) -> void:
 	_opened_by_ai = false
 	_interactable.prompt_text = "Open"
 	Audio.play_3d(&"door_close", _leaf.global_position)
+
+
+func save_state() -> Dictionary:
+	return {"open": is_open}
+
+
+func load_state(data: Dictionary) -> void:
+	is_open = bool(data.get("open", false))
+	open_amount = 1.0 if is_open else 0.0
+	_opened_by_ai = false
+	_interactable.prompt_text = "Close" if is_open else "Open"
+	_apply_pose()
 
 
 func _on_interacted(actor: Node) -> void:

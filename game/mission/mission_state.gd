@@ -30,6 +30,23 @@ func start(mission: MissionDefinition) -> void:
 	_activate_ready()
 
 
+func save_state() -> Dictionary:
+	var objectives: Dictionary = {}
+	for id: StringName in _status:
+		objectives[String(id)] = String(Status.keys()[_status[id]]).to_lower()
+	return {"objectives": objectives, "combat_reached": combat_reached}
+
+
+## Restores statuses saved by save_state(). Unknown objective IDs are ignored.
+func load_state(objectives: Dictionary, was_combat_reached: bool) -> void:
+	for key: String in objectives:
+		var index: int = Status.keys().find(String(objectives[key]).to_upper())
+		if index >= 0 and _status.has(StringName(key)):
+			_status[StringName(key)] = index as Status
+	combat_reached = was_combat_reached
+	is_finished = false
+
+
 func status_of(objective_id: StringName) -> Status:
 	return _status.get(objective_id, Status.INACTIVE)
 

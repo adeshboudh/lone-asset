@@ -25,7 +25,7 @@ func _ready() -> void:
 func open(success: bool = false, summary: String = "") -> void:
 	_title.text = "MISSION COMPLETE" if success else "ELIMINATED"
 	_tint.color = Color(0.02, 0.25, 0.1, 0.7) if success else Color(0.35, 0.02, 0.02, 0.7)
-	_retry_button.text = "Play again" if success else "Retry"
+	_retry_button.text = "Play again" if success else ("Retry from checkpoint" if Saves.has_checkpoint() else "Retry")
 	_summary.text = summary
 	_summary.visible = not summary.is_empty()
 	visible = true

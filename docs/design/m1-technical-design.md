@@ -733,6 +733,14 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 - When the first checkpoint is written (WP 12), `Platform` calls `navigator.storage.persist()` through `JavaScriptBridge` to reduce eviction risk. (Firefox shows a permission prompt, so it is not requested on first launch.)
 - Settings menu offers **Export save** (downloads the JSON via `JavaScriptBridge.download_buffer`) and **Import save** (file picker).
 
+**Implemented in WP 12**
+
+- `SaveService` autoload (`Saves`, `game/autoload/save_service.gd`) with pure `SaveRules` (version check, migration hook, JSON, vectors). A checkpoint is written (deferred one frame, so the next objective is already active) whenever an objective with `checkpoint_on_complete` finishes, and deleted when the mission is completed. Writes go to a temp file that is then swapped in.
+- Saveable nodes implement `save_state()` / `load_state()`: `Player` (position, yaw, stance, health, ammo), `Guard` (alive, position, suspicion floor; a guard that was alive restarts its patrol calm but wary), `Door` (open or closed), `Terminal` (downloaded), `Binoculars` (tags), `Mission` (objective statuses, time, eliminations, combat flag).
+- Flow: **Continue** on the title (shown when a checkpoint exists), **New game** (deletes the checkpoint), **Retry from checkpoint** on the death screen and **Restart from checkpoint** in the pause menu. `Game.level_ready()` applies the pending checkpoint once the level exists.
+- Settings has **Export save** (browser download) and **Import save** (file picker, validated before it is stored) on the web build. `navigator.storage.persist()` is requested once, at the first checkpoint. The browser parts cannot run in headless tests; they are covered by manual playtest.
+- Not saved in Milestone 1: guards' exact patrol position index and in-progress searches (a restored guard resumes its route), and bullets or sounds in flight.
+
 ### 16.2 Checkpoint schema
 
 ```json

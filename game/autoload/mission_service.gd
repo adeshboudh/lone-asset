@@ -41,6 +41,17 @@ func _process(delta: float) -> void:
 		elapsed_s += delta
 
 
+func save_state() -> Dictionary:
+	return {"elapsed_s": elapsed_s, "guards_eliminated": guards_eliminated, "combat_reached": state.combat_reached}
+
+
+func load_state(mission: Dictionary, objectives: Dictionary) -> void:
+	state.load_state(objectives, bool(mission.get("combat_reached", false)))
+	elapsed_s = float(mission.get("elapsed_s", 0.0))
+	guards_eliminated = int(mission.get("guards_eliminated", 0))
+	changed.emit()
+
+
 ## What the end screen shows after a completed mission.
 func summary_text() -> String:
 	var seconds: int = int(elapsed_s)

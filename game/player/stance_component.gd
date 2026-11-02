@@ -40,6 +40,13 @@ func physics_update(body: CharacterBody3D, intent: InputIntent, settings: Player
 		_apply(settings)
 
 
+## Puts the player straight into a stance (loading a checkpoint).
+func restore(crouched: bool, settings: PlayerMovementSettings) -> void:
+	stance = Stance.CROUCH if crouched else Stance.STAND
+	_blend = 1.0 if crouched else 0.0
+	_apply(settings)
+
+
 ## True if a standing collider fits at the body's position.
 func has_headroom(body: CharacterBody3D, settings: PlayerMovementSettings) -> bool:
 	var shape: CylinderShape3D = CylinderShape3D.new()

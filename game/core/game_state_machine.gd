@@ -12,7 +12,7 @@ const TRANSITIONS: Dictionary = {
 	State.TITLE: [State.LOADING],
 	State.LOADING: [State.PLAYING, State.TITLE],
 	State.PLAYING: [State.PAUSED, State.MISSION_END, State.TITLE],
-	State.PAUSED: [State.PLAYING, State.TITLE],
+	State.PAUSED: [State.PLAYING, State.LOADING, State.TITLE],
 	State.MISSION_END: [State.LOADING, State.TITLE],
 }
 

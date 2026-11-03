@@ -49,7 +49,7 @@ Prototype mission on the graybox course: reach the compound, download data at th
 ## Open issues
 
 - Reported once: after loading a checkpoint and dying, the menu froze. Not reproduced. Loading was hardened and a 20 s loading watchdog added. If it happens again, note which button, what froze, and whether it is every time. Possible fix: a short grace period after loading so the restored player cannot be killed instantly.
-- No benchmark numbers on real hardware yet. Needed to tune quality presets and render scale (second half of WP13).
+- Benchmark on i7-13620H / Intel UHD, Vulkan, Medium 75 % (2026-11-03, wall-clock, vsync off): 411 FPS average, 275 FPS 1 % low, perception 0.05 ms. Large headroom, so presets can likely go higher on this class of machine. Still needed: a weaker machine, a Linux run, and the OpenGL fallback, then tune presets and render scale (second half of WP13).
 - Guard stuck-free check (#13 in acceptance) has not been repeated 20 times.
 - Windows run and OpenGL fallback not yet checked by a person.
 

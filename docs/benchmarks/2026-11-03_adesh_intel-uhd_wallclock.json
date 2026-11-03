@@ -1,0 +1,66 @@
+{
+  "average_fps": 410.9,
+  "build_id": "dev",
+  "cpu": "13th Gen Intel(R) Core(TM) i7-13620H",
+  "cpu_threads": 16,
+  "date_utc": "2026-11-03T12:17:37",
+  "draw_calls": {
+    "avg": 64.6,
+    "max": 98.0
+  },
+  "duration_s": 60.0,
+  "frame_ms": {
+    "p50": 2.34,
+    "p95": 3.26,
+    "p99": 3.64
+  },
+  "frames": 24656,
+  "gpu": "Intel(R) UHD Graphics",
+  "gpu_vendor": "Intel",
+  "graphics_api": "1.4.323",
+  "histogram": {
+    "counts": [
+      24607,
+      44,
+      5,
+      0,
+      0,
+      0
+    ],
+    "edges_ms": [
+      8.33,
+      11.11,
+      16.67,
+      22.22,
+      33.33
+    ]
+  },
+  "low_1pct_fps": 275.0,
+  "os": "Windows 10.0.26300",
+  "passes_minimum_tier": true,
+  "perception_ms": {
+    "avg": 0.05,
+    "max": 0.07
+  },
+  "physics_ms": {
+    "avg": 3.87,
+    "max": 12.5
+  },
+  "primitives": {
+    "avg": 25564.03,
+    "max": 64110.0
+  },
+  "process_ms": {
+    "avg": 2.98,
+    "max": 4.06
+  },
+  "renderer": "forward_plus (vulkan)",
+  "resolution": "1152x648",
+  "settings": {
+    "quality": "medium",
+    "render_scale": 0.75
+  },
+  "static_memory_peak_mb": 103.8,
+  "video_memory_peak_mb": 131.2,
+  "vsync": "off during run (restored afterwards)"
+}

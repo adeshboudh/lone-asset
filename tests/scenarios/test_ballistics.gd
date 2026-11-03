@@ -93,3 +93,15 @@ func _dummy(position: Vector3) -> TargetDummy:
 func _ticks(count: int) -> void:
 	for i: int in count:
 		await get_tree().physics_frame
+
+
+func test_impact_mark_on_csg_geometry_stays_out_of_the_csg_node() -> void:
+	var wall: CSGBox3D = auto_free(CSGBox3D.new())
+	wall.use_collision = true
+	wall.size = Vector3(4.0, 4.0, 0.5)
+	wall.position = Vector3(0.0, 1.0, -10.0)
+	_arena.add_child(wall)
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.0, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(5)
+	assert_int(wall.get_child_count()).is_equal(0)

@@ -16,7 +16,7 @@ Status values:
 | # | Criterion (short) | Status | Evidence / gap |
 |---|---|---|---|
 | 1 | Playable on Windows and Linux, Vulkan and fallback | Manual | CI exports both and smoke-tests Linux on Vulkan. Windows run, and the OpenGL fallback, need a person. |
-| 2 | Performance and size budgets | Partial | `tools/ci/check_budgets.sh` checks size. Benchmark on i7-13620H / Intel UHD (Vulkan), Medium, 75 %: 411 FPS average, 275 FPS 1 % low, 65 draw calls, 131 MB video memory (`docs/benchmarks/2026-11-03_adesh_intel-uhd_wallclock.json`). Still needs a minimum-tier machine and a Linux run. |
+| 2 | Performance and size budgets | Partial | `tools/ci/check_budgets.sh` checks size. Benchmark on i7-13620H / Intel UHD (Vulkan), Medium, 75 %: 411 FPS average, 275 FPS 1 % low, 65 draw calls, 131 MB video memory (`docs/benchmarks/2026-11-03_adesh_intel-uhd_wallclock.json`). Linux run on i5-10210U / Intel UHD (Vulkan, Wayland, powersave governor): 81 FPS average, 29.9 FPS 1 % low, so the 1 % low target is missed (`docs/benchmarks/2026-11-03_adesh_i5-10210U-linux.json`); a second run (`..._linux_run2.json`) gave 79 FPS average and 30.1 FPS 1 % low, so it still misses. |
 | 3 | Mouse capture, Esc, focus loss, fullscreen | Manual | Play-check on both platforms. |
 | 4 | No script errors in a full playthrough | Manual | Read the log after a full run (`user://logs`). |
 | 5 | Movement, no sticking on graybox | Partial | `test_player_movement` covers walk, sprint, crouch, lean, jump, steps. Sticking on the whole course is a playtest check. |

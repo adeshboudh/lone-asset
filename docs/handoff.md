@@ -25,6 +25,12 @@ Milestone 1 (core prototype): code-complete for work packages 1 to 13. Work pack
 
 273 tests pass in CI. `main` is protected.
 
+## Branches
+
+- `dev` is the main development track. Branch from it, open pull requests into it, merge when approved.
+- `main` is the release line: it only receives merges from `dev` when a build is ready to release. Pushes to `main` refresh the `preview` release.
+- CI runs on pull requests and on pushes to `main`, not on plain pushes to `dev`.
+
 ## How to run it
 
 - Download the Windows or Linux zip from the [`preview` release](https://github.com/adeshboudh/lone-asset/releases/tag/preview) (refreshed on every push to `main`) or from a pull request's CI artifacts.
@@ -49,7 +55,7 @@ Prototype mission on the graybox course: reach the compound, download data at th
 ## Open issues
 
 - Reported once: after loading a checkpoint and dying, the menu froze. Not reproduced. Loading was hardened and a 20 s loading watchdog added. If it happens again, note which button, what froze, and whether it is every time. Possible fix: a short grace period after loading so the restored player cannot be killed instantly.
-- Benchmark on i7-13620H / Intel UHD, Vulkan, Medium 75 % (2026-11-03, wall-clock, vsync off): 411 FPS average, 275 FPS 1 % low, perception 0.05 ms. Large headroom, so presets can likely go higher on this class of machine. Still needed: a weaker machine, a Linux run, and the OpenGL fallback, then tune presets and render scale (second half of WP13).
+- Benchmark on i7-13620H / Intel UHD, Vulkan, Medium 75 % (2026-11-03, wall-clock, vsync off): 411 FPS average, 275 FPS 1 % low, perception 0.05 ms. Large headroom, so presets can likely go higher on this class of machine. Linux, i5-10210U / Intel UHD, Vulkan, Medium 75 % (powersave governor): 81 FPS average, 29.9 FPS 1 % low, p99 33 ms, physics step 13 ms average; fails the minimum tier on the 1 % low. Headless the CPU side is about 7 ms per frame, so rendering and driver work add about 6 ms. A second Linux run was the same: 79 FPS average, 30.1 FPS 1 % low, so the spikes are not run-to-run noise. Cause not found yet: profile the 33 ms frames. Still needed: the OpenGL fallback, then tune presets and render scale (second half of WP13).
 - Guard stuck-free check (#13 in acceptance) has not been repeated 20 times.
 - Windows run and OpenGL fallback not yet checked by a person.
 

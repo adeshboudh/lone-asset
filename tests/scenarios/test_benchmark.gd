@@ -21,6 +21,7 @@ func before_test() -> void:
 
 
 func test_a_short_run_produces_a_full_report() -> void:
+	var vsync: DisplayServer.VSyncMode = DisplayServer.window_get_vsync_mode()
 	var quality: int = Settings.quality
 	var render_scale: float = Settings.render_scale
 	_bench = BENCHMARK_SCENE.instantiate()
@@ -40,7 +41,7 @@ func test_a_short_run_produces_a_full_report() -> void:
 	assert_int(reports.size()).is_equal(1)
 	var report: Dictionary = reports[0]
 	for key: String in ["build_id", "gpu", "renderer", "average_fps", "low_1pct_fps", "frame_ms", "histogram",
-			"draw_calls", "physics_ms", "perception_ms", "passes_minimum_tier"]:
+			"draw_calls", "physics_ms", "perception_ms", "vsync", "passes_minimum_tier"]:
 		assert_bool(report.has(key)).override_failure_message("report lacks %s" % key).is_true()
 	assert_int(int(report["frames"])).is_greater(10)
 	# The route is a loop, so measure the farthest point reached.
@@ -51,3 +52,4 @@ func test_a_short_run_produces_a_full_report() -> void:
 	await get_tree().process_frame
 	assert_int(Settings.quality).is_equal(quality)
 	assert_float(Settings.render_scale).is_equal(render_scale)
+	assert_int(DisplayServer.window_get_vsync_mode()).is_equal(vsync)

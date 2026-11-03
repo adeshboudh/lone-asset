@@ -39,6 +39,8 @@ var _static_mem_peak: float = 0.0
 var _video_mem_peak: float = 0.0
 var _saved_quality: int
 var _saved_render_scale: float
+var _saved_vsync: DisplayServer.VSyncMode
+var _last_frame_usec: int = 0
 var _done: bool = false
 var _results: BenchmarkResults
 
@@ -48,6 +50,9 @@ func _ready() -> void:
 	Game.is_benchmark = true
 	_saved_quality = Settings.quality
 	_saved_render_scale = Settings.render_scale
+	_saved_vsync = DisplayServer.window_get_vsync_mode()
+	# Vsync would cap and smooth frame times and hide the machine's real headroom.
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Settings.quality = BENCH_QUALITY
 	Settings.render_scale = BENCH_RENDER_SCALE
 	for point: Vector2 in ROUTE:
@@ -69,6 +74,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	Settings.quality = _saved_quality
 	Settings.render_scale = _saved_render_scale
+	DisplayServer.window_set_vsync_mode(_saved_vsync)
 	Settings.apply_graphics()
 
 
@@ -87,9 +93,14 @@ func _process(delta: float) -> void:
 	if _done:
 		return
 	_elapsed += delta
-	if _elapsed < WARMUP_S:
+	# `delta` is smoothed by the engine; real wall-clock gaps show stutter.
+	var now_usec: int = Time.get_ticks_usec()
+	var frame_ms: float = (now_usec - _last_frame_usec) / 1000.0
+	var had_previous: bool = _last_frame_usec != 0
+	_last_frame_usec = now_usec
+	if _elapsed < WARMUP_S or not had_previous:
 		return
-	_frame_ms.append(delta * 1000.0)
+	_frame_ms.append(frame_ms)
 	_sample_timer += delta
 	if _sample_timer >= SAMPLE_INTERVAL_S:
 		_sample_timer = 0.0
@@ -123,6 +134,7 @@ func _finish() -> void:
 		"gpu_vendor": RenderingServer.get_video_adapter_vendor(),
 		"graphics_api": RenderingServer.get_video_adapter_api_version(),
 		"renderer": "%s (%s)" % [RenderingServer.get_current_rendering_method(), RenderingServer.get_current_rendering_driver_name()],
+		"vsync": "off during run (restored afterwards)",
 		"resolution": "%dx%d" % [window.x, window.y],
 		"settings": {"quality": ["low", "medium", "high"][BENCH_QUALITY], "render_scale": BENCH_RENDER_SCALE},
 		"duration_s": duration_s,

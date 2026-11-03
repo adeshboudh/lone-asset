@@ -16,7 +16,7 @@ Status values:
 | # | Criterion (short) | Status | Evidence / gap |
 |---|---|---|---|
 | 1 | Playable on Windows and Linux, Vulkan and fallback | Manual | CI exports both and smoke-tests Linux on Vulkan. Windows run, and the OpenGL fallback, need a person. |
-| 2 | Performance and size budgets | Partial | `tools/ci/check_budgets.sh` checks size. Frame time needs the in-game benchmark on both reference tiers (`docs/benchmarks/README.md`). |
+| 2 | Performance and size budgets | Partial | `tools/ci/check_budgets.sh` checks size. Benchmark on i7-13620H / Intel UHD (Vulkan), Medium, 75 %: 411 FPS average, 275 FPS 1 % low, 65 draw calls, 131 MB video memory (`docs/benchmarks/2026-11-03_adesh_intel-uhd_wallclock.json`). Still needs a minimum-tier machine and a Linux run. |
 | 3 | Mouse capture, Esc, focus loss, fullscreen | Manual | Play-check on both platforms. |
 | 4 | No script errors in a full playthrough | Manual | Read the log after a full run (`user://logs`). |
 | 5 | Movement, no sticking on graybox | Partial | `test_player_movement` covers walk, sprint, crouch, lean, jump, steps. Sticking on the whole course is a playtest check. |
@@ -28,7 +28,7 @@ Status values:
 | 11 | Sprint near guard triggers Investigate | Partial | `test_guard_patrol` and `test_noise_system` cover footsteps and noise; the sprint-specific case is a playtest check. |
 | 12 | Guard state flow | Automated | `test_guard_ai` |
 | 13 | Guards never stuck in 20 runs | Partial | `test_course_patrols` checks routes and a full lap once. Repeat it 20 times before sign-off. |
-| 14 | Perception within 0.5 ms with 3 guards in Combat | Partial | `test_perception` checks the ray budget. Timing on minimum hardware needs the benchmark. |
+| 14 | Perception within 0.5 ms with 3 guards in Combat | Partial | `test_perception` checks the ray budget. Benchmark on i7-13620H measured 0.05 ms average, 0.07 ms max. Repeat on minimum hardware. |
 | 15 | Mission completable undetected and by combat | Partial | `test_interaction` runs the mission end to end. Both full playthroughs are manual. |
 | 16 | Terminal download interrupted by damage and resumes | Partial | `test_letting_go_cancels_a_download` covers release. Damage interruption is a playtest check. |
 | 17 | Binoculars zoom and tag for 60 s | Automated | `test_binoculars` |

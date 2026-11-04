@@ -39,11 +39,13 @@ Open: the room has no ceiling; the level is still lit by the day sky (the night 
 
 ## Baking the compound lighting (manual, in the Godot editor)
 
-`LightmapGI` cannot be baked from a script, so this is a developer step. The room is ready: every surface inside the compound is a kit piece or a floor plane with lightmap UVs (the west and north walls are kit pieces placed flush against the level's outer walls), and `CompoundLightmap` (quality medium, 2 bounces, 2048 max) sits at its centre.
+`LightmapGI` cannot be baked from a script, so this is a developer step. Baked on 2026-11-05. The room is set up for it: every surface inside the compound is a kit piece or a floor plane with lightmap UVs (the west and north walls are kit pieces placed flush against the level's outer walls), and `CompoundLightmap` (quality medium, 2 bounces, 2048 max) sits at its centre.
 
 1. Open the project in the editor (`make edit`) and open `movement_course.tscn`.
-2. Select `CompoundLightmap` and press **Bake Lightmaps** in the viewport toolbar. The `.lmbake` file saves next to the scene.
-3. Select `SodiumLamp` and change **Bake Mode** from Dynamic to **Static**. The light is then only in the lightmap and costs nothing at run time. (It stays Dynamic until then so the room is never dark.)
+2. Select `SodiumLamp` and set **Bake Mode** to **Static** (already set). Do this before baking: a Dynamic lamp only bakes its bounced light, so a later switch to Static leaves the room dark.
+3. Select `CompoundLightmap` and press **Bake Lightmaps** in the viewport toolbar. The `.lmbake` file saves next to the scene; check **Light Data** shows it, then Ctrl+S.
 4. Run `make benchmark` and compare with `docs/benchmarks/2026-11-04_adesh_i5-10210U-linux_hero-compound.json`, then commit the `.lmbake`.
 
 Outer walls and the rest of the level floor are CSG and are not baked; the sun stays dynamic.
+
+Run benchmarks on AC power with no other heavy apps: on battery this laptop falls to about 1.1 GHz and every result is about 35 % lower.

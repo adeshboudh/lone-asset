@@ -1,48 +1,33 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene format=3 uid="uid://bwxrwlvgr5ums"]
 
-[ext_resource type="Script" path="res://game/levels/graybox/movement_course.gd" id="1_course"]
-[ext_resource type="Shader" path="res://game/levels/graybox/blockout_grid.gdshader" id="2_grid"]
+[ext_resource type="Script" uid="uid://xvsg10nll5d5" path="res://game/levels/graybox/movement_course.gd" id="1_course"]
+[ext_resource type="Shader" uid="uid://eusofw71d0wn" path="res://game/levels/graybox/blockout_grid.gdshader" id="2_grid"]
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="3_player"]
-[ext_resource type="Script" path="res://game/weapons/ballistics_system.gd" id="4_ballistics"]
+[ext_resource type="Script" uid="uid://cl2781yr5bojj" path="res://game/weapons/ballistics_system.gd" id="4_ballistics"]
 [ext_resource type="Resource" path="res://data/damage/hit_zones.tres" id="5_zones"]
 [ext_resource type="PackedScene" path="res://game/targets/target_dummy.tscn" id="6_dummy"]
-[ext_resource type="Script" path="res://game/ai/stealth/level_lighting.gd" id="7_lighting"]
-[ext_resource type="Script" path="res://game/ai/stealth/light_volume.gd" id="8_volume"]
+[ext_resource type="Script" uid="uid://b4ko6b4088kbx" path="res://game/ai/stealth/level_lighting.gd" id="7_lighting"]
+[ext_resource type="Script" uid="uid://bxyf25wwner1w" path="res://game/ai/stealth/light_volume.gd" id="8_volume"]
 [ext_resource type="PackedScene" path="res://game/ai/stealth/noise_sensor.tscn" id="9_sensor"]
 [ext_resource type="NavigationMesh" path="res://game/levels/graybox/movement_course_navmesh.tres" id="10_navmesh"]
 [ext_resource type="PackedScene" path="res://game/ai/guard/guard.tscn" id="11_guard"]
-[ext_resource type="Script" path="res://game/ai/navigation/patrol_route.gd" id="12_route"]
-[ext_resource type="Script" path="res://game/ai/navigation/patrol_point.gd" id="13_point"]
+[ext_resource type="Script" uid="uid://vejd863cksmt" path="res://game/ai/navigation/patrol_route.gd" id="12_route"]
+[ext_resource type="Script" uid="uid://bown80ybnaun" path="res://game/ai/navigation/patrol_point.gd" id="13_point"]
 [ext_resource type="PackedScene" path="res://game/interaction/door.tscn" id="14_door"]
 [ext_resource type="PackedScene" path="res://game/interaction/terminal.tscn" id="15_terminal"]
-[ext_resource type="Script" path="res://game/interaction/trigger_zone.gd" id="16_trigger"]
-
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_3_7.tscn" id="hp_wall_3_7"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_6.tscn" id="hp_wall_4_6"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_1_5.tscn" id="hp_wall_1_5"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_3_8.tscn" id="hp_wall_3_8"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_door_4m.tscn" id="hp_wall_door_4m"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_corner.tscn" id="hp_wall_corner"]
+[ext_resource type="Script" uid="uid://b46xoxax46cfn" path="res://game/interaction/trigger_zone.gd" id="16_trigger"]
+[ext_resource type="LightmapGIData" uid="uid://bsn5m2f2mmde0" path="res://game/levels/graybox/movement_course.lmbake" id="25_6cf37"]
 [ext_resource type="PackedScene" path="res://content/environment/pieces/desk.tscn" id="hp_desk"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_65.tscn" id="hp_wall_4_65"]
-[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_1.tscn" id="hp_wall_4_1"]
 [ext_resource type="Material" path="res://content/environment/materials/m_floor_concrete_world.tres" id="hp_floor_mat"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_1_5.tscn" id="hp_wall_1_5"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_3_7.tscn" id="hp_wall_3_7"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_3_8.tscn" id="hp_wall_3_8"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_1.tscn" id="hp_wall_4_1"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_6.tscn" id="hp_wall_4_6"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_65.tscn" id="hp_wall_4_65"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_corner.tscn" id="hp_wall_corner"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_door_4m.tscn" id="hp_wall_door_4m"]
 [ext_resource type="Material" path="res://content/environment/materials/m_wall_plaster_world.tres" id="hp_wall_mat"]
-
-[sub_resource type="ShaderMaterial" id="mat_floor"]
-render_priority = 0
-shader = ExtResource("2_grid")
-shader_parameter/base_color = Color(0.55, 0.57, 0.6, 1)
-
-[sub_resource type="ShaderMaterial" id="mat_wall"]
-render_priority = 0
-shader = ExtResource("2_grid")
-shader_parameter/base_color = Color(0.42, 0.46, 0.52, 1)
-
-[sub_resource type="ShaderMaterial" id="mat_cover"]
-render_priority = 0
-shader = ExtResource("2_grid")
-shader_parameter/base_color = Color(0.62, 0.52, 0.38, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -54,24 +39,42 @@ background_mode = 2
 sky = SubResource("sky")
 tonemap_mode = 2
 
+[sub_resource type="ShaderMaterial" id="mat_floor"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.55, 0.57, 0.6, 1)
+shader_parameter/line_color = Color(0.3, 0.32, 0.35, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_cover"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.62, 0.52, 0.38, 1)
+shader_parameter/line_color = Color(0.3, 0.32, 0.35, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_wall"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.42, 0.46, 0.52, 1)
+shader_parameter/line_color = Color(0.3, 0.32, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="mesh_patch"]
+size = Vector3(4, 0.08, 4)
+
 [sub_resource type="StandardMaterial3D" id="mat_metal_plate"]
 albedo_color = Color(0.5, 0.55, 0.6, 1)
 metallic = 0.8
 roughness = 0.35
 
-[sub_resource type="StandardMaterial3D" id="mat_grass_patch"]
-albedo_color = Color(0.25, 0.5, 0.2, 1)
-roughness = 1.0
-
-[sub_resource type="PlaneMesh" id="hp_floor_mesh"]
-size = Vector2(12.5, 10)
-add_uv2 = true
-
-[sub_resource type="BoxMesh" id="mesh_patch"]
-size = Vector3(4, 0.08, 4)
-
 [sub_resource type="BoxShape3D" id="shape_patch"]
 size = Vector3(4, 0.08, 4)
+
+[sub_resource type="StandardMaterial3D" id="mat_grass_patch"]
+albedo_color = Color(0.25, 0.5, 0.2, 1)
+
+[sub_resource type="PlaneMesh" id="hp_floor_mesh"]
+lightmap_size_hint = Vector2i(64, 52)
+add_uv2 = true
+size = Vector2(12.5, 10)
 
 [sub_resource type="BoxShape3D" id="shape_compound_trigger"]
 size = Vector3(10, 2.4, 7)
@@ -89,471 +92,464 @@ emission_enabled = true
 emission = Color(0.2, 1, 0.4, 1)
 emission_energy_multiplier = 0.6
 
-[node name="MovementCourse" type="Node3D"]
+[node name="MovementCourse" type="Node3D" unique_id=1274757934]
 script = ExtResource("1_course")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=815238923]
 environment = SubResource("environment")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.556670, 0, 10, 0)
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1753303907]
+transform = Transform3D(0.866025, -0.383022, 0.321394, 0, 0.642788, 0.766044, -0.5, -0.663414, 0.55667, 0, 10, 0)
 shadow_enabled = true
 
-[node name="Geometry" type="CSGCombiner3D" parent="." groups=["navigation_geometry"]]
+[node name="Geometry" type="CSGCombiner3D" parent="." unique_id=408593484 groups=["navigation_geometry"]]
 use_collision = true
 
-[node name="Floor" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, -0.5, 0)
+[node name="Floor" type="CSGBox3D" parent="Geometry" unique_id=1584496182]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 size = Vector3(60, 1, 60)
 material = SubResource("mat_floor")
 
-[node name="OuterWall0" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 2, -30)
+[node name="OuterWall0" type="CSGBox3D" parent="Geometry" unique_id=470218053]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -30)
 size = Vector3(60, 4, 1)
 material = ExtResource("hp_wall_mat")
 
-[node name="OuterWall1" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 2, 30)
+[node name="OuterWall1" type="CSGBox3D" parent="Geometry" unique_id=1715564084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30)
 size = Vector3(60, 4, 1)
 material = ExtResource("hp_wall_mat")
 
-[node name="OuterWall2" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -30, 2, 0)
+[node name="OuterWall2" type="CSGBox3D" parent="Geometry" unique_id=1434875240]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 2, 0)
 size = Vector3(1, 4, 60)
 material = ExtResource("hp_wall_mat")
 
-[node name="OuterWall3" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 30, 2, 0)
+[node name="OuterWall3" type="CSGBox3D" parent="Geometry" unique_id=1302695939]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2, 0)
 size = Vector3(1, 4, 60)
 material = ExtResource("hp_wall_mat")
 
-[node name="StepA0" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.125, -4.0)
+[node name="StepA0" type="CSGBox3D" parent="Geometry" unique_id=2044152269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.125, -4)
 size = Vector3(3, 0.25, 0.35)
 material = SubResource("mat_floor")
 
-[node name="StepA1" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.25, -4.35)
+[node name="StepA1" type="CSGBox3D" parent="Geometry" unique_id=1951806043]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.25, -4.35)
 size = Vector3(3, 0.5, 0.35)
 material = SubResource("mat_floor")
 
-[node name="StepA2" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.375, -4.7)
+[node name="StepA2" type="CSGBox3D" parent="Geometry" unique_id=551261346]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.375, -4.7)
 size = Vector3(3, 0.75, 0.35)
 material = SubResource("mat_floor")
 
-[node name="StepA3" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.5, -5.05)
-size = Vector3(3, 1.0, 0.35)
+[node name="StepA3" type="CSGBox3D" parent="Geometry" unique_id=1597606245]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.5, -5.05)
+size = Vector3(3, 1, 0.35)
 material = SubResource("mat_floor")
 
-[node name="StepA4" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.625, -5.4)
+[node name="StepA4" type="CSGBox3D" parent="Geometry" unique_id=143694494]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.625, -5.4)
 size = Vector3(3, 1.25, 0.35)
 material = SubResource("mat_floor")
 
-[node name="StepA5" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.75, -5.75)
+[node name="StepA5" type="CSGBox3D" parent="Geometry" unique_id=1646738797]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.75, -5.75)
 size = Vector3(3, 1.5, 0.35)
 material = SubResource("mat_floor")
 
-[node name="StairPlatformA" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.75, -7.6)
+[node name="StairPlatformA" type="CSGBox3D" parent="Geometry" unique_id=455245775]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.75, -7.6)
 size = Vector3(3, 1.5, 3)
 material = SubResource("mat_floor")
 
-[node name="StepB0" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7, 0.225, -4.0)
+[node name="StepB0" type="CSGBox3D" parent="Geometry" unique_id=1358646472]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.225, -4)
 size = Vector3(3, 0.45, 0.5)
 material = SubResource("mat_cover")
 
-[node name="StepB1" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7, 0.45, -4.5)
+[node name="StepB1" type="CSGBox3D" parent="Geometry" unique_id=1839908265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.45, -4.5)
 size = Vector3(3, 0.9, 0.5)
 material = SubResource("mat_cover")
 
-[node name="StepB2" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7, 0.675, -5.0)
+[node name="StepB2" type="CSGBox3D" parent="Geometry" unique_id=463053090]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.675, -5)
 size = Vector3(3, 1.35, 0.5)
 material = SubResource("mat_cover")
 
-[node name="Ramp30" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0.866025, -0.500000, 0, 0.500000, 0.866025, -2, 1.4, -6)
+[node name="Ramp30" type="CSGBox3D" parent="Geometry" unique_id=1710218056]
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, -2, 1.4, -6)
 size = Vector3(3, 0.2, 6)
 material = SubResource("mat_floor")
 
-[node name="Ramp50" type="CSGBox3D" parent="Geometry"]
+[node name="Ramp50" type="CSGBox3D" parent="Geometry" unique_id=143311730]
 transform = Transform3D(1, 0, 0, 0, 0.642788, -0.766044, 0, 0.766044, 0.642788, 3, 2.2, -6)
 size = Vector3(3, 0.2, 6)
 material = SubResource("mat_cover")
 
-[node name="TunnelWallL" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 8.85, 0.65, -6)
+[node name="TunnelWallL" type="CSGBox3D" parent="Geometry" unique_id=411073856]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.85, 0.65, -6)
 size = Vector3(0.3, 1.3, 6)
 material = SubResource("mat_wall")
 
-[node name="TunnelWallR" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 11.15, 0.65, -6)
+[node name="TunnelWallR" type="CSGBox3D" parent="Geometry" unique_id=266725691]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.15, 0.65, -6)
 size = Vector3(0.3, 1.3, 6)
 material = SubResource("mat_wall")
 
-[node name="TunnelRoof" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 10, 1.45, -6)
+[node name="TunnelRoof" type="CSGBox3D" parent="Geometry" unique_id=925661660]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.45, -6)
 size = Vector3(2.6, 0.3, 6)
 material = SubResource("mat_wall")
 
-[node name="LowCover0" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.5, 8)
-size = Vector3(3, 1.0, 0.4)
+[node name="LowCover0" type="CSGBox3D" parent="Geometry" unique_id=2015118206]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0.5, 8)
+size = Vector3(3, 1, 0.4)
 material = SubResource("mat_cover")
 
-[node name="LowCover1" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -6, 0.5, 8)
-size = Vector3(3, 1.0, 0.4)
+[node name="LowCover1" type="CSGBox3D" parent="Geometry" unique_id=1250125978]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.5, 8)
+size = Vector3(3, 1, 0.4)
 material = SubResource("mat_cover")
 
-[node name="LowCover2" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 0.5, 8)
-size = Vector3(3, 1.0, 0.4)
+[node name="LowCover2" type="CSGBox3D" parent="Geometry" unique_id=311794568]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 8)
+size = Vector3(3, 1, 0.4)
 material = SubResource("mat_cover")
 
-[node name="CornerA" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 10, 1.5, 6)
+[node name="CornerA" type="CSGBox3D" parent="Geometry" unique_id=1410399463]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, 6)
 size = Vector3(6, 3, 0.4)
 material = SubResource("mat_wall")
 
-[node name="CornerB" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 7.2, 1.5, 9)
+[node name="CornerB" type="CSGBox3D" parent="Geometry" unique_id=344195871]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 1.5, 9)
 size = Vector3(0.4, 3, 6)
 material = SubResource("mat_wall")
 
-[node name="JumpBox06" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 16, 0.3, 0)
+[node name="JumpBox06" type="CSGBox3D" parent="Geometry" unique_id=652939926]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.3, 0)
 size = Vector3(1.5, 0.6, 1.5)
 material = SubResource("mat_cover")
 
-[node name="JumpBox12" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 19, 0.6, 0)
+[node name="JumpBox12" type="CSGBox3D" parent="Geometry" unique_id=1656094324]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0.6, 0)
 size = Vector3(1.5, 1.2, 1.5)
 material = SubResource("mat_cover")
 
-[node name="Player" parent="." instance=ExtResource("3_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
-
-[node name="BallisticsSystem" type="Node3D" parent="."]
-script = ExtResource("4_ballistics")
-hit_zones = ExtResource("5_zones")
-
-[node name="FiringLine" type="CSGBox3D" parent="Geometry"]
+[node name="FiringLine" type="CSGBox3D" parent="Geometry" unique_id=1531174913]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.02, 14)
 size = Vector3(8, 0.04, 0.3)
 material = SubResource("mat_cover")
 
-[node name="Backstop" type="CSGBox3D" parent="Geometry"]
+[node name="Backstop" type="CSGBox3D" parent="Geometry" unique_id=2057750015]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2, -28)
 size = Vector3(10, 4, 1)
 material = SubResource("mat_wall")
 
-[node name="Range" type="Node3D" parent="."]
+[node name="SeparatingWall" type="CSGBox3D" parent="Geometry" unique_id=51019708]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2, 22)
+size = Vector3(0.4, 4, 10)
+material = SubResource("mat_wall")
 
-[node name="Dummy10m" parent="Range" instance=ExtResource("6_dummy")]
+[node name="Marker" type="CSGBox3D" parent="Geometry" unique_id=1667909827]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 0.02, 22)
+size = Vector3(0.8, 0.04, 0.8)
+material = SubResource("mat_cover")
+
+[node name="Player" parent="." unique_id=1474034375 instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
+
+[node name="BallisticsSystem" type="Node3D" parent="." unique_id=1953448208]
+script = ExtResource("4_ballistics")
+hit_zones = ExtResource("5_zones")
+
+[node name="Range" type="Node3D" parent="." unique_id=291938252]
+
+[node name="Dummy10m" parent="Range" unique_id=1765102328 instance=ExtResource("6_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 0, 4)
 
-[node name="Dummy10mB" parent="Range" instance=ExtResource("6_dummy")]
+[node name="Dummy10mB" parent="Range" unique_id=2030773845 instance=ExtResource("6_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 0, 4)
 
-[node name="Dummy25m" parent="Range" instance=ExtResource("6_dummy")]
+[node name="Dummy25m" parent="Range" unique_id=1725741003 instance=ExtResource("6_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -11)
 
-[node name="Dummy40m" parent="Range" instance=ExtResource("6_dummy")]
+[node name="Dummy40m" parent="Range" unique_id=1879650400 instance=ExtResource("6_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -26)
 
-[node name="LevelLighting" type="Node" parent="."]
+[node name="LevelLighting" type="Node" parent="." unique_id=226844906]
 script = ExtResource("7_lighting")
-ambient_light_level = 0.6
 
-[node name="Lighting" type="Node3D" parent="."]
+[node name="Lighting" type="Node3D" parent="." unique_id=2060369080]
 
-[node name="DarkTunnel" type="Area3D" parent="Lighting"]
+[node name="DarkTunnel" type="Area3D" parent="Lighting" unique_id=915078179]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.2, -6)
 script = ExtResource("8_volume")
 light_level = 0.1
 light_priority = 1
 size = Vector3(3.2, 2.4, 6.4)
 
-[node name="CoverShadow" type="Area3D" parent="Lighting"]
+[node name="CoverShadow" type="Area3D" parent="Lighting" unique_id=1606800277]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.1, 9.8)
 script = ExtResource("8_volume")
 light_level = 0.25
 light_priority = 1
 size = Vector3(16, 2.2, 2.4)
 
-[node name="FloodlitRange" type="Area3D" parent="Lighting"]
+[node name="FloodlitRange" type="Area3D" parent="Lighting" unique_id=1163616661]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2, 13)
 script = ExtResource("8_volume")
 light_level = 1.0
 light_priority = 2
 size = Vector3(10, 4, 6)
 
-[node name="AcousticsLab" type="Node3D" parent="."]
+[node name="AcousticsLab" type="Node3D" parent="." unique_id=70923049]
 
-[node name="SeparatingWall" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.5, 2, 22)
-size = Vector3(0.4, 4, 10)
-material = SubResource("mat_wall")
-
-[node name="Marker" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 0.02, 22)
-size = Vector3(0.8, 0.04, 0.8)
-material = SubResource("mat_cover")
-
-[node name="SensorOpen" parent="AcousticsLab" instance=ExtResource("9_sensor")]
+[node name="SensorOpen" parent="AcousticsLab" unique_id=1821103891 instance=ExtResource("9_sensor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.5, 0, 22)
 title = "OPEN"
 
-[node name="SensorBehindWall" parent="AcousticsLab" instance=ExtResource("9_sensor")]
+[node name="SensorBehindWall" parent="AcousticsLab" unique_id=1933763707 instance=ExtResource("9_sensor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 0, 22)
 title = "BEHIND WALL"
 
-[node name="Hint" type="Label3D" parent="AcousticsLab"]
+[node name="Hint" type="Label3D" parent="AcousticsLab" unique_id=793852585]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.5, 3.2, 22)
-billboard = 1
 pixel_size = 0.006
-font_size = 36
-outline_size = 10
+billboard = 1
 text = "Stand on the marker (7 m from each post).
 Sprint, jump or shoot: the post behind the wall hears less."
+font_size = 36
+outline_size = 10
 
-[node name="Surfaces" type="Node3D" parent="." groups=["navigation_geometry"]]
+[node name="Surfaces" type="Node3D" parent="." unique_id=1568489022 groups=["navigation_geometry"]]
 
-[node name="MetalPlate" type="StaticBody3D" parent="Surfaces"]
+[node name="MetalPlate" type="StaticBody3D" parent="Surfaces" unique_id=971990622]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.04, 22)
 metadata/surface = &"metal"
 
-[node name="Mesh" type="MeshInstance3D" parent="Surfaces/MetalPlate"]
+[node name="Mesh" type="MeshInstance3D" parent="Surfaces/MetalPlate" unique_id=1271487203]
 mesh = SubResource("mesh_patch")
 surface_material_override/0 = SubResource("mat_metal_plate")
 
-[node name="Shape" type="CollisionShape3D" parent="Surfaces/MetalPlate"]
+[node name="Shape" type="CollisionShape3D" parent="Surfaces/MetalPlate" unique_id=2029307408]
 shape = SubResource("shape_patch")
 
-[node name="MetalLabel" type="Label3D" parent="Surfaces/MetalPlate"]
+[node name="MetalLabel" type="Label3D" parent="Surfaces/MetalPlate" unique_id=509452797]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
-billboard = 1
 pixel_size = 0.006
-font_size = 36
-outline_size = 10
+billboard = 1
 text = "METAL
 footsteps carry 1.5x"
+font_size = 36
+outline_size = 10
 
-[node name="GrassPatch" type="StaticBody3D" parent="Surfaces"]
+[node name="GrassPatch" type="StaticBody3D" parent="Surfaces" unique_id=965382473]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.04, 22)
 metadata/surface = &"grass"
 
-[node name="Mesh" type="MeshInstance3D" parent="Surfaces/GrassPatch"]
+[node name="Mesh" type="MeshInstance3D" parent="Surfaces/GrassPatch" unique_id=2068282511]
 mesh = SubResource("mesh_patch")
 surface_material_override/0 = SubResource("mat_grass_patch")
 
-[node name="Shape" type="CollisionShape3D" parent="Surfaces/GrassPatch"]
+[node name="Shape" type="CollisionShape3D" parent="Surfaces/GrassPatch" unique_id=1779222845]
 shape = SubResource("shape_patch")
 
-[node name="GrassLabel" type="Label3D" parent="Surfaces/GrassPatch"]
+[node name="GrassLabel" type="Label3D" parent="Surfaces/GrassPatch" unique_id=11617624]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
-billboard = 1
 pixel_size = 0.006
-font_size = 36
-outline_size = 10
+billboard = 1
 text = "GRASS
 footsteps carry 0.7x"
+font_size = 36
+outline_size = 10
 
-[node name="NavigationRegion" type="NavigationRegion3D" parent="."]
+[node name="NavigationRegion" type="NavigationRegion3D" parent="." unique_id=385113049]
 navigation_mesh = ExtResource("10_navmesh")
 
-[node name="Patrols" type="Node3D" parent="."]
+[node name="Patrols" type="Node3D" parent="." unique_id=275389883]
 
-[node name="RouteA" type="Node3D" parent="Patrols"]
+[node name="RouteA" type="Node3D" parent="Patrols" unique_id=1235257055]
 script = ExtResource("12_route")
-mode = 0
 
-[node name="P1" type="Marker3D" parent="Patrols/RouteA"]
+[node name="P1" type="Marker3D" parent="Patrols/RouteA" unique_id=723812826]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 16)
 script = ExtResource("13_point")
 wait_time = 1.5
 
-[node name="P2" type="Marker3D" parent="Patrols/RouteA"]
+[node name="P2" type="Marker3D" parent="Patrols/RouteA" unique_id=2056112282]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 16)
 script = ExtResource("13_point")
 wait_time = 1.5
 
-[node name="P3" type="Marker3D" parent="Patrols/RouteA"]
+[node name="P3" type="Marker3D" parent="Patrols/RouteA" unique_id=51560757]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 26)
 script = ExtResource("13_point")
-wait_time = 2.0
 use_look_direction = true
 look_yaw_deg = 180
 
-[node name="P4" type="Marker3D" parent="Patrols/RouteA"]
+[node name="P4" type="Marker3D" parent="Patrols/RouteA" unique_id=1572836097]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 26)
 script = ExtResource("13_point")
-wait_time = 2.0
 use_look_direction = true
-look_yaw_deg = 0
 
-[node name="RouteB" type="Node3D" parent="Patrols"]
+[node name="RouteB" type="Node3D" parent="Patrols" unique_id=14838155]
 script = ExtResource("12_route")
 mode = 1
 
-[node name="P1" type="Marker3D" parent="Patrols/RouteB"]
+[node name="P1" type="Marker3D" parent="Patrols/RouteB" unique_id=560624621]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
 script = ExtResource("13_point")
 wait_time = 3.0
 use_look_direction = true
 look_yaw_deg = 90
 
-[node name="P2" type="Marker3D" parent="Patrols/RouteB"]
+[node name="P2" type="Marker3D" parent="Patrols/RouteB" unique_id=1079960337]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -16)
 script = ExtResource("13_point")
 wait_time = 0.5
 
-[node name="P3" type="Marker3D" parent="Patrols/RouteB"]
+[node name="P3" type="Marker3D" parent="Patrols/RouteB" unique_id=267162007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, -16)
 script = ExtResource("13_point")
 wait_time = 3.0
 use_look_direction = true
 look_yaw_deg = -90
 
-[node name="Guards" type="Node3D" parent="."]
-
-[node name="GuardA" parent="Guards" node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 16)
-guard_id = &"guard_a"
-patrol_route = NodePath("../../Patrols/RouteA")
-
-[node name="GuardB" parent="Guards" node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
-guard_id = &"guard_b"
-patrol_route = NodePath("../../Patrols/RouteB")
-
-[node name="HeroCompound" type="Node3D" parent="." groups=["navigation_geometry"]]
-
-[node name="SouthW" parent="HeroCompound" instance=ExtResource("hp_wall_3_7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0, -20)
-
-[node name="SouthDoor" parent="HeroCompound" instance=ExtResource("hp_wall_door_4m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.8, 0, -20)
-
-[node name="SouthE" parent="HeroCompound" instance=ExtResource("hp_wall_4_6")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.8, 0, -20)
-
-[node name="Corner" parent="HeroCompound" instance=ExtResource("hp_wall_corner")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0, -20)
-
-[node name="EastN" parent="HeroCompound" instance=ExtResource("hp_wall_1_5")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -29.5)
-
-[node name="EastDoor" parent="HeroCompound" instance=ExtResource("hp_wall_door_4m")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -28)
-
-[node name="EastS" parent="HeroCompound" instance=ExtResource("hp_wall_3_8")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -24)
-
-[node name="Desk" parent="HeroCompound" instance=ExtResource("hp_desk")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.1, 0, -27.8)
-
-[node name="WestA" parent="HeroCompound" instance=ExtResource("hp_wall_4_65")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -29.69, 0, -29.5)
-
-[node name="WestB" parent="HeroCompound" instance=ExtResource("hp_wall_4_65")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -29.69, 0, -24.85)
-
-[node name="NorthA" parent="HeroCompound" instance=ExtResource("hp_wall_4_1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0, -29.69)
-
-[node name="NorthB" parent="HeroCompound" instance=ExtResource("hp_wall_4_1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.4, 0, -29.69)
-
-[node name="NorthC" parent="HeroCompound" instance=ExtResource("hp_wall_4_1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.3, 0, -29.69)
-
-[node name="Floor" type="MeshInstance3D" parent="HeroCompound"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 0.01, -25)
-mesh = SubResource("hp_floor_mesh")
-surface_material_override/0 = ExtResource("hp_floor_mat")
-
-[node name="SodiumLamp" type="OmniLight3D" parent="."]
-light_bake_mode = 2
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 3.3, -25)
-light_color = Color(1, 0.72, 0.4, 1)
-light_energy = 1.4
-shadow_enabled = false
-omni_range = 9.0
-
-[node name="CompoundLightmap" type="LightmapGI" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 2, -25)
-quality = 1
-bounces = 2
-texel_scale = 1.0
-max_texture_size = 2048
-
-[node name="Compound" type="Node3D" parent="."]
-
-[node name="DoorSouth" parent="Compound" instance=ExtResource("14_door")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.8, 0, -20)
-door_id = &"door_south"
-
-[node name="DoorEast" parent="Compound" instance=ExtResource("14_door")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -17, 0, -26)
-door_id = &"door_east"
-
-[node name="Terminal01" parent="Compound" instance=ExtResource("15_terminal")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.05, 0, -25)
-terminal_id = &"terminal_01"
-
-[node name="CompoundInner" type="Area3D" parent="Compound"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.5, 1.2, -24.5)
-script = ExtResource("16_trigger")
-trigger_id = &"compound_inner"
-
-[node name="Shape" type="CollisionShape3D" parent="Compound/CompoundInner"]
-shape = SubResource("shape_compound_trigger")
-
-[node name="ExtractionZone" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, 25)
-script = ExtResource("16_trigger")
-trigger_id = &"extraction_zone"
-once = false
-
-[node name="Shape" type="CollisionShape3D" parent="ExtractionZone"]
-shape = SubResource("shape_extraction")
-
-[node name="Marker" type="MeshInstance3D" parent="ExtractionZone"]
-mesh = SubResource("mesh_extraction")
-surface_material_override/0 = SubResource("mat_extraction")
-
-[node name="Label" type="Label3D" parent="ExtractionZone"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
-billboard = 1
-text = "EXTRACTION"
-
-[node name="RouteC" type="Node3D" parent="Patrols"]
+[node name="RouteC" type="Node3D" parent="Patrols" unique_id=663445488]
 script = ExtResource("12_route")
 mode = 1
 
-[node name="P1" type="Marker3D" parent="Patrols/RouteC"]
+[node name="P1" type="Marker3D" parent="Patrols/RouteC" unique_id=984063592]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 0, -27)
 script = ExtResource("13_point")
 wait_time = 3.0
 use_look_direction = true
 look_yaw_deg = 90
 
-[node name="P2" type="Marker3D" parent="Patrols/RouteC"]
+[node name="P2" type="Marker3D" parent="Patrols/RouteC" unique_id=156531010]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.5, 0, -22.5)
 script = ExtResource("13_point")
 wait_time = 3.0
 use_look_direction = true
 look_yaw_deg = 180
 
-[node name="GuardC" parent="Guards" node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
+[node name="Guards" type="Node3D" parent="." unique_id=661975256]
+
+[node name="GuardA" parent="Guards" unique_id=274431569 node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 16)
+guard_id = &"guard_a"
+patrol_route = NodePath("../../Patrols/RouteA")
+
+[node name="GuardB" parent="Guards" unique_id=731071540 node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
+guard_id = &"guard_b"
+patrol_route = NodePath("../../Patrols/RouteB")
+
+[node name="GuardC" parent="Guards" unique_id=1151234527 node_paths=PackedStringArray("patrol_route") instance=ExtResource("11_guard")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 0, -27)
 guard_id = &"guard_c"
 patrol_route = NodePath("../../Patrols/RouteC")
+
+[node name="HeroCompound" type="Node3D" parent="." unique_id=151935787 groups=["navigation_geometry"]]
+
+[node name="SouthW" parent="HeroCompound" unique_id=2059340649 instance=ExtResource("hp_wall_3_7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0, -20)
+
+[node name="SouthDoor" parent="HeroCompound" unique_id=864122882 instance=ExtResource("hp_wall_door_4m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.8, 0, -20)
+
+[node name="SouthE" parent="HeroCompound" unique_id=1921581506 instance=ExtResource("hp_wall_4_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.8, 0, -20)
+
+[node name="Corner" parent="HeroCompound" unique_id=1914622274 instance=ExtResource("hp_wall_corner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0, -20)
+
+[node name="EastN" parent="HeroCompound" unique_id=610235757 instance=ExtResource("hp_wall_1_5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -29.5)
+
+[node name="EastDoor" parent="HeroCompound" unique_id=1919200781 instance=ExtResource("hp_wall_door_4m")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -28)
+
+[node name="EastS" parent="HeroCompound" unique_id=1126602702 instance=ExtResource("hp_wall_3_8")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -24)
+
+[node name="Desk" parent="HeroCompound" unique_id=1724850083 instance=ExtResource("hp_desk")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.1, 0, -27.8)
+
+[node name="WestA" parent="HeroCompound" unique_id=2077721291 instance=ExtResource("hp_wall_4_65")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -29.69, 0, -29.5)
+
+[node name="WestB" parent="HeroCompound" unique_id=1024050511 instance=ExtResource("hp_wall_4_65")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -29.69, 0, -24.85)
+
+[node name="NorthA" parent="HeroCompound" unique_id=1434661472 instance=ExtResource("hp_wall_4_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0, -29.69)
+
+[node name="NorthB" parent="HeroCompound" unique_id=146438975 instance=ExtResource("hp_wall_4_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.4, 0, -29.69)
+
+[node name="NorthC" parent="HeroCompound" unique_id=1550947420 instance=ExtResource("hp_wall_4_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.3, 0, -29.69)
+
+[node name="Floor" type="MeshInstance3D" parent="HeroCompound" unique_id=375656294]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 0.01, -25)
+mesh = SubResource("hp_floor_mesh")
+surface_material_override/0 = ExtResource("hp_floor_mat")
+
+[node name="SodiumLamp" type="OmniLight3D" parent="." unique_id=1686907132]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 3.3, -25)
+light_color = Color(1, 0.72, 0.4, 1)
+light_energy = 1.4
+light_bake_mode = 1
+omni_range = 9.0
+
+[node name="CompoundLightmap" type="LightmapGI" parent="." unique_id=800097003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 2, -25)
+bounces = 2
+max_texture_size = 2048
+light_data = ExtResource("25_6cf37")
+
+[node name="Compound" type="Node3D" parent="." unique_id=1273712424]
+
+[node name="DoorSouth" parent="Compound" unique_id=723407055 instance=ExtResource("14_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.8, 0, -20)
+door_id = &"door_south"
+
+[node name="DoorEast" parent="Compound" unique_id=1681366214 instance=ExtResource("14_door")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -17, 0, -26)
+door_id = &"door_east"
+
+[node name="Terminal01" parent="Compound" unique_id=708169396 instance=ExtResource("15_terminal")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.05, 0, -25)
+terminal_id = &"terminal_01"
+
+[node name="CompoundInner" type="Area3D" parent="Compound" unique_id=574121242]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.5, 1.2, -24.5)
+script = ExtResource("16_trigger")
+trigger_id = &"compound_inner"
+
+[node name="Shape" type="CollisionShape3D" parent="Compound/CompoundInner" unique_id=2121319083]
+shape = SubResource("shape_compound_trigger")
+
+[node name="ExtractionZone" type="Area3D" parent="." unique_id=845791875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1.5, 25)
+script = ExtResource("16_trigger")
+trigger_id = &"extraction_zone"
+once = false
+
+[node name="Shape" type="CollisionShape3D" parent="ExtractionZone" unique_id=1107747994]
+shape = SubResource("shape_extraction")
+
+[node name="Marker" type="MeshInstance3D" parent="ExtractionZone" unique_id=1541832220]
+mesh = SubResource("mesh_extraction")
+surface_material_override/0 = SubResource("mat_extraction")
+
+[node name="Label" type="Label3D" parent="ExtractionZone" unique_id=1811128392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+billboard = 1
+text = "EXTRACTION"

@@ -26,3 +26,9 @@ path = "addons/gdUnit4/**"
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Mike Schulze and gdUnit4 contributors"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "content/environment/textures/**"
+precedence = "override"
+SPDX-FileCopyrightText = "Rob Tuytel (Poly Haven)"
+SPDX-License-Identifier = "CC0-1.0"

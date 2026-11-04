@@ -24,6 +24,8 @@
 [ext_resource type="PackedScene" path="res://content/environment/pieces/wall_door_4m.tscn" id="hp_wall_door_4m"]
 [ext_resource type="PackedScene" path="res://content/environment/pieces/wall_corner.tscn" id="hp_wall_corner"]
 [ext_resource type="PackedScene" path="res://content/environment/pieces/desk.tscn" id="hp_desk"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_65.tscn" id="hp_wall_4_65"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_1.tscn" id="hp_wall_4_1"]
 [ext_resource type="Material" path="res://content/environment/materials/m_floor_concrete_world.tres" id="hp_floor_mat"]
 [ext_resource type="Material" path="res://content/environment/materials/m_wall_plaster_world.tres" id="hp_wall_mat"]
 
@@ -63,6 +65,7 @@ roughness = 1.0
 
 [sub_resource type="PlaneMesh" id="hp_floor_mesh"]
 size = Vector2(12.5, 10)
+add_uv2 = true
 
 [sub_resource type="BoxMesh" id="mesh_patch"]
 size = Vector3(4, 0.08, 4)
@@ -457,17 +460,40 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -24)
 [node name="Desk" parent="HeroCompound" instance=ExtResource("hp_desk")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.1, 0, -27.8)
 
+[node name="WestA" parent="HeroCompound" instance=ExtResource("hp_wall_4_65")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -29.69, 0, -29.5)
+
+[node name="WestB" parent="HeroCompound" instance=ExtResource("hp_wall_4_65")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -29.69, 0, -24.85)
+
+[node name="NorthA" parent="HeroCompound" instance=ExtResource("hp_wall_4_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0, -29.69)
+
+[node name="NorthB" parent="HeroCompound" instance=ExtResource("hp_wall_4_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.4, 0, -29.69)
+
+[node name="NorthC" parent="HeroCompound" instance=ExtResource("hp_wall_4_1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.3, 0, -29.69)
+
 [node name="Floor" type="MeshInstance3D" parent="HeroCompound"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 0.01, -25)
 mesh = SubResource("hp_floor_mesh")
 surface_material_override/0 = ExtResource("hp_floor_mat")
 
 [node name="SodiumLamp" type="OmniLight3D" parent="."]
+light_bake_mode = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 3.3, -25)
 light_color = Color(1, 0.72, 0.4, 1)
 light_energy = 1.4
 shadow_enabled = false
 omni_range = 9.0
+
+[node name="CompoundLightmap" type="LightmapGI" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 2, -25)
+quality = 1
+bounces = 2
+texel_scale = 1.0
+max_texture_size = 2048
 
 [node name="Compound" type="Node3D" parent="."]
 

@@ -130,7 +130,8 @@ func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
 	var mark: MeshInstance3D = _marks[_next_mark]
 	_next_mark = (_next_mark + 1) % _marks.size()
 	# Marks follow what they hit (e.g. a falling target).
-	var new_parent: Node3D = parent if parent != null else self
+	# Not under CSG geometry: any child change makes a CSG node rebuild its mesh and collision, a 20 ms hitch.
+	var new_parent: Node3D = self if parent == null or parent is CSGShape3D else parent
 	if mark.get_parent() != new_parent:
 		mark.reparent(new_parent, false)
 	var up_hint: Vector3 = Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP

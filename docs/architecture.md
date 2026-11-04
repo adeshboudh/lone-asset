@@ -83,10 +83,15 @@ tools/ci         CI scripts (tests, export, budgets)
 - After adding a script with `class_name`, run `godot --headless --path . --import` to refresh the class cache.
 - gdUnit: `get_tree().current_scene` is null; free scenes in `after_test` or CI fails with exit code 101 (orphans).
 
+## Performance pitfalls
+
+- Never add, remove or reparent children of a `CSG*` node at runtime (impact marks, decals, effects). Any child change makes it rebuild its mesh and collision, about 20 ms. Found via the Linux benchmark (impact marks under the level geometry).
+- Measure on wall-clock frame times with the in-game benchmark, windowed. Headless runs do not show real frame pacing.
+
 ## Workflow guardrails
 
-- One work package (WP) per branch and pull request. Branch names `feat/wpN-...`.
-- `main` is protected: pull request required, CI check "Lint, test and export desktop builds" must pass, squash merges, no force-push.
+- One work package (WP) per branch and pull request. Branch from `dev`; names `feat/wpN-...`, `fix/...`, `perf/...`, `docs/...`. See `CONTRIBUTING.md`.
+- `dev` is the development track and `main` the release line (merged from `dev` only). Both are protected: pull request required, CI check "Lint, test and export desktop builds" must pass, no force-push. Feature PRs are squash-merged.
 - Run `tools/ci/run_tests.sh` before pushing. Run `tools/ci/smoke_test.sh` after scene changes.
 - Commit style: Conventional Commits (`feat:`, `fix:`, `docs:`, `build:`). 
 - Do not merge a PR until the developer has played the build and approved.

@@ -30,3 +30,9 @@ Same pipeline and licence (own work, CC BY 4.0). Materials are flat PBR colours 
 | `sm_door_leaf` | 2.0 × 2.6 × 0.1 (handles add 0.05 each side) | Centre of the leaf | The graybox `Door` leaf and the 2.0 × 2.6 m kit doorway; hinge and swing stay in `door.gd` |
 
 Not wired into `terminal.tscn` or `door.tscn` yet: that changes the whole graybox level, so it happens when the hero area is built.
+
+## Hero compound (WP 12b, in progress)
+
+`game/levels/graybox/movement_course.tscn` node `HeroCompound` (group `navigation_geometry`, so the navmesh bake sees it) replaces the six CSG compound walls with kit pieces cut to fit: `pieces/wall_*.tscn` are `StaticBody3D` wrappers (mesh stretched along the wall, plain box collision, no trimesh), plus the desk and a textured floor overlay. `terminal.tscn` and `door.tscn` now use the hero models. The compound's west and north sides are the level's outer walls, which now use the plaster material (`m_wall_plaster_world`, triplanar). One warm shadow-casting `SodiumLamp` lights the room; the AI light level is unchanged (the level's ambient 0.6), so detection balance did not change. After changing the pieces, rebake with `make bake-navmesh`.
+
+Open: the room has no ceiling; the level is still lit by the day sky (the night look is a level-wide decision); lighting is not baked yet.

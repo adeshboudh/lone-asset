@@ -17,6 +17,16 @@
 [ext_resource type="PackedScene" path="res://game/interaction/terminal.tscn" id="15_terminal"]
 [ext_resource type="Script" path="res://game/interaction/trigger_zone.gd" id="16_trigger"]
 
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_3_7.tscn" id="hp_wall_3_7"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_4_6.tscn" id="hp_wall_4_6"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_1_5.tscn" id="hp_wall_1_5"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_3_8.tscn" id="hp_wall_3_8"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_door_4m.tscn" id="hp_wall_door_4m"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/wall_corner.tscn" id="hp_wall_corner"]
+[ext_resource type="PackedScene" path="res://content/environment/pieces/desk.tscn" id="hp_desk"]
+[ext_resource type="Material" path="res://content/environment/materials/m_floor_concrete_world.tres" id="hp_floor_mat"]
+[ext_resource type="Material" path="res://content/environment/materials/m_wall_plaster_world.tres" id="hp_wall_mat"]
+
 [sub_resource type="ShaderMaterial" id="mat_floor"]
 render_priority = 0
 shader = ExtResource("2_grid")
@@ -50,6 +60,9 @@ roughness = 0.35
 [sub_resource type="StandardMaterial3D" id="mat_grass_patch"]
 albedo_color = Color(0.25, 0.5, 0.2, 1)
 roughness = 1.0
+
+[sub_resource type="PlaneMesh" id="hp_floor_mesh"]
+size = Vector2(12.5, 10)
 
 [sub_resource type="BoxMesh" id="mesh_patch"]
 size = Vector3(4, 0.08, 4)
@@ -94,22 +107,22 @@ material = SubResource("mat_floor")
 [node name="OuterWall0" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 2, -30)
 size = Vector3(60, 4, 1)
-material = SubResource("mat_wall")
+material = ExtResource("hp_wall_mat")
 
 [node name="OuterWall1" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0, 2, 30)
 size = Vector3(60, 4, 1)
-material = SubResource("mat_wall")
+material = ExtResource("hp_wall_mat")
 
 [node name="OuterWall2" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -30, 2, 0)
 size = Vector3(1, 4, 60)
-material = SubResource("mat_wall")
+material = ExtResource("hp_wall_mat")
 
 [node name="OuterWall3" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 30, 2, 0)
 size = Vector3(1, 4, 60)
-material = SubResource("mat_wall")
+material = ExtResource("hp_wall_mat")
 
 [node name="StepA0" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12, 0.125, -4.0)
@@ -220,36 +233,6 @@ material = SubResource("mat_cover")
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 19, 0.6, 0)
 size = Vector3(1.5, 1.2, 1.5)
 material = SubResource("mat_cover")
-
-[node name="CompoundSouthW" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.15, 2, -20)
-size = Vector3(4.7, 4, 0.4)
-material = SubResource("mat_wall")
-
-[node name="CompoundSouthE" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.8, 2, -20)
-size = Vector3(6, 4, 0.4)
-material = SubResource("mat_wall")
-
-[node name="CompoundSouthLintel" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.8, 3.3, -20)
-size = Vector3(2, 1.4, 0.4)
-material = SubResource("mat_wall")
-
-[node name="CompoundEastN" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 2, -28.25)
-size = Vector3(0.4, 4, 2.5)
-material = SubResource("mat_wall")
-
-[node name="CompoundEastS" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 2, -22.6)
-size = Vector3(0.4, 4, 4.8)
-material = SubResource("mat_wall")
-
-[node name="CompoundEastLintel" type="CSGBox3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 3.3, -26)
-size = Vector3(0.4, 1.4, 2)
-material = SubResource("mat_wall")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
@@ -447,6 +430,44 @@ patrol_route = NodePath("../../Patrols/RouteA")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, -16)
 guard_id = &"guard_b"
 patrol_route = NodePath("../../Patrols/RouteB")
+
+[node name="HeroCompound" type="Node3D" parent="." groups=["navigation_geometry"]]
+
+[node name="SouthW" parent="HeroCompound" instance=ExtResource("hp_wall_3_7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.5, 0, -20)
+
+[node name="SouthDoor" parent="HeroCompound" instance=ExtResource("hp_wall_door_4m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.8, 0, -20)
+
+[node name="SouthE" parent="HeroCompound" instance=ExtResource("hp_wall_4_6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.8, 0, -20)
+
+[node name="Corner" parent="HeroCompound" instance=ExtResource("hp_wall_corner")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0, -20)
+
+[node name="EastN" parent="HeroCompound" instance=ExtResource("hp_wall_1_5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -29.5)
+
+[node name="EastDoor" parent="HeroCompound" instance=ExtResource("hp_wall_door_4m")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -28)
+
+[node name="EastS" parent="HeroCompound" instance=ExtResource("hp_wall_3_8")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17, 0, -24)
+
+[node name="Desk" parent="HeroCompound" instance=ExtResource("hp_desk")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -29.1, 0, -27.8)
+
+[node name="Floor" type="MeshInstance3D" parent="HeroCompound"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 0.01, -25)
+mesh = SubResource("hp_floor_mesh")
+surface_material_override/0 = ExtResource("hp_floor_mat")
+
+[node name="SodiumLamp" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 3.3, -25)
+light_color = Color(1, 0.72, 0.4, 1)
+light_energy = 1.4
+shadow_enabled = true
+omni_range = 9.0
 
 [node name="Compound" type="Node3D" parent="."]
 

@@ -466,7 +466,7 @@ surface_material_override/0 = ExtResource("hp_floor_mat")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.25, 3.3, -25)
 light_color = Color(1, 0.72, 0.4, 1)
 light_energy = 1.4
-shadow_enabled = true
+shadow_enabled = false
 omni_range = 9.0
 
 [node name="Compound" type="Node3D" parent="."]

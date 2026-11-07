@@ -28,6 +28,10 @@ var _ballistics: BallisticsSystem
 var _viewmodel: Node3D
 var _flash: OmniLight3D
 var _kick: float = 0.0
+var _turn_rate: Vector2 = Vector2.ZERO
+var _strafe_speed: float = 0.0
+var _sway_position: Vector3 = Vector3.ZERO
+var _sway_rotation_deg: Vector3 = Vector3.ZERO
 var _flash_remaining: float = 0.0
 var _was_reloading: bool = false
 
@@ -42,6 +46,13 @@ func _ready() -> void:
 	if _ballistics == null:
 		Log.warn(&"weapon", "No BallisticsSystem in the level; %s cannot fire" % definition.id)
 	_build_viewmodel()
+
+
+## Called by the holder every frame: turn rate in rad/s (x yaw right-positive, y pitch up-positive)
+## and strafe speed in m/s (right-positive). Drives the viewmodel sway.
+func set_sway_input(turn_rate: Vector2, strafe_speed: float) -> void:
+	_turn_rate = turn_rate
+	_strafe_speed = strafe_speed
 
 
 ## Returns this tick's recoil kick in radians: x = pitch up, y = yaw.
@@ -88,9 +99,14 @@ func _process(delta: float) -> void:
 		return
 	_kick = move_toward(_kick, 0.0, KICK_RECOVERY * delta)
 	var reload_dip: float = sin(logic.reload_progress() * PI) * 0.12
+	_sway_position = WeaponSwayRules.approach(_sway_position,
+		WeaponSwayRules.target_position(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
+	_sway_rotation_deg = WeaponSwayRules.approach(_sway_rotation_deg,
+		WeaponSwayRules.target_rotation_deg(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
 	_viewmodel.position = HIP_POSITION.lerp(ADS_POSITION, smoothstep(0.0, 1.0, aim_blend)) \
-		+ Vector3(0.0, -reload_dip, _kick * KICK_DISTANCE)
-	_viewmodel.rotation.x = -reload_dip * 2.0
+		+ Vector3(0.0, -reload_dip, _kick * KICK_DISTANCE) + _sway_position
+	_viewmodel.rotation = Vector3(-reload_dip * 2.0, 0.0, 0.0) + Vector3(
+		deg_to_rad(_sway_rotation_deg.x), deg_to_rad(_sway_rotation_deg.y), deg_to_rad(_sway_rotation_deg.z))
 	_flash_remaining -= delta
 	_flash.visible = _flash_remaining > 0.0
 

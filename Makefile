@@ -7,7 +7,9 @@ else
 GODOT ?= godot
 endif
 
-.PHONY: help run edit import benchmark test test-one smoke lint check bake-navmesh export
+RUNS ?= 20
+
+.PHONY: help run edit import benchmark soak test test-one smoke lint check bake-navmesh export
 
 help: ## Show this list
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -23,6 +25,9 @@ import: ## Refresh the import and class_name cache (run after adding a class_nam
 
 benchmark: ## Start the 60 s benchmark straight from launch
 	$(GODOT) --path . -- --benchmark
+
+soak: ## Guard stuck-free check, RUNS passes per guard (default 20), runs fast headless
+	$(GODOT) --headless --fixed-fps 60 --path . res://dev/guard_soak.tscn -- --runs=$(RUNS)
 
 test: ## Run all unit and scenario tests (about 4 minutes)
 	tools/ci/run_tests.sh

@@ -24,13 +24,13 @@ Status values:
 | 7 | Data-driven rifle | Manual | Change a value in `rifle_suppressed.tres` and check the behaviour changes. |
 | 8 | Crouched still player in dark undetected at 15 m | Automated | `test_perception` |
 | 9 | Standing moving lit player detected in 2.5 s | Automated | `test_perception` |
-| 10 | Leaning exposes less than standing | Partial | `test_player_noise_and_exposure` checks exposure; suspicion rate while leaning is a playtest check. |
-| 11 | Sprint near guard triggers Investigate | Partial | `test_guard_patrol` and `test_noise_system` cover footsteps and noise; the sprint-specific case is a playtest check. |
+| 10 | Leaning exposes less than standing | Automated | `test_perception` `test_leaning_around_a_pillar_exposes_only_the_head` (visibility 1/3) and `test_leaning_around_a_pillar_raises_suspicion_slower_than_standing_in_the_open` (same distance and light, lower suspicion after 1 s). |
+| 11 | Sprint near guard triggers Investigate | Automated | `test_guard_ai` `test_a_sprinting_player_near_a_patrolling_guard_makes_it_investigate`: a real sprinting player about 6 m from a patrolling guard (out of view) sends it to Investigate. |
 | 12 | Guard state flow | Automated | `test_guard_ai` |
 | 13 | Guards never stuck in 20 runs | Automated | `make soak` (`dev/guard_soak.gd`) runs the course with all three guards for 20 full patrol passes each, counting only real arrivals, and fails if a guard reaches no new point for 60 s. 2026-11-07: 20/20 for guard A, B and C. CI repeats it with 5 runs per guard. |
 | 14 | Perception within 0.5 ms with 3 guards in Combat | Partial | `test_perception` checks the ray budget. Benchmark on i7-13620H measured 0.05 ms average, 0.07 ms max. Repeat on minimum hardware. |
 | 15 | Mission completable undetected and by combat | Partial | `test_interaction` runs the mission end to end. Both full playthroughs are manual. |
-| 16 | Terminal download interrupted by damage and resumes | Partial | `test_letting_go_cancels_a_download` covers release. Damage interruption is a playtest check. |
+| 16 | Terminal download interrupted by damage and resumes | Automated | `test_interaction` `test_damage_interrupts_a_download_and_holding_again_restarts_it`: damage resets progress, it stays stopped while the key is held, and releasing then holding again resumes it. `test_letting_go_cancels_a_download` covers release. |
 | 17 | Binoculars zoom and tag for 60 s | Automated | `test_binoculars` |
 | 18 | Checkpoint survives quit and restart | Partial | `test_save` restores player, guards, doors, terminals from the saved file. A real quit and relaunch is manual. |
 | 19 | Tests pass, both platforms export | Automated | CI job "Lint, test and export desktop builds" is required on `main`. |

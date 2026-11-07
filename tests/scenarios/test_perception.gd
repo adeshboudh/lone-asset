@@ -66,6 +66,24 @@ func test_leaning_around_a_pillar_exposes_only_the_head() -> void:
 	assert_float(_visibility()).is_equal_approx(1.0 / 3.0, 0.01)
 
 
+func test_leaning_around_a_pillar_raises_suspicion_slower_than_standing_in_the_open() -> void:
+	# Same distance, same light: only the head shows when leaning, the whole body when in the open.
+	await _spawn(Vector3(0.0, 0.0, -10.0))
+	await _ticks(60)
+	var open_rate: float = _guard.suspicion.value
+	assert_float(open_rate).is_greater(0.0)
+	_player.queue_free()
+	_guard.queue_free()
+	await _ticks(2)
+	await _spawn(Vector3(0.0, 0.0, -10.0))
+	_add_box(Vector3(0.24, 3.0, 0.24), Vector3(0.0, 1.5, -5.0))
+	_intent.lean = 1
+	await _ticks(40)
+	_guard.suspicion.set_value(0.0)
+	await _ticks(60)
+	assert_float(_guard.suspicion.value).is_less(open_rate)
+
+
 # --- Vision cones ----------------------------------------------------------------------------------
 
 func test_a_player_in_view_raises_suspicion_at_the_expected_rate() -> void:

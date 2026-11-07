@@ -23,7 +23,7 @@ Milestone 1 (core prototype): code-complete for work packages 1 to 13. Work pack
 | 14 | Acceptance tracker and playtest template | PR #14 open |
 | 12b | Hero art area | Not started, needs art decisions |
 
-273 tests pass in CI. `main` is protected.
+277 tests pass in CI. Acceptance rows 6, 10, 11, 13 and 16 are automated. `main` is protected.
 
 ## Branches
 

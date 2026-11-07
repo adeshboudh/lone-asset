@@ -130,7 +130,7 @@ func _process(delta: float) -> void:
 	var look: Vector2 = _input.take_look_delta() * settings.mouse_sensitivity * Settings.mouse_sensitivity_scale * (aim_fov / _base_fov)
 	look.y = SettingsRules.look_y(look.y, Settings.invert_y)
 	rotate_y(-look.x)
-	_weapon.set_sway_input(Vector2(look.x, -look.y) / maxf(delta, 0.0001), velocity.dot(global_basis.x))
+	_weapon.set_sway_input(Vector2(look.x, -look.y) / maxf(delta, 0.0001), velocity.dot(global_basis.x), horizontal_speed, is_on_floor())
 	var max_pitch: float = deg_to_rad(settings.max_pitch_deg)
 	_pitch = clampf(_pitch - look.y, -max_pitch, max_pitch)
 	_recoil_pitch = move_toward(_recoil_pitch, 0.0, deg_to_rad(_weapon.definition.recoil_recovery_deg_per_s) * delta)

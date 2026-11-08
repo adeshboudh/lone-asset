@@ -1,0 +1,7 @@
+Community asset, licence not stated.
+
+This asset was downloaded for free from a community site and no licence text came with it.
+It is used on probation while the game is in development and is listed in content/LICENSES.md
+with the source where known. It is NOT covered by the project's MIT or CC BY 4.0 licences.
+Before a release from main, the asset must either get a verified licence (and this
+annotation replaced) or be removed.

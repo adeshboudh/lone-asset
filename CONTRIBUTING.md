@@ -50,4 +50,4 @@ Run **Settings, Run benchmark** (60 s) or `make benchmark`, then copy the result
 
 ## Licences and assets
 
-Code is MIT, original assets and docs are CC BY 4.0, third-party assets must be redistributable and listed in `content/LICENSES.md` and `REUSE.toml`. Never use another game's name or assets. `reuse lint` must pass.
+Code is MIT, original assets and docs are CC BY 4.0, third-party assets must be redistributable and listed in `content/LICENSES.md` and `REUSE.toml`. A free community download with no stated licence may be added on probation (licence column `Unverified (community)`, `LicenseRef-Community-Unverified` in `REUSE.toml`), but must be verified or replaced before it ships in a `main` release. Never use another game's name or assets. `reuse lint` must pass.

@@ -838,8 +838,18 @@ The project is open source with no asset budget. Assets live in a **public repos
 | GPL (for art) | Avoid | Unclear obligations for art in games |
 | Any NC (non-commercial) or ND (no-derivatives) | **No** | Not open-source compatible |
 | "Royalty-free, no redistribution" (Mixamo, Sonniss GDC bundles, Fab / Unity Asset Store standard licences, Sketchfab standard) | **No** | Free to use, but cannot be published in a public repo |
+| Free community download with no licence stated (for example a Sketchfab zip with no licence file) | **On probation** | Allowed in the repo and on `dev` while tracked as `LicenseRef-Community-Unverified`, see below. Not allowed to ship in a `main` release until verified or replaced |
 | AI-generated 3D/textures/audio | **No (for now)** | Copyright status and tool terms unclear; revisit later |
 | Anything ripped or copied from existing commercial games | **Never** | Copyright and trademark infringement |
+
+#### Community assets on probation
+
+Added 2026-11-08 at the developer's request: assets that are free to download from a community site but carry no stated licence may be used while the game is in development.
+
+- List the asset in `content/LICENSES.md` with source URL (if known), the author if known, and the licence column set to `Unverified (community)`. Annotate it in `REUSE.toml` as `LicenseRef-Community-Unverified` (text in `LICENSES/`).
+- Everything marked unverified must be **verified (licence found, row updated) or replaced** before it ships in a build from `main` (the public `preview` release). The PR into `main` checks the ledger for `Unverified`.
+- The source repository is public, so unverified assets are redistributed from it. The risk is accepted: if the owner objects, the asset is removed and replaced.
+- This does **not** cover anything ripped or copied from an existing commercial game, nor NC or ND content once it is known to be NC or ND. Those stay "Never" and "No" above.
 
 #### Project licensing
 

@@ -38,3 +38,15 @@ path = ["content/weapons/source/m416_blendswap_cc0.blend", "content/weapons/sour
 precedence = "override"
 SPDX-FileCopyrightText = "natholas (Blend Swap)"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["content/weapons/m4/source/**", "content/weapons/m4/textures/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "BarcodeGames (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = "content/weapons/m4/sight/**"
+precedence = "override"
+SPDX-FileCopyrightText = "Michael Makivic (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-4.0"

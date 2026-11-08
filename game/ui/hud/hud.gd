@@ -57,8 +57,11 @@ func _process(delta: float) -> void:
 		return
 	var weapon: Weapon = _player.weapon
 	var logic: WeaponLogic = weapon.logic
-	var status: String = "RELOADING" if logic.is_reloading else String(logic.fire_mode).to_upper()
-	_ammo_label.text = "%d / %d   %s" % [logic.magazine, logic.reserve, status]
+	if weapon.definition.melee:
+		_ammo_label.text = weapon.definition.display_name.to_upper()
+	else:
+		var status: String = "RELOADING" if logic.is_reloading else String(logic.fire_mode).to_upper()
+		_ammo_label.text = "%d / %d   %s   %s" % [logic.magazine, logic.reserve, status, weapon.definition.display_name]
 	_health_label.text = "%d" % ceili(_player.health.health)
 	_exposure_bar.value = _player.exposure.exposure
 	_stance_label.text = _stance_text()
@@ -200,6 +203,8 @@ func _draw_crosshair() -> void:
 		_draw_binocular_reticle(center, binoculars)
 		return
 	var weapon: Weapon = _player.weapon
+	if weapon.definition.melee:
+		return
 	# Stays visible while aiming: it is the aim guide, and its gap shows the accuracy.
 	var color: Color = Color(1.0, 1.0, 1.0, 0.85)
 	var camera: Camera3D = _player.camera

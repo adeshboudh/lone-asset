@@ -31,6 +31,13 @@ var _viewmodel: Node3D
 var _anim: AnimationPlayer
 var _flash: OmniLight3D
 var _kick: float = 0.0
+var _turn_rate: Vector2 = Vector2.ZERO
+var _strafe_speed: float = 0.0
+var _ground_speed: float = 0.0
+var _grounded: bool = true
+var _bob_phase: float = 0.0
+var _sway_position: Vector3 = Vector3.ZERO
+var _sway_rotation_deg: Vector3 = Vector3.ZERO
 var _flash_remaining: float = 0.0
 var _was_reloading: bool = false
 ## 1 right after the weapon is raised, falling to 0.
@@ -52,6 +59,16 @@ func _ready() -> void:
 	if _ballistics == null:
 		Log.warn(&"weapon", "No BallisticsSystem in the level; %s cannot fire" % definition.id)
 	_build_viewmodel()
+
+
+## Called by the holder every frame: turn rate in rad/s (x yaw right-positive, y pitch up-positive)
+## strafe speed in m/s (right-positive), horizontal speed in m/s and whether the player is on the
+## floor. Drives the viewmodel sway and walk bob.
+func set_sway_input(turn_rate: Vector2, strafe_speed: float, ground_speed: float, grounded: bool) -> void:
+	_turn_rate = turn_rate
+	_strafe_speed = strafe_speed
+	_ground_speed = ground_speed
+	_grounded = grounded
 
 
 ## Raises the weapon after the player switched to it.
@@ -117,15 +134,26 @@ func _process(delta: float) -> void:
 		return
 	_kick = move_toward(_kick, 0.0, KICK_RECOVERY * delta)
 	_equip = move_toward(_equip, 0.0, delta / EQUIP_TIME_S)
-	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, smoothstep(0.0, 1.0, aim_blend))
+	_sway_position = WeaponSwayRules.approach(_sway_position,
+		WeaponSwayRules.target_position(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
+	_sway_rotation_deg = WeaponSwayRules.approach(_sway_rotation_deg,
+		WeaponSwayRules.target_rotation_deg(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
+	_bob_phase = WeaponSwayRules.advance_bob_phase(definition, _bob_phase, _ground_speed, _grounded, delta)
+	var bob_position: Vector3 = WeaponSwayRules.bob_position(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
+	var bob_rotation_deg: Vector3 = WeaponSwayRules.bob_rotation_deg(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
+	var rotation_deg: Vector3 = _sway_rotation_deg + bob_rotation_deg
+	var sway_rotation: Vector3 = Vector3(deg_to_rad(rotation_deg.x), deg_to_rad(rotation_deg.y), deg_to_rad(rotation_deg.z))
+	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, smoothstep(0.0, 1.0, aim_blend)) \
+		+ _sway_position + bob_position
 	if _anim != null:
 		_viewmodel.position = base  # the animations carry the kick and the reload
+		_viewmodel.rotation = sway_rotation
 	else:
 		var reload_dip: float = sin(logic.reload_progress() * PI) * 0.12
 		var raise: float = _equip * _equip
 		var swing: float = sin(clampf(_melee_t / _melee_swing_s(), 0.0, 1.0) * PI) if definition.melee else 0.0
 		_viewmodel.position = base + Vector3(-0.10 * swing, -reload_dip - raise * 0.3 + 0.03 * swing, _kick * KICK_DISTANCE + raise * 0.1 - 0.28 * swing)
-		_viewmodel.rotation = Vector3(-reload_dip * 2.0 - raise * 0.7 + 0.25 * swing, 0.6 * swing, 0.0)
+		_viewmodel.rotation = Vector3(-reload_dip * 2.0 - raise * 0.7 + 0.25 * swing, 0.6 * swing, 0.0) + sway_rotation
 	_flash_remaining -= delta
 	_flash.visible = _flash_remaining > 0.0
 

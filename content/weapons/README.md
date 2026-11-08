@@ -4,7 +4,7 @@ Original work for this project, CC BY 4.0 (see `REUSE.toml`), except the third-p
 
 ## `pistol/` and `knife/` (slots 2 and 3)
 
-"9mm Pistol" by TORI106 (CC BY 4.0, https://skfb.ly/owxRE) and "M9 Bayonet knife" by Michael Karel (CC BY 4.0, https://skfb.ly/6BY6P). Both are static models without hands, so `pistol_viewmodel.gd` and `knife_viewmodel.gd` orient and texture them and put them in the right fist of the M4 pack's arms (`hands_rig.gd`: the rifle is hidden, the left arm shrunk away, the arm shrunk and swung down so it stays out of the sight picture). They have no animations: the pistol kicks and reloads with the procedural dip in `weapon.gd`, the knife swings with its procedural thrust (`melee_*` fields in `data/weapons/knife.tres`).
+"9mm Pistol" by TORI106 (CC BY 4.0, https://skfb.ly/owxRE) and "M9 Bayonet knife" by Michael Karel (CC BY 4.0, https://skfb.ly/6BY6P). Both are static models without hands, so `pistol_viewmodel.gd` and `knife_viewmodel.gd` orient and texture them and put them in the right fist of the M4 pack's arms (`hands_rig.gd`: the rifle is hidden, the left arm shrunk away, the arm shrunk and swung down so it stays out of the sight picture). Their animations are hand-keyed clips built in code (`clip_builder.gd`, keys in each viewmodel script) that turn the arm and the weapon about the grip: pistol Draw, Fire, Reload, Reload_Empty, Idle; knife Draw, Idle, Fire (quick slash, fire button) and Fire_Alt (heavy thrust, aim button). The knife's numbers are the `melee_*` fields in `data/weapons/knife.tres`.
 
 ## `m4/` (the viewmodel the player uses)
 

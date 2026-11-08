@@ -13,5 +13,7 @@ static func is_from_behind(target_facing: Vector3, to_attacker: Vector3, half_ar
 	return facing.angle_to(offset) >= deg_to_rad(180.0 - half_arc_deg)
 
 
-static func damage_for(definition: WeaponDefinition, from_behind: bool) -> float:
-	return definition.melee_backstab_damage if from_behind else definition.melee_damage
+static func damage_for(definition: WeaponDefinition, from_behind: bool, heavy: bool = false) -> float:
+	if from_behind:
+		return definition.melee_backstab_damage
+	return definition.melee_heavy_damage if heavy else definition.melee_damage

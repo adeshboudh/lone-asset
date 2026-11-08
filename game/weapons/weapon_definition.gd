@@ -76,6 +76,8 @@ extends Resource
 @export var anim_fire: StringName = &""
 @export var anim_reload: StringName = &""
 @export var anim_reload_empty: StringName = &""
+## Melee only: the heavy attack (aim button).
+@export var anim_fire_alt: StringName = &""
 
 @export_group("Melee")
 ## A blade: the trigger swings it instead of firing; ammo, spread and reload do not apply.
@@ -89,3 +91,9 @@ extends Resource
 ## Whole swing, and when the blade lands inside it.
 @export var melee_swing_s: float = 0.5
 @export var melee_hit_delay_s: float = 0.18
+## The heavy attack, on the aim button: slower, longer reach, harder hit. From behind it does the same
+## takedown damage as the quick attack.
+@export var melee_heavy_damage: float = 80.0
+@export var melee_heavy_range_m: float = 2.3
+@export var melee_heavy_swing_s: float = 0.8
+@export var melee_heavy_hit_delay_s: float = 0.36

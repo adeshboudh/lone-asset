@@ -15,8 +15,13 @@ const ARM_DROP_DEG: float = 25.0
 const GUN_TURN := Vector3(0.0, 0.0, 0.0)
 
 
+## The grip: animations turn the arm and the pistol about this point.
+const GRIP: Vector3 = GUN_POSITION + Vector3(0.0, -0.02, 0.066)
+const V0 := Vector3.ZERO
+
+
 func _ready() -> void:
-	HandsRig.build(self, false, HAND_SCALE, GUN_POSITION + Vector3(0.0, -0.02, 0.066), ARM_DROP_DEG)
+	var skeleton: Skeleton3D = HandsRig.build(self, false, HAND_SCALE, GRIP, ARM_DROP_DEG)
 	var holder: Node3D = Node3D.new()
 	holder.name = "Gun"
 	holder.position = GUN_POSITION
@@ -33,7 +38,43 @@ func _ready() -> void:
 	for i: int in parts.size():
 		(parts[i] as MeshInstance3D).set_surface_override_material(0, maps[mini(i, 1)])
 		(parts[i] as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "Pivot"
+	pivot.position = GRIP
+	add_child(pivot)
+	skeleton.get_parent().reparent(pivot, true)
+	holder.reparent(pivot, true)
 	var muzzle: Node3D = Node3D.new()
 	muzzle.name = "Muzzle"
-	holder.add_child(muzzle)
-	muzzle.position = Vector3(0.0, 0.052, -0.1)
+	add_child(muzzle)
+	muzzle.position = GUN_POSITION + Vector3(0.0, 0.052, -0.1)
+	ClipBuilder.add_player(self, ^"Pivot", GRIP, _clips())
+
+
+## Hand-keyed clips: Idle, Draw, Fire, Reload and Reload_Empty (lengths match the definition's reload times).
+func _clips() -> Dictionary:
+	return {
+		&"Idle": {"length": 3.0, "loop": true, "keys": [
+			[0.0, V0, V0], [1.5, Vector3(0.0, 0.002, 0.0), Vector3(0.4, 0.0, 0.0)], [3.0, V0, V0]]},
+		&"Draw": {"length": 0.45, "keys": [
+			[0.0, Vector3(0.05, -0.22, 0.06), Vector3(-35.0, 20.0, 10.0)],
+			[0.3, Vector3(0.0, 0.01, -0.01), Vector3(4.0, 0.0, 0.0)],
+			[0.45, V0, V0]]},
+		&"Fire": {"length": 0.14, "keys": [
+			[0.0, V0, V0], [0.03, Vector3(0.0, 0.004, 0.035), Vector3(6.0, 0.0, 0.0)], [0.14, V0, V0]]},
+		&"Reload": {"length": 1.5, "keys": [
+			[0.0, V0, V0],
+			[0.25, Vector3(0.03, -0.10, 0.05), Vector3(-25.0, 0.0, 25.0)],
+			[0.55, Vector3(0.03, -0.11, 0.05), Vector3(-28.0, 0.0, 28.0)],
+			[0.8, Vector3(0.03, -0.09, 0.04), Vector3(-22.0, 0.0, 22.0)],
+			[1.15, Vector3(0.01, -0.03, 0.0), Vector3(-6.0, 0.0, 6.0)],
+			[1.5, V0, V0]]},
+		&"Reload_Empty": {"length": 1.9, "keys": [
+			[0.0, V0, V0],
+			[0.25, Vector3(0.03, -0.10, 0.05), Vector3(-25.0, 0.0, 25.0)],
+			[0.6, Vector3(0.03, -0.11, 0.05), Vector3(-28.0, 0.0, 28.0)],
+			[0.95, Vector3(0.03, -0.09, 0.04), Vector3(-22.0, 0.0, 22.0)],
+			[1.3, Vector3(0.01, -0.02, 0.0), Vector3(-4.0, 0.0, 4.0)],
+			[1.5, Vector3(0.0, 0.0, 0.03), Vector3(3.0, 0.0, 0.0)],
+			[1.9, V0, V0]]},
+	}

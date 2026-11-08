@@ -23,7 +23,7 @@ Milestone 1 (core prototype): code-complete for work packages 1 to 13. Work pack
 | 14 | Acceptance tracker and playtest template | PR #14 open |
 | 12b | Hero art area | Not started, needs art decisions |
 
-Weapons (after WP 14 started): the animated M4 with gloved hands and a reflex sight is the rifle (PR #25), the crosshair shows accuracy, and the player carries three weapons on keys 1, 2 and 3: rifle, suppressed pistol and combat knife (branch `feat/weapon-switching`, stacked on PR #25). Each weapon has its own ammo and the loadout is saved. The knife has a swing and does 200 damage from behind (silent takedown) or 45 from the front, data in `data/weapons/knife.tres`. Pistol and knife are static models held in the M4 pack's right hand: no reload or fire animations yet.
+Weapons (after WP 14 started): the animated M4 with gloved hands and a reflex sight is the rifle (PR #25), the crosshair shows accuracy, and the player carries three weapons on keys 1, 2 and 3: rifle, suppressed pistol and combat knife (branch `feat/weapon-switching`, stacked on PR #25). Each weapon has its own ammo and the loadout is saved. The knife has a swing and does 200 damage from behind (silent takedown) or 45 from the front, data in `data/weapons/knife.tres`. Pistol and knife are static models held in the M4 pack's right hand, with hand-keyed clips (draw, fire, reload; knife quick slash on the fire button and heavy thrust on the aim button) built by `content/weapons/clip_builder.gd`.
 
 277 tests pass in CI. Acceptance rows 6, 10, 11, 13 and 16 are automated. `main` is protected.
 

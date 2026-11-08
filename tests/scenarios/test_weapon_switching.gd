@@ -114,6 +114,44 @@ func test_knife_out_of_reach_misses() -> void:
 	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
 
 
+func test_every_animation_a_weapon_names_exists_in_its_viewmodel() -> void:
+	for slot: int in [1, 2, 3]:
+		await _press_slot(slot)
+		var definition: WeaponDefinition = _player.weapon.definition
+		var animations: AnimationPlayer = _player.weapon._anim
+		assert_object(animations).is_not_null()
+		for clip: StringName in [definition.anim_idle, definition.anim_draw, definition.anim_fire, definition.anim_reload,
+				definition.anim_reload_empty, definition.anim_fire_alt]:
+			if clip != &"":
+				assert_bool(animations.has_animation(clip)).override_failure_message("%s missing %s in %s" % [definition.id, clip, animations.get_animation_list()]).is_true()
+
+
+func test_heavy_attack_does_more_damage_from_the_front() -> void:
+	await _press_slot(3)
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -1.2), PI)
+	await _ticks(2)
+	await _heavy_stab()
+	assert_float(HealthComponent.of(dummy).health).is_equal_approx(100.0 - _player.weapon.definition.melee_heavy_damage, 0.01)
+
+
+func test_heavy_attack_reaches_further_than_the_quick_one() -> void:
+	await _press_slot(3)
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -2.3), PI)
+	await _ticks(2)
+	await _stab()
+	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
+	await _heavy_stab()
+	assert_float(HealthComponent.of(dummy).health).is_less(100.0)
+
+
+func test_heavy_attack_from_behind_kills() -> void:
+	await _press_slot(3)
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -1.2), 0.0)
+	await _ticks(2)
+	await _heavy_stab()
+	assert_bool(HealthComponent.of(dummy).is_dead).is_true()
+
+
 func test_knife_is_heard_only_up_close() -> void:
 	await _press_slot(3)
 	var close: Array[NoiseEvent] = _sensor(Vector3(2.0, 0.0, 0.0))
@@ -136,6 +174,13 @@ func _stab() -> void:
 	await _ticks(2)
 	_intent.fire_pressed = false
 	await _ticks(30)
+
+
+func _heavy_stab() -> void:
+	_intent.aim = true
+	await _ticks(2)
+	_intent.aim = false
+	await _ticks(60)
 
 
 func _dummy(position: Vector3, yaw: float) -> TargetDummy:

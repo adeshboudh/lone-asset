@@ -30,6 +30,16 @@ func test_backstab_hits_harder() -> void:
 	assert_float(MeleeRules.damage_for(knife, true)).is_greater(MeleeRules.damage_for(knife, false))
 
 
+func test_heavy_attack_hits_harder_than_the_quick_one_from_the_front() -> void:
+	var knife: WeaponDefinition = WeaponDefinition.new()
+	assert_float(MeleeRules.damage_for(knife, false, true)).is_greater(MeleeRules.damage_for(knife, false, false))
+
+
+func test_takedown_damage_is_the_same_for_both_attacks() -> void:
+	var knife: WeaponDefinition = WeaponDefinition.new()
+	assert_float(MeleeRules.damage_for(knife, true, true)).is_equal(MeleeRules.damage_for(knife, true, false))
+
+
 func test_slot_request_lands_on_that_slot() -> void:
 	assert_int(LoadoutRules.slot_after(2, 0, 3, true)).is_equal(1)
 

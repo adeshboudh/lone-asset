@@ -6,8 +6,6 @@ extends Node3D
 ## Emitted per round, for noise (WP 5), HUD and effects.
 signal fired(origin: Vector3, direction: Vector3)
 
-const HIP_POSITION: Vector3 = Vector3(0.16, -0.17, -0.32)
-const ADS_POSITION: Vector3 = Vector3(0.0, -0.105, -0.24)
 const KICK_DISTANCE: float = 0.035
 const KICK_RECOVERY: float = 14.0
 const FLASH_TIME_S: float = 0.05
@@ -26,6 +24,7 @@ var current_spread_deg: float = 0.0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _ballistics: BallisticsSystem
 var _viewmodel: Node3D
+var _anim: AnimationPlayer
 var _flash: OmniLight3D
 var _kick: float = 0.0
 var _flash_remaining: float = 0.0
@@ -66,6 +65,9 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	var shots: int = logic.update(delta, intent.fire, intent.fire_pressed) if _ballistics != null else 0
 	if logic.is_reloading and not _was_reloading:
 		Audio.play_2d(definition.reload_empty_sound if logic.magazine == 0 else definition.reload_sound, &"Weapons")
+		var empty: bool = logic.magazine == 0
+		_play_anim(definition.anim_reload_empty if empty else definition.anim_reload,
+				definition.reload_time_empty if empty else definition.reload_time)
 	_was_reloading = logic.is_reloading
 	for i: int in shots:
 		var direction: Vector3 = WeaponSpread.random_direction(-aim.basis.z, current_spread_deg, _rng)
@@ -78,6 +80,7 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 			deg_to_rad(definition.recoil_pitch_deg),
 			deg_to_rad(_rng.randf_range(-definition.recoil_yaw_deg, definition.recoil_yaw_deg))) * recoil_scale
 		_kick = 1.0
+		_play_anim(definition.anim_fire, 0.0)
 		_flash_remaining = FLASH_TIME_S
 		fired.emit(aim.origin, direction)
 	return kick
@@ -87,10 +90,13 @@ func _process(delta: float) -> void:
 	if _viewmodel == null:
 		return
 	_kick = move_toward(_kick, 0.0, KICK_RECOVERY * delta)
-	var reload_dip: float = sin(logic.reload_progress() * PI) * 0.12
-	_viewmodel.position = HIP_POSITION.lerp(ADS_POSITION, smoothstep(0.0, 1.0, aim_blend)) \
-		+ Vector3(0.0, -reload_dip, _kick * KICK_DISTANCE)
-	_viewmodel.rotation.x = -reload_dip * 2.0
+	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, smoothstep(0.0, 1.0, aim_blend))
+	if _anim != null:
+		_viewmodel.position = base  # the animations carry the kick and the reload
+	else:
+		var reload_dip: float = sin(logic.reload_progress() * PI) * 0.12
+		_viewmodel.position = base + Vector3(0.0, -reload_dip, _kick * KICK_DISTANCE)
+		_viewmodel.rotation.x = -reload_dip * 2.0
 	_flash_remaining -= delta
 	_flash.visible = _flash_remaining > 0.0
 
@@ -109,3 +115,19 @@ func _build_viewmodel() -> void:
 	_flash.visible = false
 	var muzzle: Node3D = _viewmodel.get_node_or_null(^"Muzzle") as Node3D
 	(muzzle if muzzle != null else _viewmodel).add_child(_flash)
+	_anim = _viewmodel.get_node_or_null(^"AnimationPlayer") as AnimationPlayer
+	if _anim == null:
+		_anim = _viewmodel.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if _anim != null:
+		_play_anim(definition.anim_draw, 0.0)
+
+
+## Plays a viewmodel animation, then falls back to idle. duration_s > 0 stretches it to that length.
+func _play_anim(anim_name: StringName, duration_s: float) -> void:
+	if _anim == null or anim_name == &"" or not _anim.has_animation(anim_name):
+		return
+	var speed: float = ViewmodelAnimationRules.speed_for(_anim.get_animation(anim_name).length, duration_s)
+	_anim.stop()
+	_anim.play(anim_name, -1.0, speed)
+	if definition.anim_idle != &"" and _anim.has_animation(definition.anim_idle):
+		_anim.queue(definition.anim_idle)

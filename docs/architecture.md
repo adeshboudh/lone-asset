@@ -9,13 +9,13 @@ This is the short version of `docs/design/m1-technical-design.md`. Read it first
 
 ## What the project is
 
-An open-source tactical stealth FPS for **Windows and Linux desktop**, built with **Godot 4.7.2** (typed GDScript, Jolt physics, Forward+ renderer with OpenGL fallback). One person plays and tests it. Zero budget: MIT code, CC BY 4.0 original assets and docs, REUSE-compliant, redistributable third-party assets only.
+An open-source tactical stealth FPS for **Windows and Linux desktop**, built with **Godot 4.7.2** (typed GDScript, Jolt physics, Forward+ renderer with OpenGL fallback). One person plays and tests it. Zero budget: MIT code, CC BY 4.0 original assets and docs, REUSE-compliant, redistributable third-party assets only (free community downloads with no stated licence are allowed on probation, §17.4 of the design doc).
 
 Hard rules about identity and content:
 
 - Never use the name of, or any asset, text, level, sound or model from, any existing game. The public name is **Lone Asset**.
 - No browser or WebAssembly target. Desktop only (decided 2026-11-02).
-- Every asset needs a licence entry (`content/LICENSES.md`, `REUSE.toml`). CI runs `reuse lint`.
+- Every asset needs a licence entry (`content/LICENSES.md`, `REUSE.toml`). CI runs `reuse lint`. Community downloads with no stated licence go in as `Unverified (community)` and must be verified or replaced before a `main` release.
 
 ## Design principles
 

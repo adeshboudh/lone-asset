@@ -32,3 +32,9 @@ path = "content/environment/textures/**"
 precedence = "override"
 SPDX-FileCopyrightText = "Rob Tuytel (Poly Haven)"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["content/weapons/source/m416_blendswap_cc0.blend", "content/weapons/source/m416_blendswap_LICENSE.txt"]
+precedence = "override"
+SPDX-FileCopyrightText = "natholas (Blend Swap)"
+SPDX-License-Identifier = "CC0-1.0"

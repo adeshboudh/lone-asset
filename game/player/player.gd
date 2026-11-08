@@ -4,6 +4,8 @@ extends CharacterBody3D
 ## the components hold the behaviour.
 
 @export var settings: PlayerMovementSettings
+## Weapons carried besides the one in the scene (slot 1): slots 2, 3... in order.
+@export var extra_weapons: Array[WeaponDefinition] = []
 
 var camera: Camera3D:
 	get:
@@ -45,6 +47,10 @@ var _idle_intent: InputIntent = InputIntent.new()
 var _recoil_pitch: float = 0.0
 var _base_fov: float = 0.0
 var _bob_phase: float = 0.0
+## Every weapon carried, in slot order, and the index of the one in hand.
+var _weapons: Array[Weapon] = []
+var _slot: int = 0
+var _weapon: Weapon
 
 @onready var _input: PlayerInput = %PlayerInput
 @onready var _movement: MovementComponent = %MovementComponent
@@ -54,7 +60,7 @@ var _bob_phase: float = 0.0
 @onready var _head: Node3D = %Head
 @onready var _lean_pivot: Node3D = %LeanPivot
 @onready var _camera: Camera3D = %Camera
-@onready var _weapon: Weapon = %Weapon
+@onready var _primary_weapon: Weapon = %Weapon
 @onready var _health: HealthComponent = %HealthComponent
 @onready var _hud: Hud = %Hud
 @onready var _noise: NoiseEmitterComponent = %NoiseEmitterComponent
@@ -75,7 +81,7 @@ func _ready() -> void:
 	add_to_group(&"player")
 	_movement.landed.connect(_on_landed)
 	_noise.stepped.connect(_audio.on_step)
-	_weapon.fired.connect(_on_weapon_fired)
+	_build_loadout()
 	_health.died.connect(_on_died)
 	_interactor.setup(self)
 	_hud.setup(self)
@@ -99,6 +105,9 @@ func save_state() -> Dictionary:
 		"stance": "crouch" if _stance.is_crouched else "stand",
 		"health": _health.health,
 		"weapon": {"id": String(_weapon.definition.id), "mag": _weapon.logic.magazine, "reserve": _weapon.logic.reserve},
+		"slot": _slot,
+		"loadout": _weapons.map(func(w: Weapon) -> Dictionary:
+			return {"id": String(w.definition.id), "mag": w.logic.magazine, "reserve": w.logic.reserve}),
 	}
 
 
@@ -112,9 +121,18 @@ func load_state(data: Dictionary) -> void:
 	_stance.restore(data.get("stance", "stand") == "crouch", settings)
 	_head.position.y = _stance.eye_height
 	_health.health = float(data.get("health", _health.max_health))
-	var saved_weapon: Dictionary = data.get("weapon", {})
-	_weapon.logic.magazine = int(saved_weapon.get("mag", _weapon.logic.magazine))
-	_weapon.logic.reserve = int(saved_weapon.get("reserve", _weapon.logic.reserve))
+	var saved_loadout: Array = data.get("loadout", [])
+	for saved: Dictionary in saved_loadout:
+		for held: Weapon in _weapons:
+			if String(held.definition.id) == String(saved.get("id", "")):
+				held.logic.magazine = int(saved.get("mag", held.logic.magazine))
+				held.logic.reserve = int(saved.get("reserve", held.logic.reserve))
+	if saved_loadout.is_empty():
+		# older saves: just the weapon in hand
+		var saved_weapon: Dictionary = data.get("weapon", {})
+		_weapon.logic.magazine = int(saved_weapon.get("mag", _weapon.logic.magazine))
+		_weapon.logic.reserve = int(saved_weapon.get("reserve", _weapon.logic.reserve))
+	_select_slot(clampi(int(data.get("slot", 0)), 0, _weapons.size() - 1), true)
 
 
 ## Scripted input for tests and AI dummies; null returns control to the devices.
@@ -147,7 +165,9 @@ func _physics_process(delta: float) -> void:
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
 	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
 	_binoculars.physics_update(self, intent, delta)
-	_weapon.visible = not _binoculars.is_active
+	_switch_weapon(intent.weapon_slot)
+	for held: Weapon in _weapons:
+		held.visible = held == _weapon and not _binoculars.is_active
 	# Raised binoculars take both hands: the weapon sees no input.
 	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active else intent
 	var kick: Vector2 = _weapon.physics_update(weapon_intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
@@ -156,9 +176,41 @@ func _physics_process(delta: float) -> void:
 	rotate_y(kick.y)
 
 
-func _on_weapon_fired(_origin: Vector3, _direction: Vector3) -> void:
-	_noise.emit_shot(self, _weapon.definition)
-	_exposure.flash(_weapon.definition.flash_exposure)
+## The scene's weapon is slot 1; extra_weapons follow it as slots 2, 3...
+func _build_loadout() -> void:
+	_weapons.append(_primary_weapon)
+	for definition: WeaponDefinition in extra_weapons:
+		var extra: Weapon = Weapon.new()
+		extra.definition = definition
+		extra.name = String(definition.id).to_pascal_case()
+		_primary_weapon.get_parent().add_child(extra)
+		_weapons.append(extra)
+	for held: Weapon in _weapons:
+		held.fired.connect(_on_weapon_fired.bind(held))
+	_weapon = _primary_weapon
+	_slot = 0
+	for held: Weapon in _weapons:
+		held.visible = held == _weapon
+
+
+func _switch_weapon(requested: int) -> void:
+	var slot: int = LoadoutRules.slot_after(requested, _slot, _weapons.size(), _weapon.can_holster() and not _binoculars.is_active)
+	if slot != _slot:
+		_select_slot(slot, false)
+
+
+func _select_slot(slot: int, silent: bool) -> void:
+	_slot = slot
+	_weapon = _weapons[slot]
+	for held: Weapon in _weapons:
+		held.visible = held == _weapon
+	if not silent:
+		_weapon.equip()
+
+
+func _on_weapon_fired(_origin: Vector3, _direction: Vector3, source: Weapon) -> void:
+	_noise.emit_shot(self, source.definition)
+	_exposure.flash(source.definition.flash_exposure)
 
 
 func _on_landed(fall_height: float) -> void:

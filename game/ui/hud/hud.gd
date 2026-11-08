@@ -57,8 +57,11 @@ func _process(delta: float) -> void:
 		return
 	var weapon: Weapon = _player.weapon
 	var logic: WeaponLogic = weapon.logic
-	var status: String = "RELOADING" if logic.is_reloading else String(logic.fire_mode).to_upper()
-	_ammo_label.text = "%d / %d   %s" % [logic.magazine, logic.reserve, status]
+	if weapon.definition.melee:
+		_ammo_label.text = weapon.definition.display_name.to_upper()
+	else:
+		var status: String = "RELOADING" if logic.is_reloading else String(logic.fire_mode).to_upper()
+		_ammo_label.text = "%d / %d   %s   %s" % [logic.magazine, logic.reserve, status, weapon.definition.display_name]
 	_health_label.text = "%d" % ceili(_player.health.health)
 	_exposure_bar.value = _player.exposure.exposure
 	_stance_label.text = _stance_text()
@@ -200,17 +203,15 @@ func _draw_crosshair() -> void:
 		_draw_binocular_reticle(center, binoculars)
 		return
 	var weapon: Weapon = _player.weapon
-	var color: Color = Color(1.0, 1.0, 1.0, 0.85 * (1.0 - weapon.aim_blend))
-	# Gap in pixels where the spread cone meets the screen.
+	if weapon.definition.melee:
+		return
+	# Stays visible while aiming: it is the aim guide, and its gap shows the accuracy.
+	var color: Color = Color(1.0, 1.0, 1.0, 0.85)
 	var camera: Camera3D = _player.camera
-	var half_height: float = _crosshair.size.y * 0.5
-	var gap: float = tan(deg_to_rad(weapon.current_spread_deg)) / tan(deg_to_rad(camera.fov * 0.5)) * half_height
-	gap = maxf(gap, 3.0)
+	var gap: float = CrosshairRules.gap_px(weapon.current_spread_deg, camera.fov, _crosshair.size.y * 0.5)
 	var length: float = 8.0
 	for direction: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
 		_crosshair.draw_line(center + direction * gap, center + direction * (gap + length), color, 2.0)
-	if weapon.aim_blend > 0.5:
-		_crosshair.draw_circle(center, 1.5, Color(1.0, 1.0, 1.0, 0.9))
 
 	if _hit_marker_remaining > 0.0:
 		var marker_color: Color = Color(1.0, 0.3, 0.25) if _hit_marker_killed else Color.WHITE

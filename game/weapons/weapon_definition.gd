@@ -89,3 +89,36 @@ extends Resource
 @export_group("Presentation")
 ## First-person model. Must contain a Node3D named "Muzzle".
 @export var viewmodel_scene: PackedScene
+## Where the viewmodel sits relative to the camera, hip-fired and fully aimed (metres). Aimed must
+## put the sight on the camera axis; it depends on the model, so it lives with the definition.
+@export var viewmodel_hip_position: Vector3 = Vector3(0.16, -0.17, -0.32)
+@export var viewmodel_ads_position: Vector3 = Vector3(0.0, -0.105, -0.24)
+@export_subgroup("Viewmodel animations")
+## Names in the viewmodel's AnimationPlayer. Empty = the model has none and the kick and reload dip are
+## procedural. When "fire" is set the animation carries the recoil and the procedural kick is off.
+@export var anim_idle: StringName = &""
+@export var anim_draw: StringName = &""
+@export var anim_fire: StringName = &""
+@export var anim_reload: StringName = &""
+@export var anim_reload_empty: StringName = &""
+## Melee only: the heavy attack (aim button).
+@export var anim_fire_alt: StringName = &""
+
+@export_group("Melee")
+## A blade: the trigger swings it instead of firing; ammo, spread and reload do not apply.
+@export var melee: bool = false
+@export var melee_range_m: float = 1.8
+@export var melee_damage: float = 45.0
+## Damage when the target is struck from behind: the silent takedown.
+@export var melee_backstab_damage: float = 200.0
+## "From behind" means within this many degrees of straight behind the target.
+@export_range(0.0, 180.0) var melee_backstab_arc_deg: float = 60.0
+## Whole swing, and when the blade lands inside it.
+@export var melee_swing_s: float = 0.5
+@export var melee_hit_delay_s: float = 0.18
+## The heavy attack, on the aim button: slower, longer reach, harder hit. From behind it does the same
+## takedown damage as the quick attack.
+@export var melee_heavy_damage: float = 80.0
+@export var melee_heavy_range_m: float = 2.3
+@export var melee_heavy_swing_s: float = 0.8
+@export var melee_heavy_hit_delay_s: float = 0.36

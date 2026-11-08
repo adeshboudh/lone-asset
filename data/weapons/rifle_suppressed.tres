@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
-[ext_resource type="PackedScene" path="res://content/weapons/graybox_rifle.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://content/weapons/m4/m4_viewmodel.tscn" id="2_view"]
 
 [resource]
 script = ExtResource("1_def")
@@ -9,3 +9,10 @@ id = &"rifle_suppressed"
 display_name = "Suppressed rifle"
 flash_exposure = 0.3
 viewmodel_scene = ExtResource("2_view")
+viewmodel_hip_position = Vector3(0, 0, 0)
+viewmodel_ads_position = Vector3(-0.071, 0.0125, 0)
+anim_idle = &"Idle"
+anim_draw = &"Draw"
+anim_fire = &"Fire"
+anim_reload = &"Reload"
+anim_reload_empty = &"Reload_Empty"

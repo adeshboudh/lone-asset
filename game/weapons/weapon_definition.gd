@@ -76,3 +76,16 @@ extends Resource
 @export var anim_fire: StringName = &""
 @export var anim_reload: StringName = &""
 @export var anim_reload_empty: StringName = &""
+
+@export_group("Melee")
+## A blade: the trigger swings it instead of firing; ammo, spread and reload do not apply.
+@export var melee: bool = false
+@export var melee_range_m: float = 1.8
+@export var melee_damage: float = 45.0
+## Damage when the target is struck from behind: the silent takedown.
+@export var melee_backstab_damage: float = 200.0
+## "From behind" means within this many degrees of straight behind the target.
+@export_range(0.0, 180.0) var melee_backstab_arc_deg: float = 60.0
+## Whole swing, and when the blade lands inside it.
+@export var melee_swing_s: float = 0.5
+@export var melee_hit_delay_s: float = 0.18

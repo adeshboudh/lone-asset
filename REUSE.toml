@@ -50,3 +50,15 @@ path = "content/weapons/m4/sight/**"
 precedence = "override"
 SPDX-FileCopyrightText = "Michael Makivic (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["content/weapons/pistol/source/**", "content/weapons/pistol/textures/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "TORI106 (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["content/weapons/knife/source/**", "content/weapons/knife/textures/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Michael Karel (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-4.0"

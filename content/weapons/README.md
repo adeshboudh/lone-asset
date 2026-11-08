@@ -2,6 +2,10 @@
 
 Original work for this project, CC BY 4.0 (see `REUSE.toml`), except the third-party pieces named below and in `../LICENSES.md`.
 
+## `pistol/` and `knife/` (slots 2 and 3)
+
+"9mm Pistol" by TORI106 (CC BY 4.0, https://skfb.ly/owxRE) and "M9 Bayonet knife" by Michael Karel (CC BY 4.0, https://skfb.ly/6BY6P). Both are static models without hands, so `pistol_viewmodel.gd` and `knife_viewmodel.gd` orient and texture them and build simple gloved hands with `limb_builder.gd`. They have no animations: the pistol kicks and reloads with the procedural dip in `weapon.gd`, the knife swings with its procedural thrust (`melee_*` fields in `data/weapons/knife.tres`).
+
 ## `m4/` (the viewmodel the player uses)
 
 Animated M4 and gloved hands from "M4 - FPS Weapon Animations Pack (v.1)" by BarcodeGames (CC BY 4.0, https://skfb.ly/pNQJN), and the reflex sight "FPS Red Dot Sight (Game Model)" by Michael Makivic (CC BY 4.0, https://skfb.ly/6zPSA). `m4_viewmodel.gd` puts the pack's camera bone at the node origin, textures the gun and hands, removes the carry handle and front sight post from the mesh, mounts the sight (clear lens, no dot: the HUD crosshair is the aim guide) and adds the `Muzzle` node. The pack's animations (Idle, Draw, Fire, Reload, Reload_Empty) are named in `data/weapons/rifle_suppressed.tres`, which also sets the hip and ADS positions. ADS puts the lens centre on the crosshair: change the sight mount or its scale and ADS moves with it.

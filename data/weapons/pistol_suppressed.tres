@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://content/weapons/pistol/pistol_viewmodel.tscn" id="2_view"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"pistol_suppressed"
+display_name = "Suppressed pistol"
+damage = 30.0
+fire_rate_rpm = 450.0
+fire_modes = Array[StringName]([&"semi"])
+magazine_size = 15
+reserve_ammo = 60
+reload_time = 1.5
+reload_time_empty = 1.9
+muzzle_velocity = 380.0
+max_range = 200.0
+spread_hip_deg = 2.0
+spread_ads_deg = 0.2
+spread_move_add_deg = 1.8
+spread_per_shot_deg = 0.5
+spread_max_bloom_deg = 2.2
+recoil_pitch_deg = 0.9
+recoil_yaw_deg = 0.3
+ads_fov = 62.0
+ads_time = 0.14
+noise_radius_m = 14.0
+flash_exposure = 0.25
+viewmodel_scene = ExtResource("2_view")
+viewmodel_hip_position = Vector3(0.13, -0.13, -0.34)
+viewmodel_ads_position = Vector3(0.0, -0.062, -0.27)

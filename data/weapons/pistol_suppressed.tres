@@ -28,5 +28,5 @@ ads_time = 0.14
 noise_radius_m = 14.0
 flash_exposure = 0.25
 viewmodel_scene = ExtResource("2_view")
-viewmodel_hip_position = Vector3(0.13, -0.13, -0.34)
-viewmodel_ads_position = Vector3(0.0, -0.062, -0.27)
+viewmodel_hip_position = Vector3(0, 0.03, -0.12)
+viewmodel_ads_position = Vector3(-0.075, 0.103, -0.14)

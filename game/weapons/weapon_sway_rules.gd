@@ -24,11 +24,12 @@ static func target_rotation_deg(weapon: WeaponDefinition, turn_rate: Vector2, st
 	return rotation_deg * _aim_scale(weapon, aim_blend)
 
 
-## Walk cycle: advances with distance walked, only on the ground. Wraps at TAU.
-static func advance_bob_phase(weapon: WeaponDefinition, phase: float, ground_speed: float, grounded: bool, delta: float) -> float:
+## Walk cycle, locked to the footsteps: PI per stride (one step), so TAU is a left and a right
+## step. stride_m is the footstep stride of the current gait. Only on the ground. Wraps at TAU.
+static func advance_bob_phase(phase: float, ground_speed: float, stride_m: float, grounded: bool, delta: float) -> float:
 	if not grounded:
 		return phase
-	return fmod(phase + ground_speed * delta * weapon.bob_cycles_per_metre * TAU, TAU)
+	return fmod(phase + ground_speed * delta / maxf(stride_m, 0.01) * PI, TAU)
 
 
 ## Gun position offset while walking or sprinting: a vertical step bounce and a small side swing.

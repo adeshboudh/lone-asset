@@ -75,7 +75,8 @@ func test_aiming_reduces_bob() -> void:
 
 
 func test_bob_phase_follows_distance_and_wraps() -> void:
-	var step: float = WeaponSwayRules.advance_bob_phase(_weapon, 0.0, 2.0, true, 0.5)
-	assert_float(step).is_equal_approx(fmod(1.0 * _weapon.bob_cycles_per_metre * TAU, TAU), 0.0001)
-	assert_float(WeaponSwayRules.advance_bob_phase(_weapon, 1.5, 3.0, false, 1.0)).is_equal(1.5)
-	assert_float(WeaponSwayRules.advance_bob_phase(_weapon, TAU - 0.01, 5.0, true, 1.0)).is_less(TAU)
+	# One stride walked is one step: half a cycle, so a footstep lands on every PI.
+	assert_float(WeaponSwayRules.advance_bob_phase(0.0, 1.8, 1.8, true, 1.0)).is_equal_approx(PI, 0.0001)
+	assert_float(WeaponSwayRules.advance_bob_phase(0.0, 2.4, 2.4, true, 1.0)).is_equal_approx(PI, 0.0001)
+	assert_float(WeaponSwayRules.advance_bob_phase(1.5, 3.0, 1.8, false, 1.0)).is_equal(1.5)
+	assert_float(WeaponSwayRules.advance_bob_phase(TAU - 0.01, 5.0, 1.8, true, 1.0)).is_less(TAU)

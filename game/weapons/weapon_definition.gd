@@ -65,11 +65,10 @@ extends Resource
 @export var sway_smoothing: float = 12.0
 
 @export_group("Walk bob (viewmodel motion while walking and sprinting)")
-## Step cycles per metre walked.
-@export var bob_cycles_per_metre: float = 0.6
+## The bob cycle follows the footstep stride: one bounce per step, one side swing per two steps.
 @export var bob_vertical_m: float = 0.012
-@export var bob_side_m: float = 0.008
-@export var bob_roll_deg: float = 1.2
+@export var bob_side_m: float = 0.004
+@export var bob_roll_deg: float = 0.6
 ## Extra muzzle-down tilt at sprint pace.
 @export var bob_sprint_tilt_deg: float = 6.0
 

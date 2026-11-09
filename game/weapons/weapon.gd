@@ -34,6 +34,7 @@ var _kick: float = 0.0
 var _turn_rate: Vector2 = Vector2.ZERO
 var _strafe_speed: float = 0.0
 var _ground_speed: float = 0.0
+var _stride_m: float = 1.8
 var _grounded: bool = true
 var _bob_phase: float = 0.0
 var _sway_position: Vector3 = Vector3.ZERO
@@ -62,13 +63,14 @@ func _ready() -> void:
 
 
 ## Called by the holder every frame: turn rate in rad/s (x yaw right-positive, y pitch up-positive)
-## strafe speed in m/s (right-positive), horizontal speed in m/s and whether the player is on the
-## floor. Drives the viewmodel sway and walk bob.
-func set_sway_input(turn_rate: Vector2, strafe_speed: float, ground_speed: float, grounded: bool) -> void:
+## strafe speed in m/s (right-positive), horizontal speed in m/s, whether the player is on the
+## floor and the current footstep stride in m. Drives the viewmodel sway and walk bob.
+func set_sway_input(turn_rate: Vector2, strafe_speed: float, ground_speed: float, grounded: bool, stride_m: float) -> void:
 	_turn_rate = turn_rate
 	_strafe_speed = strafe_speed
 	_ground_speed = ground_speed
 	_grounded = grounded
+	_stride_m = stride_m
 
 
 ## Raises the weapon after the player switched to it.
@@ -138,7 +140,7 @@ func _process(delta: float) -> void:
 		WeaponSwayRules.target_position(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
 	_sway_rotation_deg = WeaponSwayRules.approach(_sway_rotation_deg,
 		WeaponSwayRules.target_rotation_deg(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
-	_bob_phase = WeaponSwayRules.advance_bob_phase(definition, _bob_phase, _ground_speed, _grounded, delta)
+	_bob_phase = WeaponSwayRules.advance_bob_phase(_bob_phase, _ground_speed, _stride_m, _grounded, delta)
 	var bob_position: Vector3 = WeaponSwayRules.bob_position(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
 	var bob_rotation_deg: Vector3 = WeaponSwayRules.bob_rotation_deg(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
 	var rotation_deg: Vector3 = _sway_rotation_deg + bob_rotation_deg

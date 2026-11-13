@@ -17,13 +17,13 @@ SPDX-License-Identifier: CC-BY-4.0
 
 | Area | Rating | Notes |
 |---|---|---|
-| Movement feel | | |
-| Aiming and recoil | | |
-| Weapon audio | | |
-| Stealth readability ("I knew why I was seen") | | |
-| AI believability | | |
-| Hero-area visuals | | |
-| Performance smoothness | | |
+| Movement feel |4 | |
+| Aiming and recoil |4 | |
+| Weapon audio |1 |the gun sound is suppressed |
+| Stealth readability ("I knew why I was seen") |3 | |
+| AI believability |3 |we can make the tougher AI based on the light he on |
+| Hero-area visuals | 4| good enough for 1st iteration but not up to the par for real game|
+| Performance smoothness | 4| the game is smooth in windows|
 
 ## Detection log
 

@@ -255,7 +255,17 @@ def main() -> None:
                 muffled_names.append(muffled_name)
             bank[f"{sound_id}_muffled"] = muffled_names
 
-    add("rifle_shot_suppressed", [shot_suppressed(rng) for _ in range(3)], muffled=True)
+    def add_recorded(sound_id: str) -> None:
+        """Registers a recorded sound (and its muffled copy) that convert_recorded_shots.py already wrote."""
+        bank[sound_id] = [sound_id]
+        bank[f"{sound_id}_muffled"] = [f"{sound_id}_muffled"]
+
+    # The gun shots are recordings now (convert_recorded_shots.py); the draws below keep the random stream
+    # the other sounds were generated from.
+    for _ in range(3):
+        shot_suppressed(rng)
+    add_recorded("rifle_shot_suppressed")
+    add_recorded("pistol_shot_suppressed")
     for surface in ("concrete", "metal", "grass"):
         add(f"footstep_{surface}", [footstep(rng, surface) for _ in range(3)], muffled=True)
     add("landing", [landing(rng)], muffled=True)
@@ -269,7 +279,9 @@ def main() -> None:
     wind, wind_sr = wind_loop(rng)
     add("wind_loop", [wind], wind_sr)
     # Added after the others so earlier sounds keep their exact samples (shared random generator).
-    add("rifle_shot_loud", [shot_loud(rng) for _ in range(3)], muffled=True)
+    for _ in range(3):
+        shot_loud(rng)
+    add_recorded("rifle_shot_loud")
     # Added in WP 9, after the sounds above, for the same reason.
     add("door_open", [door_open(rng)], muffled=True)
     add("door_close", [door_close(rng)], muffled=True)

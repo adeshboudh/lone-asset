@@ -90,7 +90,7 @@ tools/ci         CI scripts (tests, export, budgets)
 
 ## Workflow guardrails
 
-- One work package (WP) per branch and pull request. Branch from `dev`; names `feat/wpN-...`, `fix/...`, `perf/...`, `docs/...`. See `CONTRIBUTING.md`.
+- One work package (WP) per branch and pull request; related small changes can share one branch and PR. Branch from `dev`; names `feat/wpN-...`, `fix/...`, `perf/...`, `docs/...`. See `CONTRIBUTING.md`.
 - `dev` is the development track and `main` the release line (merged from `dev` only). Both are protected: pull request required, CI check "Lint, test and export desktop builds" must pass, no force-push. Feature PRs are squash-merged.
 - Run `tools/ci/run_tests.sh` before pushing. Run `tools/ci/smoke_test.sh` after scene changes.
 - Commit style: Conventional Commits (`feat:`, `fix:`, `docs:`, `build:`). 

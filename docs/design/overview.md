@@ -13,7 +13,7 @@ The player downloads a zip, unzips it and runs the game; no installer. (Mileston
 
 This document describes the technical and gameplay direction only. Story, characters, narrative, dialogue, and specific missions are intentionally excluded.
 
-The project is **open source** and built with a **zero budget**: free and open-source tools only, and only assets whose licences allow redistribution in a public repository (see [Milestone 1 technical design](m1-technical-design.md), §17.4).
+The project is **open source** and built with a **zero budget**: free and open-source tools only, and every third-party asset recorded in the licence ledger (see [Milestone 1 technical design](m1-technical-design.md), §17.4).
 
 Lone Asset is an original project. It does not use names, characters, logos, maps, assets or audio from any existing game or franchise, and its marketing must not reference other games' trademarks.
 

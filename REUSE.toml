@@ -64,7 +64,7 @@ SPDX-FileCopyrightText = "Michael Karel (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = ["tools/audio/source/*.mp3", "content/audio/sfx/rifle_shot_suppressed*.wav*", "content/audio/sfx/rifle_shot_loud*.wav*", "content/audio/sfx/pistol_shot_suppressed*.wav*", "content/audio/sfx/rifle_reload*.wav*", "content/audio/sfx/pistol_reload*.wav*"]
+path = ["tools/audio/source/*.mp3", "content/audio/sfx/rifle_shot_suppressed*.wav*", "content/audio/sfx/rifle_shot_loud*.wav*", "content/audio/sfx/pistol_shot_suppressed*.wav*", "content/audio/sfx/rifle_reload*.wav*", "content/audio/sfx/pistol_reload*.wav*", "content/audio/sfx/rifle_dry*.wav*", "content/audio/sfx/pistol_dry*.wav*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (recorded gun shots, original page not found)"
 SPDX-License-Identifier = "CC0-1.0"

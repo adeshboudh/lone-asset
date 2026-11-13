@@ -57,7 +57,28 @@ def reloads() -> None:
         print(sound_id, length_s)
 
 
+CHARGING = "205940-EFX_INT_AR-15_M4_Charging_Handle_with_Trigger_04-B.mp3"
+MAKAROV = "1232860.audio-GUNMech-SMorph-LockLoad-CO-100k_-Makarov_9mm_Single_Action_Pistol_Dry_Fire_03.mp3"
+# The charging-handle recording holds several clicks (about 1.03, 2.15, 3.29, 3.47, 3.65, 6.03, 7.72, 7.88 and
+# 8.14 s). This one is the dry-fire trigger click; change it if it is the wrong sound.
+M4_TRIGGER_AT_S = 6.03
+DRY = {
+    "rifle_dry": (CHARGING, M4_TRIGGER_AT_S - 0.01, 0.16),
+    "pistol_dry": (MAKAROV, 0.0, 0.15),
+}
+
+
+def dry_fire() -> None:
+    for sound_id, (file, start_s, length_s) in DRY.items():
+        x = decode(SOURCE / file)[int(start_s * SR): int((start_s + length_s) * SR)]
+        fade = int(0.05 * SR)
+        x[-fade:] *= np.linspace(1.0, 0.0, fade)
+        write_wav(sound_id, normalise(x, 0.8))
+        print(sound_id)
+
+
 def main() -> None:
+    dry_fire()
     reloads()
     for sound_id, file in SHOTS.items():
         x = decode(SOURCE / file)[: int(KEEP_S * SR)]

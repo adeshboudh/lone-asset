@@ -29,6 +29,7 @@ noise_radius_m = 14.0
 fire_sound = &"pistol_shot_suppressed"
 reload_sound = &"pistol_reload"
 reload_empty_sound = &"pistol_reload_empty"
+dry_fire_sound = &"pistol_dry"
 flash_exposure = 0.25
 viewmodel_scene = ExtResource("2_view")
 viewmodel_hip_position = Vector3(0, 0.03, -0.12)

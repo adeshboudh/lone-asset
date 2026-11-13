@@ -276,7 +276,9 @@ def main() -> None:
     add_recorded("rifle_reload_empty", muffled=False)
     add_recorded("pistol_reload", muffled=False)
     add_recorded("pistol_reload_empty", muffled=False)
-    add("rifle_dry", [click(rng, 0.9)])
+    click(rng, 0.9)  # recordings now (convert_recorded_shots.py); the draw keeps the random stream
+    add_recorded("rifle_dry", muffled=False)
+    add_recorded("pistol_dry", muffled=False)
     add("impact_world", [impact_world(rng) for _ in range(3)], muffled=True)
     add("impact_body", [impact_body(rng) for _ in range(2)], muffled=True)
     add("hit_marker", [hit_marker()])

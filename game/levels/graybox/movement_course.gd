@@ -21,9 +21,6 @@ func _ready() -> void:
 	_readout.modulate = Color(1.0, 1.0, 1.0, 0.8)
 	layer.add_child(_readout)
 	add_child(layer)
-	var wind: AudioStreamPlayer = Audio.make_loop(&"wind_loop", &"Ambience", -14.0)
-	if wind != null:
-		add_child(wind)
 	Mission.start(MISSION)
 	Game.level_ready()
 

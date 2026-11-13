@@ -29,7 +29,36 @@ def decode(path: Path) -> np.ndarray:
     return np.frombuffer(raw, dtype=np.float32).astype(np.float64)
 
 
+MAG = "1235545.audio-GUNMech-SMorph-LockxLoad-TLM170_-AR-15_Steel_Mag_PIstol_Clip_Manipulation_05.mp3"
+SLIDE = "213017-Pistol-Luger-9mm-Foley-SlideAction-1.mp3"
+# Reload sounds are placed so the clips' events land on the viewmodel animations' key moments, and padded to
+# the reload time. Magazine clip events: out 0.02 s, in 0.93 s, seated 1.15 s. Slide clip: snap at 0.66 s.
+# (id, reload time, [(clip, start in the reload s)])
+RELOADS = [
+    ("rifle_reload", 2.2, [(MAG, 0.35)]),  # M4 magazine out at 0.55 s, in at 1.21 s
+    ("rifle_reload_empty", 2.8, [(MAG, 0.57), (SLIDE, 1.26)]),  # magazine in at 1.50 s, bolt release at 1.92 s
+    ("pistol_reload", 1.5, [(MAG, 0.0)]),  # hand dips at 0.25 to 0.8 s and rises at 1.15 s
+    ("pistol_reload_empty", 1.9, [(MAG, 0.0), (SLIDE, 0.84)]),  # slide snap at 1.5 s
+]
+
+
+def reloads() -> None:
+    clips = {file: decode(SOURCE / file) for file in (MAG, SLIDE)}
+    for sound_id, length_s, parts in RELOADS:
+        track = np.zeros(int(length_s * SR))
+        for file, start_s in parts:
+            clip = clips[file] / np.abs(clips[file]).max()
+            start = int(start_s * SR)
+            end = min(len(track), start + len(clip))
+            track[start:end] += clip[: end - start]
+        fade = int(0.1 * SR)
+        track[-fade:] *= np.linspace(1.0, 0.0, fade)
+        write_wav(sound_id, normalise(track, 0.8))
+        print(sound_id, length_s)
+
+
 def main() -> None:
+    reloads()
     for sound_id, file in SHOTS.items():
         x = decode(SOURCE / file)[: int(KEEP_S * SR)]
         fade = int(FADE_S * SR)

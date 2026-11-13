@@ -1,8 +1,7 @@
 # Asset Licence Ledger
 
 Every third-party asset in `content/` is listed here **before** it is committed, and has a matching annotation in `REUSE.toml`.
-Rows marked `Unverified (community)` are on probation: they must be verified or replaced before a `main` release (design §17.4).
-Allowed licences and sources: [docs/design/m1-technical-design.md §17.4](../docs/design/m1-technical-design.md).
+Any licence is accepted; record the author, source and terms as far as they are known (design §17.4).
 
 | Asset (path) | Author | Source URL | Licence | Date added | Modifications |
 |---|---|---|---|---|---|

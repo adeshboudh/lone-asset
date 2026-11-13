@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/kit/sm_wall_4m.glb" id="1"]
+
+[sub_resource type="BoxShape3D" id="s0"]
+size = Vector3(4.65, 4.1, 0.4)
+
+[node name="Piece" type="StaticBody3D"]
+
+[node name="Mesh" parent="." instance=ExtResource("1")]
+transform = Transform3D(1.1625, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Shape0" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.325, 2.05, 0)
+shape = SubResource("s0")

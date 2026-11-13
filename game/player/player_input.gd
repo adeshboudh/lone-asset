@@ -15,6 +15,7 @@ var _fire_armed: bool = false
 var _fire_pressed: bool = false
 var _reload_pressed: bool = false
 var _fire_mode_pressed: bool = false
+var _weapon_slot: int = 0
 var _interact_pressed: bool = false
 var _binoculars_pressed: bool = false
 var _zoom_step: int = 0
@@ -39,6 +40,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_reload_pressed = true
 	elif event.is_action_pressed(&"fire_mode"):
 		_fire_mode_pressed = true
+	elif event.is_action_pressed(&"weapon_1"):
+		_weapon_slot = 1
+	elif event.is_action_pressed(&"weapon_2"):
+		_weapon_slot = 2
+	elif event.is_action_pressed(&"weapon_3"):
+		_weapon_slot = 3
 	elif event.is_action_pressed(&"interact"):
 		_interact_pressed = true
 	elif event.is_action_pressed(&"binoculars"):
@@ -56,7 +63,7 @@ func take_look_delta() -> Vector2:
 	return delta
 
 
-## Intent for this physics tick. One-shot presses (crouch, jump, trigger, reload, fire mode, interact) are consumed.
+## Intent for this physics tick. One-shot presses (crouch, jump, trigger, reload, fire mode, weapon slot, interact) are consumed.
 func read_intent() -> InputIntent:
 	if scripted_intent != null:
 		return scripted_intent
@@ -70,6 +77,7 @@ func read_intent() -> InputIntent:
 	_intent.aim = Input.is_action_pressed(&"aim") and Platform.is_mouse_captured()
 	_intent.reload = _reload_pressed
 	_intent.fire_mode_toggled = _fire_mode_pressed
+	_intent.weapon_slot = _weapon_slot
 	_intent.interact = Input.is_action_pressed(&"interact") and Platform.is_mouse_captured()
 	_intent.interact_pressed = _interact_pressed
 	_intent.binoculars_toggled = _binoculars_pressed
@@ -79,6 +87,7 @@ func read_intent() -> InputIntent:
 	_fire_pressed = false
 	_reload_pressed = false
 	_fire_mode_pressed = false
+	_weapon_slot = 0
 	_interact_pressed = false
 	_binoculars_pressed = false
 	_zoom_step = 0

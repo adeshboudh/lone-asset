@@ -83,6 +83,22 @@ func test_footsteps_send_a_patrolling_guard_to_investigate_then_back_to_its_rout
 	assert_array(_changes).contains(["guard:patrol>investigate", "guard:investigate>return_to_patrol", "guard:return_to_patrol>patrol"])
 
 
+func test_a_sprinting_player_near_a_patrolling_guard_makes_it_investigate() -> void:
+	# Design acceptance: sprinting close to a guard (not in view) triggers Investigate.
+	await _spawn_player(Vector3(0.0, 0.0, 14.0))
+	var guard: Guard = _guard(Vector3(0.0, 0.0, 0.0), _route([[0, 0, 5.0], [0, -2, 5.0]]))
+	await _ticks(30)
+	_intent.move = Vector2(0.0, 1.0)
+	_intent.sprint = true
+	# Run past the guard's back at about 6 m; sprint steps carry 10 m.
+	_player.global_position = Vector3(6.0, 0.1, 14.0)
+	_player.rotation.y = 0.0
+	var investigating: bool = await _wait_until(func() -> bool: return guard.brain.current_name == "investigate", 240)
+	_intent.move = Vector2.ZERO
+	_intent.sprint = false
+	assert_bool(investigating).is_true()
+
+
 func test_two_suppressed_shots_make_a_guard_search_around_the_noise_then_give_up() -> void:
 	await _spawn_player(FAR_CORNER)
 	var guard: Guard = _guard(Vector3(0.0, 0.0, 0.0), _route([[0, 0, 0.3], [10, 0, 0.3]]))

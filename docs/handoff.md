@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # Handoff and progress
 
-Last updated: 2026-11-03. Read `docs/architecture.md` first.
+Last updated: 2026-11-09. Read `docs/architecture.md` first.
 
 ## Status
 
@@ -21,9 +21,21 @@ Milestone 1 (core prototype): code-complete for work packages 1 to 13. Work pack
 | (platform) | Desktop-only switch (Windows and Linux, Forward+) | Merged (#12) |
 | 13 | Quality presets, render scale, in-game benchmark, budget checks | Merged (#13) |
 | 14 | Acceptance tracker and playtest template | PR #14 open |
+| (weapons) | First-person rifle: animated M4, gloved arms, reflex sight, accuracy crosshair | Merged (#25) |
+| (weapons) | Weapon switching (keys 1/2/3) with a suppressed pistol and a combat knife | Merged (#26) |
+| (weapons) | Viewmodel sway and walk bob | Merged (#23) |
+| (docs) | Free community downloads with no stated licence allowed on probation | Merged (#24) |
 | 12b | Hero art area | Not started, needs art decisions |
 
-273 tests pass in CI. `main` is protected.
+Weapons: the player carries three weapons on keys 1, 2 and 3: the animated M4 with gloved arms and a reflex sight, a suppressed pistol and a combat knife. Each weapon has its own ammo and the loadout is saved. Switching is blocked while reloading or swinging (`LoadoutRules`, `Player._switch_weapon`). The knife: fire button = quick slash (45 damage), aim button = heavy thrust (80 damage, 2.3 m reach); from behind either one does 200 (silent takedown, `MeleeRules`); noise radius 3 m; numbers in `data/weapons/knife.tres`. Pistol and knife are static models held in the M4 pack's right arm (`content/weapons/hands_rig.gd`) with hand-keyed clips built in code (`content/weapons/clip_builder.gd`; the keys are in each viewmodel script). The crosshair stays up while aiming and its gap shows the accuracy. Sway and bob apply to every weapon. Credits for the pistol, knife, M4 pack and sight are in `content/LICENSES.md`.
+
+All tests pass in CI. Acceptance rows 6, 10, 11, 13 and 16 are automated. `main` is protected.
+
+## Branches
+
+- `dev` is the main development track. Branch from it, open pull requests into it, merge when approved.
+- `main` is the release line: it only receives merges from `dev` when a build is ready to release. Pushes to `main` refresh the `preview` release.
+- CI runs on pull requests and on pushes to `main`, not on plain pushes to `dev`.
 
 ## How to run it
 
@@ -31,7 +43,7 @@ Milestone 1 (core prototype): code-complete for work packages 1 to 13. Work pack
 - Windows: unzip, run `LoneAsset.exe`; SmartScreen may warn (unsigned): More info, Run anyway.
 - From source: Godot 4.7.2 (see `ENGINE_VERSION`), `godot --editor --path .`.
 
-Controls: WASD move, Shift sprint, C crouch, Q/E lean, Space jump, mouse aim, left click fire, right click aim down sights, R reload, X fire mode, F interact (hold at terminal), B binoculars (wheel zooms), F3 debug views, Esc pause.
+Controls: WASD move, Shift sprint, C crouch, Q/E lean, Space jump, mouse aim, left click fire, right click aim down sights, R reload, X fire mode, 1/2/3 rifle/pistol/knife, F interact (hold at terminal), B binoculars (wheel zooms), F3 debug views, Esc pause.
 
 ## The mission
 
@@ -49,9 +61,14 @@ Prototype mission on the graybox course: reach the compound, download data at th
 ## Open issues
 
 - Reported once: after loading a checkpoint and dying, the menu froze. Not reproduced. Loading was hardened and a 20 s loading watchdog added. If it happens again, note which button, what froze, and whether it is every time. Possible fix: a short grace period after loading so the restored player cannot be killed instantly.
-- Benchmark on i7-13620H / Intel UHD, Vulkan, Medium 75 % (2026-11-03, wall-clock, vsync off): 411 FPS average, 275 FPS 1 % low, perception 0.05 ms. Large headroom, so presets can likely go higher on this class of machine. Still needed: a weaker machine, a Linux run, and the OpenGL fallback, then tune presets and render scale (second half of WP13).
-- Guard stuck-free check (#13 in acceptance) has not been repeated 20 times.
+- Benchmark on i7-13620H / Intel UHD, Vulkan, Medium 75 % (2026-11-03, wall-clock, vsync off): 411 FPS average, 275 FPS 1 % low, perception 0.05 ms. Large headroom, so presets can likely go higher on this class of machine. Linux, i5-10210U / Intel UHD, Vulkan, Medium 75 % (powersave governor): 81 FPS average, 29.9 FPS 1 % low, p99 33 ms, physics step 13 ms average; fails the minimum tier on the 1 % low. Headless the CPU side is about 7 ms per frame, so rendering and driver work add about 6 ms. A second Linux run was the same: 79 FPS average, 30.1 FPS 1 % low, so the spikes are not run-to-run noise. Cause: bullet impact marks were reparented under the `CSGCombiner3D` level geometry, and every child change made it rebuild its mesh and collision (about 20 ms per guard shot). Fixed on `perf/linux-frame-spikes`: 87 FPS average, 61 FPS 1 % low, p99 16 ms (`..._after-csg-fix.json`), passes the minimum tier. Windows on `dev` with the hero compound (i7-13620H, 2026-11-05): 361 FPS average, 216 FPS 1 % low, p99 4.6 ms, passes the minimum tier (`2026-11-05_adesh_i7-13620H-windows_dev.json`). Hero compound (WP 12b, PR #18) on the same machine: `dev` without it 71.5 FPS average, 48.1 FPS 1 % low; with it, after dropping normal and roughness maps from the large world materials and the lamp shadow, 65.0 and 43.1 (`2026-11-04_..._hero-compound.json`). Average meets the 60 target, the 1 % low is about 2 FPS short of 45. Trim merged into the wall surface since (draw calls 74 to 69; FPS change is inside this machine's run-to-run noise of about 5 FPS). The compound lighting is now baked (`movement_course.lmbake`, `CompoundLightmap`, lamp set to Static before baking): 68.6 FPS average, 50.0 FPS 1 % low, p99 20 ms, passes the minimum tier on Linux with the hero compound (`2026-11-04_..._hero-compound-baked.json`). `LightmapGI` can only be baked in the editor (no script `bake` method); rebake after changing compound geometry or the lamp, with the lamp already on Static. Benchmarks must run on AC power: on battery the same build dropped to 43 FPS and `dev` alone to 44. Still needed: the OpenGL fallback, then tune presets and render scale (second half of WP13).
+- Guard stuck-free check (#13) is done: `make soak` passed 20/20 for all three guards on 2026-11-07, and CI runs 5 per guard.
 - Windows run and OpenGL fallback not yet checked by a person.
+
+- Weapons are checked by rendered screenshots and tests, not yet by a person playing: ADS alignment (`viewmodel_ads_position` in each weapon's `.tres`), the pistol and knife clip timing, and how sway looks on the pistol and knife need a playtest pass.
+- The knife and pistol have no sounds of their own (they reuse the rifle and impact sounds). The pistol and knife have no reload or fire animation from a real animator; the clips are keyed by hand.
+- The old M416 model files (`content/weapons/rifle_suppressed.glb/.tscn`, `source/build_rifle.py`, `m416_blendswap_*`) are no longer used by the player; delete them or keep them for a second rifle.
+- Not built yet: pickups for ammo and weapons, a weapon-select wheel, throwables.
 
 ## Next steps, in order
 

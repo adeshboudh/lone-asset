@@ -9,13 +9,13 @@ This is the short version of `docs/design/m1-technical-design.md`. Read it first
 
 ## What the project is
 
-An open-source tactical stealth FPS for **Windows and Linux desktop**, built with **Godot 4.7.2** (typed GDScript, Jolt physics, Forward+ renderer with OpenGL fallback). One person plays and tests it. Zero budget: MIT code, CC BY 4.0 original assets and docs, REUSE-compliant, redistributable third-party assets only.
+An open-source tactical stealth FPS for **Windows and Linux desktop**, built with **Godot 4.7.2** (typed GDScript, Jolt physics, Forward+ renderer with OpenGL fallback). One person plays and tests it. Zero budget: MIT code, CC BY 4.0 original assets and docs, REUSE-compliant, redistributable third-party assets only (free community downloads with no stated licence are allowed on probation, §17.4 of the design doc).
 
 Hard rules about identity and content:
 
 - Never use the name of, or any asset, text, level, sound or model from, any existing game. The public name is **Lone Asset**.
 - No browser or WebAssembly target. Desktop only (decided 2026-11-02).
-- Every asset needs a licence entry (`content/LICENSES.md`, `REUSE.toml`). CI runs `reuse lint`.
+- Every asset needs a licence entry (`content/LICENSES.md`, `REUSE.toml`). CI runs `reuse lint`. Community downloads with no stated licence go in as `Unverified (community)` and must be verified or replaced before a `main` release.
 
 ## Design principles
 
@@ -83,10 +83,15 @@ tools/ci         CI scripts (tests, export, budgets)
 - After adding a script with `class_name`, run `godot --headless --path . --import` to refresh the class cache.
 - gdUnit: `get_tree().current_scene` is null; free scenes in `after_test` or CI fails with exit code 101 (orphans).
 
+## Performance pitfalls
+
+- Never add, remove or reparent children of a `CSG*` node at runtime (impact marks, decals, effects). Any child change makes it rebuild its mesh and collision, about 20 ms. Found via the Linux benchmark (impact marks under the level geometry).
+- Measure on wall-clock frame times with the in-game benchmark, windowed. Headless runs do not show real frame pacing.
+
 ## Workflow guardrails
 
-- One work package (WP) per branch and pull request. Branch names `feat/wpN-...`.
-- `main` is protected: pull request required, CI check "Lint, test and export desktop builds" must pass, squash merges, no force-push.
+- One work package (WP) per branch and pull request. Branch from `dev`; names `feat/wpN-...`, `fix/...`, `perf/...`, `docs/...`. See `CONTRIBUTING.md`.
+- `dev` is the development track and `main` the release line (merged from `dev` only). Both are protected: pull request required, CI check "Lint, test and export desktop builds" must pass, no force-push. Feature PRs are squash-merged.
 - Run `tools/ci/run_tests.sh` before pushing. Run `tools/ci/smoke_test.sh` after scene changes.
 - Commit style: Conventional Commits (`feat:`, `fix:`, `docs:`, `build:`). 
 - Do not merge a PR until the developer has played the build and approved.

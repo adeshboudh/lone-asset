@@ -22,6 +22,8 @@ Needs a GPU with Vulkan support for full graphics; older GPUs fall back to OpenG
 
 ## Development
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup on Linux and Windows, the branch and pull request flow, and the checks to run. `make help` lists the shortcuts.
+
 Requirements: Godot **4.7.2-stable** (see `ENGINE_VERSION`) with matching export templates, Git LFS.
 
 ```bash
@@ -49,7 +51,7 @@ Desktop export (needs the Windows and Linux export templates for the pinned vers
 tools/ci/export_desktop.sh build
 ```
 
-Every pull request's CI run attaches Windows and Linux zips as build artifacts; every push to `main` refreshes the `preview` release.
+Every pull request's CI run attaches Windows and Linux zips as build artifacts; every push to `main` refreshes the `preview` release. Development happens on `dev`; `main` is the release line.
 
 ## Licence
 

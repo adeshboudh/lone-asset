@@ -1,0 +1,66 @@
+{
+  "average_fps": 68.6,
+  "build_id": "dev",
+  "cpu": "Intel(R) Core(TM) i5-10210U CPU @ 1.60GHz",
+  "cpu_threads": 8,
+  "date_utc": "2026-11-04T19:09:25",
+  "draw_calls": {
+    "avg": 69.17,
+    "max": 111.0
+  },
+  "duration_s": 60.0,
+  "frame_ms": {
+    "p50": 14.52,
+    "p95": 18.41,
+    "p99": 20.0
+  },
+  "frames": 4118,
+  "gpu": "Intel(R) UHD Graphics (CML GT2)",
+  "gpu_vendor": "Intel",
+  "graphics_api": "1.4.354",
+  "histogram": {
+    "counts": [
+      1,
+      260,
+      3141,
+      707,
+      9,
+      0
+    ],
+    "edges_ms": [
+      8.33,
+      11.11,
+      16.67,
+      22.22,
+      33.33
+    ]
+  },
+  "low_1pct_fps": 50.0,
+  "os": "Linux 4.0.6",
+  "passes_minimum_tier": true,
+  "perception_ms": {
+    "avg": 0.06,
+    "max": 0.09
+  },
+  "physics_ms": {
+    "avg": 2.1,
+    "max": 5.88
+  },
+  "primitives": {
+    "avg": 19557.15,
+    "max": 50636.0
+  },
+  "process_ms": {
+    "avg": 16.17,
+    "max": 23.85
+  },
+  "renderer": "forward_plus (vulkan)",
+  "resolution": "960x1054",
+  "settings": {
+    "quality": "medium",
+    "render_scale": 0.75
+  },
+  "static_memory_peak_mb": 117.8,
+  "video_memory_peak_mb": 159.2,
+  "vsync": "off during run (restored afterwards)"
+}

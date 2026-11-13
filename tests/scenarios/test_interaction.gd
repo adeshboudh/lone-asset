@@ -173,6 +173,41 @@ func test_letting_go_cancels_a_download() -> void:
 	assert_int(Mission.state.status_of(&"obj_download_data")).is_equal(MissionState.Status.ACTIVE)
 
 
+func test_damage_interrupts_a_download_and_holding_again_restarts_it() -> void:
+	var course: Node3D = COURSE_SCENE.instantiate()
+	add_child(course)
+	_course = course
+	course.get_node("Guards").queue_free()
+	await _ticks(5)
+	var player: Player = course.get_node("Player")
+	Mission.state.on_trigger(&"compound_inner")
+	_teleport(player, Vector3(-27.6, 0.1, -25.0), PI * 0.5)
+	await _ticks(5)
+	var intent: InputIntent = InputIntent.new()
+	intent.interact = true
+	intent.interact_pressed = true
+	player.set_scripted_intent(intent)
+	await _ticks(60)
+	assert_float(player.interactor.hold_progress).is_greater(0.0)
+
+	var hit: DamageInfo = DamageInfo.new()
+	hit.amount = 5.0
+	player.health.apply_damage(hit)
+	await _ticks(2)
+	assert_float(player.interactor.hold_progress).is_equal(0.0)
+	# Still holding the key: the download stays stopped until the player lets go and holds again.
+	await _ticks(30)
+	assert_float(player.interactor.hold_progress).is_equal(0.0)
+	assert_int(Mission.state.status_of(&"obj_download_data")).is_equal(MissionState.Status.ACTIVE)
+
+	intent.interact = false
+	await _ticks(2)
+	intent.interact = true
+	await _ticks(30)
+	assert_float(player.interactor.hold_progress).is_greater(0.0)
+	player.set_scripted_intent(null)
+
+
 func _door() -> Door:
 	var door: Door = DOOR_SCENE.instantiate()
 	door.door_id = &"test_door"

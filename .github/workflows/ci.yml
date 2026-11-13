@@ -43,6 +43,9 @@ jobs:
       - name: Unit tests
         run: tools/ci/run_tests.sh
 
+      - name: Guard soak (5 patrol runs per guard)
+        run: godot --headless --fixed-fps 60 --path . res://dev/guard_soak.tscn -- --runs=5
+
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v5

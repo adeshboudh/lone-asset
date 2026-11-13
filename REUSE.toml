@@ -62,3 +62,9 @@ path = ["content/weapons/knife/source/**", "content/weapons/knife/textures/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "Michael Karel (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["tools/audio/source/*.mp3", "content/audio/sfx/rifle_shot_suppressed*.wav*", "content/audio/sfx/rifle_shot_loud*.wav*", "content/audio/sfx/pistol_shot_suppressed*.wav*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (recorded gun shots, original page not found)"
+SPDX-License-Identifier = "CC0-1.0"

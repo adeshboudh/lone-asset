@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=51 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=54 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed.wav" id="2_rifle_shot_suppressed"]
@@ -27,29 +27,32 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/landing_muffled.wav" id="25_landing_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_reload.wav" id="26_rifle_reload"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_reload_empty.wav" id="27_rifle_reload_empty"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_dry.wav" id="28_rifle_dry"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_1.wav" id="29_impact_world_1"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_2.wav" id="30_impact_world_2"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_3.wav" id="31_impact_world_3"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_1_muffled.wav" id="32_impact_world_1_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_2_muffled.wav" id="33_impact_world_2_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_3_muffled.wav" id="34_impact_world_3_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_1.wav" id="35_impact_body_1"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_2.wav" id="36_impact_body_2"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_1_muffled.wav" id="37_impact_body_1_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_2_muffled.wav" id="38_impact_body_2_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/hit_marker.wav" id="39_hit_marker"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/ui_click.wav" id="40_ui_click"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/wind_loop.wav" id="41_wind_loop"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud.wav" id="42_rifle_shot_loud"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_muffled.wav" id="43_rifle_shot_loud_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/door_open.wav" id="44_door_open"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/door_open_muffled.wav" id="45_door_open_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/door_close.wav" id="46_door_close"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/door_close_muffled.wav" id="47_door_close_muffled"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_loop.wav" id="48_terminal_loop"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_done.wav" id="49_terminal_done"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/objective_complete.wav" id="50_objective_complete"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_reload.wav" id="28_pistol_reload"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_reload_empty.wav" id="29_pistol_reload_empty"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_dry.wav" id="30_rifle_dry"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_dry.wav" id="31_pistol_dry"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_1.wav" id="32_impact_world_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_2.wav" id="33_impact_world_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_3.wav" id="34_impact_world_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_1_muffled.wav" id="35_impact_world_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_2_muffled.wav" id="36_impact_world_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_world_3_muffled.wav" id="37_impact_world_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_1.wav" id="38_impact_body_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_2.wav" id="39_impact_body_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_1_muffled.wav" id="40_impact_body_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/impact_body_2_muffled.wav" id="41_impact_body_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/hit_marker.wav" id="42_hit_marker"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/ui_click.wav" id="43_ui_click"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/wind_loop.wav" id="44_wind_loop"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud.wav" id="45_rifle_shot_loud"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_muffled.wav" id="46_rifle_shot_loud_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_open.wav" id="47_door_open"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_open_muffled.wav" id="48_door_open_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_close.wav" id="49_door_close"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/door_close_muffled.wav" id="50_door_close_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_loop.wav" id="51_terminal_loop"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_done.wav" id="52_terminal_done"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/objective_complete.wav" id="53_objective_complete"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -68,21 +71,24 @@ sounds = {
 &"landing_muffled": [ExtResource("25_landing_muffled")],
 &"rifle_reload": [ExtResource("26_rifle_reload")],
 &"rifle_reload_empty": [ExtResource("27_rifle_reload_empty")],
-&"rifle_dry": [ExtResource("28_rifle_dry")],
-&"impact_world": [ExtResource("29_impact_world_1"), ExtResource("30_impact_world_2"), ExtResource("31_impact_world_3")],
-&"impact_world_muffled": [ExtResource("32_impact_world_1_muffled"), ExtResource("33_impact_world_2_muffled"), ExtResource("34_impact_world_3_muffled")],
-&"impact_body": [ExtResource("35_impact_body_1"), ExtResource("36_impact_body_2")],
-&"impact_body_muffled": [ExtResource("37_impact_body_1_muffled"), ExtResource("38_impact_body_2_muffled")],
-&"hit_marker": [ExtResource("39_hit_marker")],
-&"ui_click": [ExtResource("40_ui_click")],
-&"wind_loop": [ExtResource("41_wind_loop")],
-&"rifle_shot_loud": [ExtResource("42_rifle_shot_loud")],
-&"rifle_shot_loud_muffled": [ExtResource("43_rifle_shot_loud_muffled")],
-&"door_open": [ExtResource("44_door_open")],
-&"door_open_muffled": [ExtResource("45_door_open_muffled")],
-&"door_close": [ExtResource("46_door_close")],
-&"door_close_muffled": [ExtResource("47_door_close_muffled")],
-&"terminal_loop": [ExtResource("48_terminal_loop")],
-&"terminal_done": [ExtResource("49_terminal_done")],
-&"objective_complete": [ExtResource("50_objective_complete")]
+&"pistol_reload": [ExtResource("28_pistol_reload")],
+&"pistol_reload_empty": [ExtResource("29_pistol_reload_empty")],
+&"rifle_dry": [ExtResource("30_rifle_dry")],
+&"pistol_dry": [ExtResource("31_pistol_dry")],
+&"impact_world": [ExtResource("32_impact_world_1"), ExtResource("33_impact_world_2"), ExtResource("34_impact_world_3")],
+&"impact_world_muffled": [ExtResource("35_impact_world_1_muffled"), ExtResource("36_impact_world_2_muffled"), ExtResource("37_impact_world_3_muffled")],
+&"impact_body": [ExtResource("38_impact_body_1"), ExtResource("39_impact_body_2")],
+&"impact_body_muffled": [ExtResource("40_impact_body_1_muffled"), ExtResource("41_impact_body_2_muffled")],
+&"hit_marker": [ExtResource("42_hit_marker")],
+&"ui_click": [ExtResource("43_ui_click")],
+&"wind_loop": [ExtResource("44_wind_loop")],
+&"rifle_shot_loud": [ExtResource("45_rifle_shot_loud")],
+&"rifle_shot_loud_muffled": [ExtResource("46_rifle_shot_loud_muffled")],
+&"door_open": [ExtResource("47_door_open")],
+&"door_open_muffled": [ExtResource("48_door_open_muffled")],
+&"door_close": [ExtResource("49_door_close")],
+&"door_close_muffled": [ExtResource("50_door_close_muffled")],
+&"terminal_loop": [ExtResource("51_terminal_loop")],
+&"terminal_done": [ExtResource("52_terminal_done")],
+&"objective_complete": [ExtResource("53_objective_complete")]
 }

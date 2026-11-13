@@ -255,10 +255,11 @@ def main() -> None:
                 muffled_names.append(muffled_name)
             bank[f"{sound_id}_muffled"] = muffled_names
 
-    def add_recorded(sound_id: str) -> None:
+    def add_recorded(sound_id: str, muffled: bool = True) -> None:
         """Registers a recorded sound (and its muffled copy) that convert_recorded_shots.py already wrote."""
         bank[sound_id] = [sound_id]
-        bank[f"{sound_id}_muffled"] = [f"{sound_id}_muffled"]
+        if muffled:
+            bank[f"{sound_id}_muffled"] = [f"{sound_id}_muffled"]
 
     # The gun shots are recordings now (convert_recorded_shots.py); the draws below keep the random stream
     # the other sounds were generated from.
@@ -269,9 +270,15 @@ def main() -> None:
     for surface in ("concrete", "metal", "grass"):
         add(f"footstep_{surface}", [footstep(rng, surface) for _ in range(3)], muffled=True)
     add("landing", [landing(rng)], muffled=True)
-    add("rifle_reload", [reload(rng, False)])
-    add("rifle_reload_empty", [reload(rng, True)])
-    add("rifle_dry", [click(rng, 0.9)])
+    reload(rng, False)  # recordings now (convert_recorded_shots.py); the draws keep the random stream
+    reload(rng, True)
+    add_recorded("rifle_reload", muffled=False)
+    add_recorded("rifle_reload_empty", muffled=False)
+    add_recorded("pistol_reload", muffled=False)
+    add_recorded("pistol_reload_empty", muffled=False)
+    click(rng, 0.9)  # recordings now (convert_recorded_shots.py); the draw keeps the random stream
+    add_recorded("rifle_dry", muffled=False)
+    add_recorded("pistol_dry", muffled=False)
     add("impact_world", [impact_world(rng) for _ in range(3)], muffled=True)
     add("impact_body", [impact_body(rng) for _ in range(2)], muffled=True)
     add("hit_marker", [hit_marker()])

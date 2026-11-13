@@ -7,13 +7,15 @@ const FOOTSTEP_DB: Dictionary[StringName, float] = {
 	NoiseEvent.FOOTSTEP_WALK: -3.0,
 	NoiseEvent.FOOTSTEP_SPRINT: 0.0,
 }
-## Surfaces that have their own footstep sounds; anything else uses concrete.
-const SURFACE_SOUNDS: Array[StringName] = [&"metal", &"grass"]
 const LANDING_MIN_FALL_M: float = NoiseEmitterComponent.LANDING_MIN_FALL_M
+
+var _left_foot: bool = false
 
 
 func on_step(type: StringName, surface: StringName) -> void:
-	var sound: StringName = StringName("footstep_" + String(surface if surface in SURFACE_SOUNDS else &"concrete"))
+	_left_foot = not _left_foot
+	var per_foot: StringName = AudioRules.footstep_id(surface, _left_foot, true)
+	var sound: StringName = per_foot if Audio.bank.has_sound(per_foot) else AudioRules.footstep_id(surface)
 	Audio.play_2d(sound, &"Footsteps", FOOTSTEP_DB.get(type, -3.0))
 
 

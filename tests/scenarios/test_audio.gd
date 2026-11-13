@@ -35,7 +35,7 @@ func after_test() -> void:
 func test_footsteps_use_the_footsteps_bus_and_concrete_by_default() -> void:
 	_intent.move = Vector2(0.0, 1.0)
 	await _ticks(90)
-	assert_array(_ids("footstep_concrete")).is_not_empty()
+	assert_array(_footsteps("concrete")).is_not_empty()
 	assert_str(_played[0]["bus"]).is_equal("Footsteps")
 
 
@@ -43,8 +43,23 @@ func test_footsteps_follow_the_surface() -> void:
 	_floor.set_meta(&"surface", &"metal")
 	_intent.move = Vector2(0.0, 1.0)
 	await _ticks(90)
-	assert_array(_ids("footstep_metal")).is_not_empty()
-	assert_array(_ids("footstep_concrete")).is_empty()
+	assert_array(_footsteps("metal")).is_not_empty()
+	assert_array(_footsteps("concrete")).is_empty()
+
+
+func test_footsteps_alternate_left_and_right_when_per_foot_sounds_exist() -> void:
+	var stream: AudioStream = Audio.bank.pick(&"footstep_concrete", RandomNumberGenerator.new())
+	Audio.bank.sounds[&"footstep_concrete_left"] = [stream]
+	Audio.bank.sounds[&"footstep_concrete_right"] = [stream]
+	_intent.move = Vector2(0.0, 1.0)
+	await _ticks(150)
+	Audio.bank.sounds.erase(&"footstep_concrete_left")
+	Audio.bank.sounds.erase(&"footstep_concrete_right")
+	var feet: Array = _played.filter(func(entry: Dictionary) -> bool: return String(entry["id"]).begins_with("footstep_")).map(
+			func(entry: Dictionary) -> String: return String(entry["id"]))
+	assert_int(feet.size()).is_greater_equal(3)
+	for i: int in range(1, feet.size()):
+		assert_str(feet[i]).is_not_equal(feet[i - 1])
 
 
 func test_no_footsteps_when_standing_still() -> void:
@@ -135,6 +150,11 @@ func test_wind_loop_is_a_looping_stream() -> void:
 	assert_int((loop.stream as AudioStreamWAV).loop_mode).is_equal(AudioStreamWAV.LOOP_FORWARD)
 	assert_int((loop.stream as AudioStreamWAV).loop_end).is_greater(1000)
 	assert_str(loop.bus).is_equal("Ambience")
+
+
+## Footsteps on a surface, whichever foot or shared variant played.
+func _footsteps(surface: String) -> Array:
+	return _played.filter(func(entry: Dictionary) -> bool: return String(entry["id"]).begins_with("footstep_" + surface))
 
 
 func _ids(id: String) -> Array:

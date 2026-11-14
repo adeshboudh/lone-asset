@@ -25,6 +25,19 @@ extends Resource
 ## Unused until penetration is implemented (Milestone 2).
 @export var penetration_power: float = 0.0
 
+@export_group("Tracer")
+## Glowing streak drawn along the bullet's flight. Off for melee.
+@export var tracer_enabled: bool = true
+## 1 = every shot, 5 = every fifth shot.
+@export var tracer_every_n: int = 1
+## Streak colour; glow multiplies it above 1 so the glow effect picks it up.
+@export var tracer_color: Color = Color(1.0, 0.7, 0.25)
+@export var tracer_glow: float = 4.0
+@export var tracer_length_m: float = 2.5
+@export var tracer_width_m: float = 0.03
+## Distance from the muzzle before the streak first appears.
+@export var tracer_start_m: float = 3.0
+
 @export_group("Accuracy (cone half-angle, degrees)")
 @export var spread_hip_deg: float = 2.5
 @export var spread_ads_deg: float = 0.15

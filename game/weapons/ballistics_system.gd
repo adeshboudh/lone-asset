@@ -6,6 +6,7 @@ extends Node3D
 const GROUP: StringName = &"ballistics"
 const MAX_LIFETIME_S: float = 2.0
 const MAX_IMPACT_MARKS: int = 64
+const MAX_TRACERS: int = 128
 
 
 class Projectile:
@@ -19,6 +20,11 @@ class Projectile:
 	var gravity_scale: float
 	var source: Node
 	var exclude: Array[RID]
+	var tracer: bool
+	var tracer_color: Color
+	var tracer_length: float
+	var tracer_width: float
+	var tracer_start: float
 
 
 @export var hit_zones: HitZoneTable
@@ -29,11 +35,18 @@ var active_count: int:
 	get:
 		return _active.size()
 
+var tracer_count: int:
+	get:
+		return _tracers.visible_instance_count
+
 var _active: Array[Projectile] = []
 var _pool: Array[Projectile] = []
 var _gravity: Vector3 = Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _marks: Array[MeshInstance3D] = []
 var _next_mark: int = 0
+var _tracers: MultiMesh
+## Shots fired so far per shooter (instance id), for the every-nth tracer rule.
+var _shot_counts: Dictionary = {}
 
 
 func _enter_tree() -> void:
@@ -55,6 +68,7 @@ func _ready() -> void:
 		mark.visible = false
 		add_child(mark)
 		_marks.append(mark)
+	_build_tracers()
 
 
 ## shooter is excluded from the bullet's collisions.
@@ -72,6 +86,15 @@ func fire(origin: Vector3, direction: Vector3, weapon: WeaponDefinition, shooter
 	projectile.exclude.clear()
 	if shooter != null:
 		projectile.exclude.append(shooter.get_rid())
+	var key: int = shooter.get_instance_id() if shooter != null else 0
+	var shot_index: int = _shot_counts.get(key, 0)
+	_shot_counts[key] = shot_index + 1
+	projectile.tracer = weapon.tracer_enabled and TracerRules.shows_tracer(shot_index, weapon.tracer_every_n)
+	projectile.tracer_color = Color(weapon.tracer_color.r * weapon.tracer_glow, weapon.tracer_color.g * weapon.tracer_glow,
+		weapon.tracer_color.b * weapon.tracer_glow)
+	projectile.tracer_length = weapon.tracer_length_m
+	projectile.tracer_width = weapon.tracer_width_m
+	projectile.tracer_start = weapon.tracer_start_m
 	_active.append(projectile)
 
 
@@ -81,6 +104,7 @@ func _physics_process(delta: float) -> void:
 		if not _advance(_active[i], delta, space):
 			_pool.append(_active[i])
 			_active.remove_at(i)
+	_update_tracers()
 
 
 ## Returns false when the projectile is finished (hit, out of range or too old).
@@ -137,3 +161,47 @@ func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
 	var up_hint: Vector3 = Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP
 	mark.global_transform = Transform3D(Basis.looking_at(-normal, up_hint), position + normal * 0.005)
 	mark.visible = true
+
+
+func _build_tracers() -> void:
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3.ONE
+	var material: StandardMaterial3D = StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.vertex_color_use_as_albedo = true
+	mesh.material = material
+	_tracers = MultiMesh.new()
+	_tracers.transform_format = MultiMesh.TRANSFORM_3D
+	_tracers.use_colors = true
+	_tracers.mesh = mesh
+	_tracers.instance_count = MAX_TRACERS
+	_tracers.visible_instance_count = 0
+	var instance: MultiMeshInstance3D = MultiMeshInstance3D.new()
+	instance.multimesh = _tracers
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# The streaks move every tick; their bounds are not worth recomputing.
+	instance.custom_aabb = AABB(Vector3(-2000.0, -2000.0, -2000.0), Vector3(4000.0, 4000.0, 4000.0))
+	# World space regardless of where the system sits in the level.
+	instance.top_level = true
+	add_child(instance)
+
+
+## Draws one stretched glowing box per live tracer bullet, from its head back along its velocity.
+func _update_tracers() -> void:
+	var count: int = 0
+	for projectile: Projectile in _active:
+		if count >= MAX_TRACERS:
+			break
+		if not projectile.tracer:
+			continue
+		var length: float = TracerRules.visible_length(projectile.travelled, projectile.tracer_start, projectile.tracer_length)
+		if length <= 0.0:
+			continue
+		var direction: Vector3 = projectile.velocity.normalized()
+		var up_hint: Vector3 = Vector3.FORWARD if absf(direction.y) > 0.99 else Vector3.UP
+		var basis: Basis = Basis.looking_at(direction, up_hint).scaled_local(
+			Vector3(projectile.tracer_width, projectile.tracer_width, length))
+		_tracers.set_instance_transform(count, Transform3D(basis, projectile.position - direction * (length * 0.5)))
+		_tracers.set_instance_color(count, projectile.tracer_color)
+		count += 1
+	_tracers.visible_instance_count = count

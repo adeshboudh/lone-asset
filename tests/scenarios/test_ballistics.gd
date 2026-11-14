@@ -105,3 +105,34 @@ func test_impact_mark_on_csg_geometry_stays_out_of_the_csg_node() -> void:
 	_ballistics.fire(Vector3(0.0, 1.0, 0.0), Vector3.FORWARD, RIFLE, null)
 	await _ticks(5)
 	assert_int(wall.get_child_count()).is_equal(0)
+
+
+func test_tracer_appears_after_start_distance_and_ends_with_the_bullet() -> void:
+	var weapon: WeaponDefinition = RIFLE.duplicate()
+	weapon.tracer_start_m = 3.0
+	_ballistics.fire(Vector3(0.0, 100.0, 0.0), Vector3.FORWARD, weapon, null)
+	assert_int(_ballistics.tracer_count).is_equal(0)
+	await _ticks(3)
+	assert_int(_ballistics.tracer_count).is_equal(1)
+	await _ticks(60)
+	assert_int(_ballistics.active_count).is_equal(0)
+	assert_int(_ballistics.tracer_count).is_equal(0)
+
+
+func test_tracer_every_nth_shot() -> void:
+	var weapon: WeaponDefinition = RIFLE.duplicate()
+	weapon.tracer_every_n = 3
+	weapon.tracer_start_m = 0.0
+	for i: int in 6:
+		_ballistics.fire(Vector3(float(i), 100.0, 0.0), Vector3.FORWARD, weapon, null)
+	await _ticks(2)
+	assert_int(_ballistics.tracer_count).is_equal(2)
+
+
+func test_no_tracer_when_disabled() -> void:
+	var weapon: WeaponDefinition = RIFLE.duplicate()
+	weapon.tracer_enabled = false
+	weapon.tracer_start_m = 0.0
+	_ballistics.fire(Vector3(0.0, 100.0, 0.0), Vector3.FORWARD, weapon, null)
+	await _ticks(2)
+	assert_int(_ballistics.tracer_count).is_equal(0)

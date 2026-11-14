@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=54 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=56 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed.wav" id="2_rifle_shot_suppressed"]
@@ -53,6 +53,8 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_loop.wav" id="51_terminal_loop"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_done.wav" id="52_terminal_done"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/objective_complete.wav" id="53_objective_complete"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_loud.wav" id="54_pistol_shot_loud"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_loud_muffled.wav" id="55_pistol_shot_loud_muffled"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -84,6 +86,8 @@ sounds = {
 &"wind_loop": [ExtResource("44_wind_loop")],
 &"rifle_shot_loud": [ExtResource("45_rifle_shot_loud")],
 &"rifle_shot_loud_muffled": [ExtResource("46_rifle_shot_loud_muffled")],
+&"pistol_shot_loud": [ExtResource("54_pistol_shot_loud")],
+&"pistol_shot_loud_muffled": [ExtResource("55_pistol_shot_loud_muffled")],
 &"door_open": [ExtResource("47_door_open")],
 &"door_open_muffled": [ExtResource("48_door_open_muffled")],
 &"door_close": [ExtResource("49_door_close")],

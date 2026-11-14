@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2026 Lone Asset contributors
 # SPDX-License-Identifier: MIT
-"""Turns the recorded gun shots in tools/audio/source/ into game sounds (needs ffmpeg on the PATH).
+"""Turns the gun shots in tools/audio/source/ (recorded, and generated with text_to_sfx) into game sounds (needs ffmpeg on the PATH).
 
 Mono, 44.1 kHz, trimmed to the first 1.2 s with a fade-out (a long tail would pile up voices in fast fire),
 normalised like the generated sounds, plus a muffled copy for walls. Run make_placeholder_sounds.py afterwards
 to refresh data/audio/sound_bank.tres.
 """
 import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -17,9 +18,10 @@ SOURCE = Path(__file__).resolve().parent / "source"
 KEEP_S = 1.2
 FADE_S = 0.3
 SHOTS = {
-    "rifle_shot_suppressed": "301533-M4-SPRSD-SINGLESHOT-ON-GUN-A-03.mp3",
-    "rifle_shot_loud": "516405-Gun-Assault_Rifle-M4_Carbine-5_56x45mm-Shot-Single-5-Mix.mp3",
-    "pistol_shot_suppressed": "163536-M-P9-Suppressed_-Single_Shot_-Open_Exterior-09.mp3",
+    "rifle_shot_suppressed": "rifle_shot_suppressed_s1.wav",
+    "rifle_shot_loud": "rifle_shot_loud_s2.wav",
+    "pistol_shot_suppressed": "pistol_shot_suppressed_s1.wav",
+    "pistol_shot_loud": "pistol_shot_loud_s1.wav",
 }
 
 
@@ -78,8 +80,10 @@ def dry_fire() -> None:
 
 
 def main() -> None:
-    dry_fire()
-    reloads()
+    # --shots: only the gun shots (the sources of the other sounds are unchanged).
+    if "--shots" not in sys.argv:
+        dry_fire()
+        reloads()
     for sound_id, file in SHOTS.items():
         x = decode(SOURCE / file)[: int(KEEP_S * SR)]
         fade = int(FADE_S * SR)

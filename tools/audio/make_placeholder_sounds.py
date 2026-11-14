@@ -289,6 +289,7 @@ def main() -> None:
     for _ in range(3):
         shot_loud(rng)
     add_recorded("rifle_shot_loud")
+    add_recorded("pistol_shot_loud")
     # Added in WP 9, after the sounds above, for the same reason.
     add("door_open", [door_open(rng)], muffled=True)
     add("door_close", [door_close(rng)], muffled=True)

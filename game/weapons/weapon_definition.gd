@@ -5,6 +5,13 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 
+@export_group("Attachment variant")
+## The other version of this weapon (e.g. suppressor <-> muzzle brake), swapped with the attachment key.
+## Ammo carries over. Link one way only: the base weapon points at its variant.
+@export var alt_variant: WeaponDefinition
+## Seconds the weapon is unusable while the attachment is swapped.
+@export var variant_swap_s: float = 0.9
+
 @export_group("Fire")
 @export var damage: float = 34.0
 @export var fire_rate_rpm: float = 750.0
@@ -22,8 +29,22 @@ extends Resource
 @export var max_range: float = 400.0
 ## Raycast segments per physics tick.
 @export var projectile_steps_per_tick: int = 4
-## Unused until penetration is implemented (Milestone 2).
+## Passes through thin penetrable surfaces: each metre of material costs the surface's
+## penetration_cost_per_m, and damage drops by the share of power used up. 0 = never penetrates.
 @export var penetration_power: float = 0.0
+
+@export_group("Tracer")
+## Glowing streak drawn along the bullet's flight. Off for melee.
+@export var tracer_enabled: bool = true
+## 1 = every shot, 5 = every fifth shot.
+@export var tracer_every_n: int = 1
+## Streak colour; its alpha is how see-through the streak is. Glow multiplies the colour above 1 so the glow effect picks it up.
+@export var tracer_color: Color = Color(1.0, 0.7, 0.25, 0.5)
+@export var tracer_glow: float = 1.2
+@export var tracer_length_m: float = 40.0
+@export var tracer_width_m: float = 0.01
+## Distance flown before the streak first appears (0 = from the muzzle).
+@export var tracer_start_m: float = 0.0
 
 @export_group("Accuracy (cone half-angle, degrees)")
 @export var spread_hip_deg: float = 2.5
@@ -80,7 +101,7 @@ extends Resource
 @export_range(0.0, 1.0) var flash_exposure: float = 1.0
 
 @export_group("Audio (sound ids in the sound bank)")
-@export var fire_sound: StringName = &"rifle_shot_suppressed"
+@export var fire_sound: StringName = &"m4_shot_suppressed"
 @export var dry_fire_sound: StringName = &"rifle_dry"
 @export var reload_sound: StringName = &"rifle_reload"
 @export var reload_empty_sound: StringName = &"rifle_reload_empty"

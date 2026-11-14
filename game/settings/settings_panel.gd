@@ -69,7 +69,6 @@ func _ready() -> void:
 	var benchmark_button: Button = Button.new()
 	benchmark_button.text = "Run benchmark (60 s)"
 	benchmark_button.pressed.connect(func() -> void:
-		Audio.play_ui(&"ui_click")
 		close()
 		Game.start_benchmark())
 	_tab.add_child(benchmark_button)
@@ -81,10 +80,9 @@ func _ready() -> void:
 
 	_back = Button.new()
 	_back.text = "Back"
-	_back.pressed.connect(func() -> void:
-		Audio.play_ui(&"ui_click")
-		close())
+	_back.pressed.connect(close)
 	_rows.add_child(_back)
+	UiSounds.wire(self)
 
 
 func open() -> void:

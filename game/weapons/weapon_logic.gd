@@ -66,6 +66,12 @@ func start_reload() -> bool:
 	return true
 
 
+## Switches to another version of the same weapon (attachment swap); magazine and reserve carry over.
+func swap_definition(weapon: WeaponDefinition) -> void:
+	definition = weapon
+	_fire_mode_index = mini(_fire_mode_index, weapon.fire_modes.size() - 1)
+
+
 func toggle_fire_mode() -> void:
 	if not is_reloading:
 		_fire_mode_index = (_fire_mode_index + 1) % definition.fire_modes.size()

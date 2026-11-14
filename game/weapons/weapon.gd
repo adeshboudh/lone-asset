@@ -9,6 +9,8 @@ signal fired(origin: Vector3, direction: Vector3)
 const KICK_DISTANCE: float = 0.035
 const KICK_RECOVERY: float = 14.0
 const FLASH_TIME_S: float = 0.05
+## World and characters, same as the bullets.
+const MUZZLE_RAY_MASK: int = 3
 ## Raising a weapon after a switch.
 const EQUIP_TIME_S: float = 0.35
 ## World (1) and characters/targets (2): what a blade can hit.
@@ -30,6 +32,7 @@ var _ballistics: BallisticsSystem
 var _viewmodel: Node3D
 var _anim: AnimationPlayer
 var _flash: OmniLight3D
+var _muzzle: Node3D
 var _kick: float = 0.0
 var _turn_rate: Vector2 = Vector2.ZERO
 var _strafe_speed: float = 0.0
@@ -48,10 +51,27 @@ var _melee_t: float = -1.0
 var _melee_hit_pending: bool = false
 var _melee_heavy: bool = false
 var _aim_was_held: bool = false
+## This weapon's versions: the scene's definition first, then its alt_variant (if any).
+var _variants: Array[WeaponDefinition] = []
+var _variant_index: int = 0
+## Seconds left in an attachment swap, during which the weapon cannot fire or reload.
+var _swap_remaining: float = 0.0
+
+var variant_index: int:
+	get:
+		return _variant_index
+
+## Id of the scene's definition: the same whichever variant is fitted, so saves find the right slot.
+var base_id: StringName:
+	get:
+		return _variants[0].id if not _variants.is_empty() else definition.id
 
 
 func _ready() -> void:
 	logic = WeaponLogic.new(definition)
+	_variants.append(definition)
+	if definition.alt_variant != null:
+		_variants.append(definition.alt_variant)
 	if rng_seed != 0:
 		_rng.seed = rng_seed
 	else:
@@ -81,9 +101,31 @@ func equip() -> void:
 	_play_anim(definition.anim_draw, 0.0)
 
 
-## False while reloading or swinging: the weapon cannot be put away mid-action.
+## False while reloading, swapping the attachment or swinging: the weapon cannot be put away mid-action.
 func can_holster() -> bool:
-	return not logic.is_reloading and _melee_t < 0.0
+	return not logic.is_reloading and _melee_t < 0.0 and _swap_remaining <= 0.0
+
+
+## Swaps to the other version (suppressor <-> muzzle brake). False when there is none or the weapon is busy.
+func toggle_variant() -> bool:
+	if not LoadoutRules.can_swap_variant(_variants.size() > 1, logic.is_reloading, _swap_remaining > 0.0):
+		return false
+	set_variant((_variant_index + 1) % _variants.size())
+	_swap_remaining = definition.variant_swap_s
+	_equip = 1.0
+	_play_anim(definition.anim_draw, 0.0)
+	return true
+
+
+## Selects a version directly (saved games, tests); no delay or animation.
+func set_variant(index: int) -> void:
+	if _variants.is_empty() or index < 0 or index >= _variants.size():
+		return
+	_variant_index = index
+	definition = _variants[index]
+	logic.swap_definition(definition)
+	if _flash != null:
+		_flash.light_energy = 0.6 if definition.suppressed else 2.5
 
 
 ## Returns this tick's recoil kick in radians: x = pitch up, y = yaw.
@@ -92,11 +134,16 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 		moving: float, crouched: bool) -> Vector2:
 	if definition.melee:
 		return _melee_update(intent, delta, shooter, aim)
-	var wants_aim: bool = intent.aim and not logic.is_reloading
+	var swapping: bool = _swap_remaining > 0.0
+	_swap_remaining = maxf(_swap_remaining - delta, 0.0)
+	if intent.attachment_toggled:
+		toggle_variant()
+		swapping = _swap_remaining > 0.0
+	var wants_aim: bool = intent.aim and not logic.is_reloading and not swapping
 	aim_blend = move_toward(aim_blend, 1.0 if wants_aim else 0.0, delta / definition.ads_time)
 	if intent.fire_mode_toggled:
 		logic.toggle_fire_mode()
-	if intent.reload:
+	if intent.reload and not swapping:
 		logic.start_reload()
 
 	if intent.fire_pressed and logic.magazine == 0 and logic.reserve == 0 and not logic.is_reloading:
@@ -107,7 +154,7 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	current_spread_deg = spread.current_deg(definition, aiming, moving, crouched)
 
 	var kick: Vector2 = Vector2.ZERO
-	var shots: int = logic.update(delta, intent.fire, intent.fire_pressed) if _ballistics != null else 0
+	var shots: int = logic.update(delta, intent.fire and not swapping, intent.fire_pressed and not swapping) if _ballistics != null else 0
 	if logic.is_reloading and not _was_reloading:
 		Audio.play_2d(definition.reload_empty_sound if logic.magazine == 0 else definition.reload_sound, &"Weapons")
 		var empty: bool = logic.magazine == 0
@@ -116,7 +163,8 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	_was_reloading = logic.is_reloading
 	for i: int in shots:
 		var direction: Vector3 = WeaponSpread.random_direction(-aim.basis.z, current_spread_deg, _rng)
-		_ballistics.fire(aim.origin, direction, definition, shooter)
+		var start: Array = _bullet_start(direction, shooter, aim)
+		_ballistics.fire(start[0], start[1], definition, shooter)
 		Audio.play_2d(definition.fire_sound, &"Weapons", 0.0, _rng.randf_range(0.96, 1.04))
 		spread.on_shot(definition)
 		current_spread_deg = spread.current_deg(definition, aiming, moving, crouched)
@@ -129,6 +177,28 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 		_flash_remaining = FLASH_TIME_S
 		fired.emit(aim.origin, direction)
 	return kick
+
+
+## Bullets leave the muzzle, aimed at the point the crosshair ray (camera, with spread) hits, so they land where
+## the player aims. Returns [origin, direction]. Falls back to firing from the camera when there is no muzzle or
+## it is blocked (gun pushed into a wall), where firing from the muzzle would shoot through the wall.
+func _bullet_start(direction: Vector3, shooter: CollisionObject3D, aim: Transform3D) -> Array:
+	if _muzzle == null or not _muzzle.is_inside_tree() or shooter == null:
+		return [aim.origin, direction]
+	var space: PhysicsDirectSpaceState3D = shooter.get_world_3d().direct_space_state
+	var exclude: Array[RID] = [shooter.get_rid()]
+	var muzzle_pos: Vector3 = _muzzle.global_position
+	var blocked: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(aim.origin, muzzle_pos, MUZZLE_RAY_MASK, exclude))
+	if not blocked.is_empty():
+		return [aim.origin, direction]
+	var far: Vector3 = aim.origin + direction * definition.max_range
+	var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(aim.origin, far, MUZZLE_RAY_MASK, exclude))
+	var target: Vector3 = hit["position"] if not hit.is_empty() else far
+	var to_target: Vector3 = target - muzzle_pos
+	# A target closer than the muzzle (or behind it) cannot be aimed at from there.
+	if to_target.dot(direction) <= 0.0:
+		return [aim.origin, direction]
+	return [muzzle_pos, to_target.normalized()]
 
 
 func _process(delta: float) -> void:
@@ -228,7 +298,8 @@ func _build_viewmodel() -> void:
 	_flash.omni_range = 2.5
 	_flash.visible = false
 	var muzzle: Node3D = _viewmodel.get_node_or_null(^"Muzzle") as Node3D
-	(muzzle if muzzle != null else _viewmodel).add_child(_flash)
+	_muzzle = muzzle if muzzle != null else _viewmodel
+	_muzzle.add_child(_flash)
 	_anim = _viewmodel.get_node_or_null(^"AnimationPlayer") as AnimationPlayer
 	if _anim == null:
 		_anim = _viewmodel.find_child("AnimationPlayer", true, false) as AnimationPlayer

@@ -78,7 +78,7 @@ func test_landing_sound_after_a_jump() -> void:
 func test_firing_plays_the_shot_on_the_weapons_bus() -> void:
 	_fire_once()
 	await _ticks(3)
-	var shots: Array = _ids("rifle_shot_suppressed")
+	var shots: Array = _ids("m4_shot_suppressed")
 	assert_array(shots).has_size(1)
 	assert_str(shots[0]["bus"]).is_equal("Weapons")
 
@@ -104,7 +104,7 @@ func test_dry_fire_click_when_out_of_ammo() -> void:
 	_fire_once()
 	await _ticks(3)
 	assert_array(_ids("rifle_dry")).has_size(1)
-	assert_array(_ids("rifle_shot_suppressed")).is_empty()
+	assert_array(_ids("m4_shot_suppressed")).is_empty()
 
 
 func test_bullet_impact_makes_a_positional_sound() -> void:

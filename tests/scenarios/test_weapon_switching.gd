@@ -162,6 +162,87 @@ func test_knife_is_heard_only_up_close() -> void:
 	assert_int(far.size()).is_equal(0)
 
 
+func test_rifle_shot_leaves_the_muzzle_but_hits_where_the_camera_aims() -> void:
+	# No spread, so the shot is deterministic; a copy so the shared resource stays untouched.
+	var perfect: WeaponDefinition = _player.weapon.definition.duplicate()
+	perfect.spread_hip_deg = 0.0
+	perfect.spread_move_add_deg = 0.0
+	perfect.spread_per_shot_deg = 0.0
+	_player.weapon.definition = perfect
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0), 0.0)
+	await _ticks(2)
+	_intent.fire_pressed = true
+	await _ticks(2)
+	_intent.fire_pressed = false
+	await _ticks(30)
+	assert_float(HealthComponent.of(dummy).health).is_less(100.0)
+
+
+func test_attachment_key_swaps_suppressor_for_muzzle_brake_and_keeps_ammo() -> void:
+	var rifle: Weapon = _player.weapon
+	rifle.logic.magazine = 17
+	await _press_attachment()
+	assert_str(String(rifle.definition.id)).is_equal("rifle_muzzle")
+	assert_int(rifle.logic.magazine).is_equal(17)
+	assert_bool(rifle.definition.suppressed).is_false()
+	await _ticks(70)
+	await _press_attachment()
+	assert_str(String(rifle.definition.id)).is_equal("rifle_suppressed")
+	assert_int(rifle.logic.magazine).is_equal(17)
+
+
+func test_muzzle_brake_is_more_accurate_and_louder_than_the_suppressor() -> void:
+	var rifle: Weapon = _player.weapon
+	var suppressed: WeaponDefinition = rifle.definition
+	await _press_attachment()
+	var brake: WeaponDefinition = rifle.definition
+	assert_float(brake.spread_hip_deg).is_less(suppressed.spread_hip_deg)
+	assert_float(brake.spread_ads_deg).is_less(suppressed.spread_ads_deg)
+	assert_float(brake.noise_radius_m).is_greater(suppressed.noise_radius_m)
+
+
+func test_cannot_fire_while_the_attachment_is_being_swapped() -> void:
+	var rifle: Weapon = _player.weapon
+	var before: int = rifle.logic.magazine
+	_intent.attachment_toggled = true
+	await _ticks(2)
+	_intent.attachment_toggled = false
+	_intent.fire_pressed = true
+	await _ticks(2)
+	_intent.fire_pressed = false
+	assert_int(rifle.logic.magazine).is_equal(before)
+
+
+func test_pistol_has_a_muzzle_brake_variant_too() -> void:
+	await _press_slot(2)
+	await _press_attachment()
+	assert_str(String(_player.weapon.definition.id)).is_equal("pistol_muzzle")
+	assert_str(String(_player.weapon.definition.fire_sound)).is_equal("pistol_shot_loud")
+
+
+func test_knife_has_no_attachment() -> void:
+	await _press_slot(3)
+	await _press_attachment()
+	assert_str(String(_player.weapon.definition.id)).is_equal("knife")
+
+
+func test_fitted_variant_is_saved_and_restored() -> void:
+	await _press_attachment()
+	var saved: Dictionary = _player.save_state()
+	await _ticks(70)
+	await _press_attachment()
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
+	_player.load_state(saved)
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
+
+
+func _press_attachment() -> void:
+	_intent.attachment_toggled = true
+	await _ticks(2)
+	_intent.attachment_toggled = false
+	await _ticks(2)
+
+
 func _press_slot(slot: int) -> void:
 	_intent.weapon_slot = slot
 	await _ticks(2)

@@ -107,7 +107,7 @@ func save_state() -> Dictionary:
 		"weapon": {"id": String(_weapon.definition.id), "mag": _weapon.logic.magazine, "reserve": _weapon.logic.reserve},
 		"slot": _slot,
 		"loadout": _weapons.map(func(w: Weapon) -> Dictionary:
-			return {"id": String(w.definition.id), "mag": w.logic.magazine, "reserve": w.logic.reserve}),
+			return {"id": String(w.base_id), "mag": w.logic.magazine, "reserve": w.logic.reserve, "variant": w.variant_index}),
 	}
 
 
@@ -124,7 +124,8 @@ func load_state(data: Dictionary) -> void:
 	var saved_loadout: Array = data.get("loadout", [])
 	for saved: Dictionary in saved_loadout:
 		for held: Weapon in _weapons:
-			if String(held.definition.id) == String(saved.get("id", "")):
+			if String(held.base_id) == String(saved.get("id", "")):
+				held.set_variant(int(saved.get("variant", 0)))
 				held.logic.magazine = int(saved.get("mag", held.logic.magazine))
 				held.logic.reserve = int(saved.get("reserve", held.logic.reserve))
 	if saved_loadout.is_empty():

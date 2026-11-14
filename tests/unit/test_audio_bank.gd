@@ -42,10 +42,10 @@ func test_guard_rifle_sound_exists() -> void:
 
 
 func test_gameplay_sounds_exist_with_muffled_copies() -> void:
-	for id: StringName in [&"footstep_concrete", &"footstep_metal", &"footstep_grass", &"landing", &"impact_world", &"impact_body", &"rifle_shot_suppressed", &"rifle_shot_loud"]:
+	for id: StringName in [&"footstep_concrete", &"footstep_metal", &"footstep_grass", &"landing", &"impact_world", &"impact_body", &"m4_shot_suppressed", &"m4_shot_raw", &"pistol_shot_suppressed", &"pistol_shot_loud"]:
 		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
 		assert_bool(BANK.has_sound(StringName(String(id) + "_muffled"))).override_failure_message("missing muffled '%s'" % id).is_true()
-	for id: StringName in [&"hit_marker", &"ui_click", &"wind_loop"]:
+	for id: StringName in [&"hit_marker", &"ui_click", &"ui_hover", &"ui_start", &"wind_loop"]:
 		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
 
 

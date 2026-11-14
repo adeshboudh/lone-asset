@@ -1,8 +1,6 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=54 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=68 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed.wav" id="2_rifle_shot_suppressed"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_suppressed_muffled.wav" id="3_rifle_shot_suppressed_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_suppressed.wav" id="4_pistol_shot_suppressed"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_suppressed_muffled.wav" id="5_pistol_shot_suppressed_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_1.wav" id="6_footstep_concrete_1"]
@@ -44,8 +42,6 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/hit_marker.wav" id="42_hit_marker"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/ui_click.wav" id="43_ui_click"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/wind_loop.wav" id="44_wind_loop"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud.wav" id="45_rifle_shot_loud"]
-[ext_resource type="AudioStream" path="res://content/audio/sfx/rifle_shot_loud_muffled.wav" id="46_rifle_shot_loud_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/door_open.wav" id="47_door_open"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/door_open_muffled.wav" id="48_door_open_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/door_close.wav" id="49_door_close"]
@@ -53,12 +49,28 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_loop.wav" id="51_terminal_loop"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/terminal_done.wav" id="52_terminal_done"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/objective_complete.wav" id="53_objective_complete"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_loud.wav" id="54_pistol_shot_loud"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_loud_muffled.wav" id="55_pistol_shot_loud_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_raw_1.wav" id="56_m4_shot_raw_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_raw_2.wav" id="57_m4_shot_raw_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_raw_3.wav" id="58_m4_shot_raw_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_raw_1_muffled.wav" id="59_m4_shot_raw_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_raw_2_muffled.wav" id="60_m4_shot_raw_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_raw_3_muffled.wav" id="61_m4_shot_raw_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_1.wav" id="62_m4_shot_suppressed_1"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_2.wav" id="63_m4_shot_suppressed_2"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_3.wav" id="64_m4_shot_suppressed_3"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_4.wav" id="65_m4_shot_suppressed_4"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_1_muffled.wav" id="66_m4_shot_suppressed_1_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_2_muffled.wav" id="67_m4_shot_suppressed_2_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_3_muffled.wav" id="68_m4_shot_suppressed_3_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_4_muffled.wav" id="69_m4_shot_suppressed_4_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/ui_hover.wav" id="70_ui_hover"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/ui_start.wav" id="71_ui_start"]
 
 [resource]
 script = ExtResource("1_bank")
 sounds = {
-&"rifle_shot_suppressed": [ExtResource("2_rifle_shot_suppressed")],
-&"rifle_shot_suppressed_muffled": [ExtResource("3_rifle_shot_suppressed_muffled")],
 &"pistol_shot_suppressed": [ExtResource("4_pistol_shot_suppressed")],
 &"pistol_shot_suppressed_muffled": [ExtResource("5_pistol_shot_suppressed_muffled")],
 &"footstep_concrete": [ExtResource("6_footstep_concrete_1"), ExtResource("7_footstep_concrete_2"), ExtResource("8_footstep_concrete_3")],
@@ -82,13 +94,19 @@ sounds = {
 &"hit_marker": [ExtResource("42_hit_marker")],
 &"ui_click": [ExtResource("43_ui_click")],
 &"wind_loop": [ExtResource("44_wind_loop")],
-&"rifle_shot_loud": [ExtResource("45_rifle_shot_loud")],
-&"rifle_shot_loud_muffled": [ExtResource("46_rifle_shot_loud_muffled")],
+&"pistol_shot_loud": [ExtResource("54_pistol_shot_loud")],
+&"pistol_shot_loud_muffled": [ExtResource("55_pistol_shot_loud_muffled")],
 &"door_open": [ExtResource("47_door_open")],
 &"door_open_muffled": [ExtResource("48_door_open_muffled")],
 &"door_close": [ExtResource("49_door_close")],
 &"door_close_muffled": [ExtResource("50_door_close_muffled")],
 &"terminal_loop": [ExtResource("51_terminal_loop")],
 &"terminal_done": [ExtResource("52_terminal_done")],
-&"objective_complete": [ExtResource("53_objective_complete")]
+&"objective_complete": [ExtResource("53_objective_complete")],
+&"m4_shot_raw": [ExtResource("56_m4_shot_raw_1"), ExtResource("57_m4_shot_raw_2"), ExtResource("58_m4_shot_raw_3")],
+&"m4_shot_raw_muffled": [ExtResource("59_m4_shot_raw_1_muffled"), ExtResource("60_m4_shot_raw_2_muffled"), ExtResource("61_m4_shot_raw_3_muffled")],
+&"m4_shot_suppressed": [ExtResource("62_m4_shot_suppressed_1"), ExtResource("63_m4_shot_suppressed_2"), ExtResource("64_m4_shot_suppressed_3"), ExtResource("65_m4_shot_suppressed_4")],
+&"m4_shot_suppressed_muffled": [ExtResource("66_m4_shot_suppressed_1_muffled"), ExtResource("67_m4_shot_suppressed_2_muffled"), ExtResource("68_m4_shot_suppressed_3_muffled"), ExtResource("69_m4_shot_suppressed_4_muffled")],
+&"ui_hover": [ExtResource("70_ui_hover")],
+&"ui_start": [ExtResource("71_ui_start")]
 }

@@ -339,10 +339,17 @@ WeaponHolder
 
 - Projectiles are **plain data records** in a pooled array inside `BallisticsSystem` (a node in the level), not scene instances.
 - Each physics tick, each projectile advances in `projectile_steps_per_tick` segments: `velocity += gravity * dt`, raycast from previous to next position.
-- First hit → build `DamageInfo` → `HealthComponent.apply_damage()` if the collider has one (the child named `HealthComponent`) → place an impact mark (pooled, 64). Per-surface effects (`SurfaceProfile`) arrive with penetration in Milestone 2.
+- First hit → build `DamageInfo` → `HealthComponent.apply_damage()` if the collider has one (the child named `HealthComponent`) → place an impact mark (pooled, 64).
+- Bullets leave the gun muzzle, aimed at the point the camera ray (with spread) hits. If the muzzle is blocked (gun against a wall) the bullet starts at the camera instead.
+- Surfaces: a world collider (or a parent, up to 3 levels) names its surface with the `surface` metadata, the same one footsteps read. `data/surfaces/surface_table.tres` (`SurfaceTable`) maps each id to a `SurfaceDefinition`: impact sound, spark/dust/splash particles, ricochet angle, and penetration cost. Unlisted surfaces use the default entry. A new surface is a new table entry (water, dirt and wood are already in).
+- Ricochet (`ImpactRules`): a hit at or below the surface's ricochet angle to the surface plane reflects the bullet at reduced speed and damage; at most one ricochet per bullet.
+- Penetration: a bullet with `penetration_power` passes through a penetrable surface if power covers `thickness × penetration_cost_per_m` (thickness measured by a ray back from 1 m beyond the hit, so thicker objects always stop it). Damage scales by the power left. Characters are never penetrated.
+- One impact noise per bullet. The tracer trail restarts at each ricochet or exit.
+- Tracers: one pooled `MultiMesh` draws a glowing streak from the muzzle (up to `tracer_length_m`) behind every live bullet; colour, glow, width and every-nth are per weapon (`TracerRules`).
 - The `BallisticsSystem` registers in the `ballistics` group on entering the tree, so weapons find it regardless of node order.
 - Projectile removed on hit, on exceeding `max_range`, or after 2 s.
-- Bullet travel time is short at these ranges, but the system is in place for penetration/ricochet in Milestone 2.
+- Weapon variants: `WeaponDefinition.alt_variant` links a weapon to its other version (suppressor / muzzle brake). The attachment key swaps `Weapon.definition` in place (`LoadoutRules.can_swap_variant`, `variant_swap_s` delay, no firing or reloading meanwhile); `WeaponLogic` keeps magazine and reserve. Each variant is its own `.tres` with its own spread, recoil, noise radius, flash and shot sound. The saved loadout stores the fitted variant index.
+- Speeds are deliberately low (rifle 520 m/s, pistol 300, guard rifle 450) with `gravity_scale` 1.5, so shots can be seen and led at range.
 
 ---
 
@@ -684,6 +691,7 @@ class_name EquipmentDefinition extends Resource
 Implemented early (with WP 5) because silence made the prototype hard to judge.
 
 - **Buses** (`game/audio/default_bus_layout.tres`): `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
+- **Menu sounds**: `UiSounds.wire(menu)` connects `ui_hover` (mouse-over, keyboard focus) and a press sound to every button under a node; a button picks its press sound with the `ui_sound` metadata (default `ui_click`, `ui_start` on Play and Continue). Call it before connecting actions that leave the screen.
 - **`Audio` autoload**: `play_2d` (the player's own weapon, footsteps and landings, 8 pooled voices), `play_3d` (positional sounds such as bullet impacts, at most 24 pooled voices), `play_ui` (plays while paused) and `make_loop` (level ambience, e.g. wind).
 - **Sound bank** (`data/audio/sound_bank.tres`): sound id → variants, picked at random so footsteps and shots do not repeat exactly. Weapons name their sounds in their `WeaponDefinition` (fire, dry fire, reload, reload from empty).
 - **Placeholder sounds** are synthesised by `tools/audio/make_placeholder_sounds.py` (our own work, CC BY 4.0). Replace a file and keep its name to swap in a real recording.

@@ -18,6 +18,8 @@ var fire_pressed: bool = false
 var aim: bool = false
 var reload: bool = false
 var fire_mode_toggled: bool = false
+## Attachment key went down this tick: swap between the weapon's two variants (suppressor / muzzle brake).
+var attachment_toggled: bool = false
 ## Number key pressed this tick to pick a weapon: 1-based slot, 0 for none.
 var weapon_slot: int = 0
 ## Interact key held, and went down this tick.
@@ -39,6 +41,7 @@ func clear() -> void:
 	aim = false
 	reload = false
 	fire_mode_toggled = false
+	attachment_toggled = false
 	weapon_slot = 0
 	interact = false
 	interact_pressed = false

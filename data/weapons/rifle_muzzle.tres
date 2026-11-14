@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://content/weapons/m4/m4_viewmodel.tscn" id="2_view"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"rifle_muzzle"
+display_name = "Rifle, muzzle brake"
+muzzle_velocity = 520.0
+gravity_scale = 1.5
+penetration_power = 100.0
+spread_hip_deg = 2.0
+spread_ads_deg = 0.08
+spread_per_shot_deg = 0.3
+spread_max_bloom_deg = 1.5
+recoil_pitch_deg = 0.45
+recoil_yaw_deg = 0.2
+suppressed = false
+noise_radius_m = 80.0
+flash_exposure = 1.0
+fire_sound = &"m4_shot_raw"
+viewmodel_scene = ExtResource("2_view")
+viewmodel_hip_position = Vector3(0, 0, 0)
+viewmodel_ads_position = Vector3(-0.071, 0.0125, 0)
+anim_idle = &"Idle"
+anim_draw = &"Draw"
+anim_fire = &"Fire"
+anim_reload = &"Reload"
+anim_reload_empty = &"Reload_Empty"

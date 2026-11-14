@@ -1,10 +1,12 @@
 class_name SettingsPanel
 extends CanvasLayer
-## Settings screen shared by the title and pause menus. Build once, then open() / close().
+## Tabbed settings screen shared by the title and pause menus. Build once, then open() / close().
 
 signal closed
 
 var _rows: VBoxContainer
+var _tabs: TabContainer
+var _tab: VBoxContainer
 var _back: Button
 
 
@@ -28,13 +30,18 @@ func _ready() -> void:
 	title.add_theme_font_size_override(&"font_size", 32)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_rows.add_child(title)
+	_tabs = TabContainer.new()
+	_tabs.custom_minimum_size = Vector2(0.0, 300.0)
+	_rows.add_child(_tabs)
 
+	_begin_tab("Controls")
 	_add_slider("Mouse sensitivity", SettingsRules.SENSITIVITY_MIN, SettingsRules.SENSITIVITY_MAX, 0.05,
 		func() -> float: return Settings.mouse_sensitivity_scale,
 		func(v: float) -> void: Settings.mouse_sensitivity_scale = v)
 	_add_check("Invert vertical look",
 		func() -> bool: return Settings.invert_y,
 		func(v: bool) -> void: Settings.invert_y = v)
+	_begin_tab("Video")
 	_add_slider("Field of view", SettingsRules.FOV_MIN, SettingsRules.FOV_MAX, 1.0,
 		func() -> float: return Settings.fov_deg,
 		func(v: float) -> void: Settings.fov_deg = v)
@@ -47,6 +54,7 @@ func _ready() -> void:
 	_add_check("Head bob",
 		func() -> bool: return Settings.head_bob,
 		func(v: bool) -> void: Settings.head_bob = v)
+	_begin_tab("Audio")
 	_add_slider("Master volume", 0.0, 1.0, 0.05,
 		func() -> float: return Settings.master_volume,
 		func(v: float) -> void: Settings.master_volume = v)
@@ -57,18 +65,19 @@ func _ready() -> void:
 		func() -> float: return Settings.sfx_volume,
 		func(v: float) -> void: Settings.sfx_volume = v)
 
+	_begin_tab("Developer")
 	var benchmark_button: Button = Button.new()
 	benchmark_button.text = "Run benchmark (60 s)"
 	benchmark_button.pressed.connect(func() -> void:
 		Audio.play_ui(&"ui_click")
 		close()
 		Game.start_benchmark())
-	_rows.add_child(benchmark_button)
+	_tab.add_child(benchmark_button)
 
 	var folder_button: Button = Button.new()
 	folder_button.text = "Open save folder"
 	folder_button.pressed.connect(Saves.open_save_folder)
-	_rows.add_child(folder_button)
+	_tab.add_child(folder_button)
 
 	_back = Button.new()
 	_back.text = "Back"
@@ -80,6 +89,7 @@ func _ready() -> void:
 
 func open() -> void:
 	visible = true
+	_tabs.current_tab = 0
 	_back.grab_focus()
 
 
@@ -87,6 +97,13 @@ func close() -> void:
 	if visible:
 		visible = false
 		closed.emit()
+
+
+func _begin_tab(tab_name: String) -> void:
+	_tab = VBoxContainer.new()
+	_tab.name = tab_name
+	_tab.add_theme_constant_override(&"separation", 10)
+	_tabs.add_child(_tab)
 
 
 func _add_slider(label_text: String, low: float, high: float, step: float, getter: Callable, setter: Callable) -> void:
@@ -111,7 +128,7 @@ func _add_slider(label_text: String, low: float, high: float, step: float, gette
 		setter.call(v)
 		readout.text = _format(v, high)
 		Settings.commit())
-	_rows.add_child(row)
+	_tab.add_child(row)
 
 
 func _add_option(label_text: String, choices: Array[String], getter: Callable, setter: Callable) -> void:
@@ -129,7 +146,7 @@ func _add_option(label_text: String, choices: Array[String], getter: Callable, s
 		setter.call(index)
 		Settings.commit())
 	row.add_child(option)
-	_rows.add_child(row)
+	_tab.add_child(row)
 
 
 func _add_check(label_text: String, getter: Callable, setter: Callable) -> void:
@@ -139,7 +156,7 @@ func _add_check(label_text: String, getter: Callable, setter: Callable) -> void:
 	box.toggled.connect(func(on: bool) -> void:
 		setter.call(on)
 		Settings.commit())
-	_rows.add_child(box)
+	_tab.add_child(box)
 
 
 func _format(value: float, high: float) -> String:

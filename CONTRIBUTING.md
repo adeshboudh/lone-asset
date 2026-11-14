@@ -22,7 +22,7 @@ make run        # play;  make edit  opens the editor;  make help  lists everythi
 ## Branches and pull requests
 
 - `dev` is the main development track. `main` is the release line and only receives merges from `dev`.
-- Branch from `dev`, named `feat/...`, `fix/...`, `perf/...` or `docs/...`. One work package or one concern per branch and PR.
+- Branch from `dev`, named `feat/...`, `fix/...`, `perf/...` or `docs/...`. One work package or concern per branch and PR; related small changes (tuning, sounds, docs, minor fixes) can share one branch and PR, with one commit per change.
 - Open the PR into `dev`. Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `build:`, `perf:`) for commit and PR titles. Feature PRs are squash-merged.
 - A PR is merged only after the developer has played the build and approved. Every PR's CI run attaches Windows and Linux zips as artifacts for that.
 - To release, open a PR from `dev` into `main` and merge it with a merge commit. Pushes to `main` refresh the public [`preview` release](https://github.com/adeshboudh/lone-asset/releases/tag/preview).

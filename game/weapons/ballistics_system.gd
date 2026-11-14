@@ -107,7 +107,7 @@ func fire(origin: Vector3, direction: Vector3, weapon: WeaponDefinition, shooter
 	_shot_counts[key] = shot_index + 1
 	projectile.tracer = weapon.tracer_enabled and TracerRules.shows_tracer(shot_index, weapon.tracer_every_n)
 	projectile.tracer_color = Color(weapon.tracer_color.r * weapon.tracer_glow, weapon.tracer_color.g * weapon.tracer_glow,
-		weapon.tracer_color.b * weapon.tracer_glow)
+		weapon.tracer_color.b * weapon.tracer_glow, weapon.tracer_color.a)
 	projectile.tracer_length = weapon.tracer_length_m
 	projectile.tracer_width = weapon.tracer_width_m
 	projectile.tracer_start = weapon.tracer_start_m
@@ -254,6 +254,7 @@ func _build_tracers() -> void:
 	var material: StandardMaterial3D = StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.vertex_color_use_as_albedo = true
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mesh.material = material
 	_tracers = MultiMesh.new()
 	_tracers.transform_format = MultiMesh.TRANSFORM_3D

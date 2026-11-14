@@ -31,11 +31,11 @@ extends Resource
 @export var tracer_enabled: bool = true
 ## 1 = every shot, 5 = every fifth shot.
 @export var tracer_every_n: int = 1
-## Streak colour; glow multiplies it above 1 so the glow effect picks it up.
-@export var tracer_color: Color = Color(1.0, 0.7, 0.25)
-@export var tracer_glow: float = 2.0
+## Streak colour; its alpha is how see-through the streak is. Glow multiplies the colour above 1 so the glow effect picks it up.
+@export var tracer_color: Color = Color(1.0, 0.7, 0.25, 0.5)
+@export var tracer_glow: float = 1.2
 @export var tracer_length_m: float = 40.0
-@export var tracer_width_m: float = 0.015
+@export var tracer_width_m: float = 0.01
 ## Distance flown before the streak first appears (0 = from the muzzle).
 @export var tracer_start_m: float = 0.0
 

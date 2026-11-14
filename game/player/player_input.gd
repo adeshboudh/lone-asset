@@ -16,6 +16,7 @@ var _fire_pressed: bool = false
 var _reload_pressed: bool = false
 var _fire_mode_pressed: bool = false
 var _weapon_slot: int = 0
+var _attachment_pressed: bool = false
 var _interact_pressed: bool = false
 var _binoculars_pressed: bool = false
 var _zoom_step: int = 0
@@ -40,6 +41,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_reload_pressed = true
 	elif event.is_action_pressed(&"fire_mode"):
 		_fire_mode_pressed = true
+	elif event.is_action_pressed(&"attachment"):
+		_attachment_pressed = true
 	elif event.is_action_pressed(&"weapon_1"):
 		_weapon_slot = 1
 	elif event.is_action_pressed(&"weapon_2"):
@@ -77,6 +80,7 @@ func read_intent() -> InputIntent:
 	_intent.aim = Input.is_action_pressed(&"aim") and Platform.is_mouse_captured()
 	_intent.reload = _reload_pressed
 	_intent.fire_mode_toggled = _fire_mode_pressed
+	_intent.attachment_toggled = _attachment_pressed
 	_intent.weapon_slot = _weapon_slot
 	_intent.interact = Input.is_action_pressed(&"interact") and Platform.is_mouse_captured()
 	_intent.interact_pressed = _interact_pressed
@@ -87,6 +91,7 @@ func read_intent() -> InputIntent:
 	_fire_pressed = false
 	_reload_pressed = false
 	_fire_mode_pressed = false
+	_attachment_pressed = false
 	_weapon_slot = 0
 	_interact_pressed = false
 	_binoculars_pressed = false

@@ -348,6 +348,7 @@ WeaponHolder
 - Tracers: one pooled `MultiMesh` draws a glowing streak from the muzzle (up to `tracer_length_m`) behind every live bullet; colour, glow, width and every-nth are per weapon (`TracerRules`).
 - The `BallisticsSystem` registers in the `ballistics` group on entering the tree, so weapons find it regardless of node order.
 - Projectile removed on hit, on exceeding `max_range`, or after 2 s.
+- Weapon variants: `WeaponDefinition.alt_variant` links a weapon to its other version (suppressor / muzzle brake). The attachment key swaps `Weapon.definition` in place (`LoadoutRules.can_swap_variant`, `variant_swap_s` delay, no firing or reloading meanwhile); `WeaponLogic` keeps magazine and reserve. Each variant is its own `.tres` with its own spread, recoil, noise radius, flash and shot sound. The saved loadout stores the fitted variant index.
 - Speeds are deliberately low (rifle 520 m/s, pistol 300, guard rifle 450) with `gravity_scale` 1.5, so shots can be seen and led at range.
 
 ---

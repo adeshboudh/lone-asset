@@ -5,6 +5,13 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 
+@export_group("Attachment variant")
+## The other version of this weapon (e.g. suppressor <-> muzzle brake), swapped with the attachment key.
+## Ammo carries over. Link one way only: the base weapon points at its variant.
+@export var alt_variant: WeaponDefinition
+## Seconds the weapon is unusable while the attachment is swapped.
+@export var variant_swap_s: float = 0.9
+
 @export_group("Fire")
 @export var damage: float = 34.0
 @export var fire_rate_rpm: float = 750.0

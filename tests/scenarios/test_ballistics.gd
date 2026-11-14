@@ -3,6 +3,7 @@ extends GdUnitTestSuite
 
 const RIFLE: WeaponDefinition = preload("res://data/weapons/rifle_suppressed.tres")
 const ZONES: HitZoneTable = preload("res://data/damage/hit_zones.tres")
+const SURFACES: SurfaceTable = preload("res://data/surfaces/surface_table.tres")
 const DUMMY: PackedScene = preload("res://game/targets/target_dummy.tscn")
 
 var _arena: Node3D
@@ -66,14 +67,16 @@ func test_gravity_drops_bullet_over_distance() -> void:
 	await _ticks(2)
 	var hit_y: Array[float] = []
 	_ballistics.fire(Vector3.ZERO, Vector3.FORWARD, RIFLE, null)
-	await _ticks(40)
+	await _ticks(60)
 	# The impact mark sits where the bullet hit.
 	for mark: Node in wall.get_children():
 		if mark is MeshInstance3D:
 			hit_y.append((mark as MeshInstance3D).global_position.y)
 	assert_array(hit_y).has_size(1)
-	# Drop ≈ ½·g·t², t = 299.5 / 880 s → about 0.57 m.
-	assert_float(hit_y[0]).is_between(-0.65, -0.5)
+	# Drop = ½·g·scale·t², with t the flight time to the wall face.
+	var flight_s: float = 299.5 / RIFLE.muzzle_velocity
+	var expected: float = -0.5 * 9.8 * RIFLE.gravity_scale * flight_s * flight_s
+	assert_float(hit_y[0]).is_between(expected * 1.08, expected * 0.92)
 
 
 func test_projectile_removed_after_max_range() -> void:
@@ -136,3 +139,76 @@ func test_no_tracer_when_disabled() -> void:
 	_ballistics.fire(Vector3(0.0, 100.0, 0.0), Vector3.FORWARD, weapon, null)
 	await _ticks(2)
 	assert_int(_ballistics.tracer_count).is_equal(0)
+
+
+func test_bullet_goes_through_thin_wood_and_loses_damage() -> void:
+	_ballistics.surfaces = SURFACES
+	_wall(Vector3(0.0, 1.0, -10.0), Vector3(4.0, 4.0, 0.1), &"wood")
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0))
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	# 0.1 m of wood costs 25 of the rifle's 100 power: 75 % of the damage gets through.
+	assert_float(HealthComponent.of(dummy).health).is_equal_approx(100.0 - RIFLE.damage * 0.75, 0.05)
+
+
+func test_concrete_stops_the_bullet() -> void:
+	_ballistics.surfaces = SURFACES
+	_wall(Vector3(0.0, 1.0, -10.0), Vector3(4.0, 4.0, 0.1), &"concrete")
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0))
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
+
+
+func test_thick_wood_stops_the_bullet() -> void:
+	_ballistics.surfaces = SURFACES
+	# 0.5 m of wood costs 125, more than the rifle's 100 power.
+	_wall(Vector3(0.0, 1.0, -10.0), Vector3(4.0, 4.0, 0.5), &"wood")
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0))
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
+
+
+func test_no_penetration_without_a_surface_table() -> void:
+	_wall(Vector3(0.0, 1.0, -10.0), Vector3(4.0, 4.0, 0.1), &"wood")
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0))
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
+
+
+func test_shallow_hit_on_metal_ricochets_and_keeps_flying() -> void:
+	_ballistics.surfaces = SURFACES
+	# A steel floor; the bullet meets it at about 6 degrees.
+	_wall(Vector3(0.0, -0.5, -20.0), Vector3(20.0, 1.0, 60.0), &"metal")
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.0, 0.0), Vector3(0.0, -0.1, -1.0), RIFLE, null)
+	await _ticks(8)
+	assert_int(_ballistics.active_count).is_equal(1)
+
+
+func test_steep_hit_on_concrete_ends_the_bullet() -> void:
+	_ballistics.surfaces = SURFACES
+	_wall(Vector3(0.0, -0.5, -20.0), Vector3(20.0, 1.0, 60.0), &"concrete")
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.0, 0.0), Vector3(0.0, -1.0, -1.0), RIFLE, null)
+	await _ticks(8)
+	assert_int(_ballistics.active_count).is_equal(0)
+
+
+func _wall(position: Vector3, size: Vector3, surface: StringName) -> StaticBody3D:
+	var wall: StaticBody3D = auto_free(StaticBody3D.new())
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	wall.add_child(shape)
+	wall.position = position
+	wall.set_meta(&"surface", surface)
+	_arena.add_child(wall)
+	return wall

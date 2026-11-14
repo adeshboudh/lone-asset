@@ -339,10 +339,16 @@ WeaponHolder
 
 - Projectiles are **plain data records** in a pooled array inside `BallisticsSystem` (a node in the level), not scene instances.
 - Each physics tick, each projectile advances in `projectile_steps_per_tick` segments: `velocity += gravity * dt`, raycast from previous to next position.
-- First hit → build `DamageInfo` → `HealthComponent.apply_damage()` if the collider has one (the child named `HealthComponent`) → place an impact mark (pooled, 64). Per-surface effects (`SurfaceProfile`) arrive with penetration in Milestone 2.
+- First hit → build `DamageInfo` → `HealthComponent.apply_damage()` if the collider has one (the child named `HealthComponent`) → place an impact mark (pooled, 64).
+- Bullets leave the gun muzzle, aimed at the point the camera ray (with spread) hits. If the muzzle is blocked (gun against a wall) the bullet starts at the camera instead.
+- Surfaces: a world collider (or a parent, up to 3 levels) names its surface with the `surface` metadata, the same one footsteps read. `data/surfaces/surface_table.tres` (`SurfaceTable`) maps each id to a `SurfaceDefinition`: impact sound, spark/dust/splash particles, ricochet angle, and penetration cost. Unlisted surfaces use the default entry. A new surface is a new table entry (water, dirt and wood are already in).
+- Ricochet (`ImpactRules`): a hit at or below the surface's ricochet angle to the surface plane reflects the bullet at reduced speed and damage; at most one ricochet per bullet.
+- Penetration: a bullet with `penetration_power` passes through a penetrable surface if power covers `thickness × penetration_cost_per_m` (thickness measured by a ray back from 1 m beyond the hit, so thicker objects always stop it). Damage scales by the power left. Characters are never penetrated.
+- One impact noise per bullet. The tracer trail restarts at each ricochet or exit.
+- Tracers: one pooled `MultiMesh` draws a glowing streak from the muzzle (up to `tracer_length_m`) behind every live bullet; colour, glow, width and every-nth are per weapon (`TracerRules`).
 - The `BallisticsSystem` registers in the `ballistics` group on entering the tree, so weapons find it regardless of node order.
 - Projectile removed on hit, on exceeding `max_range`, or after 2 s.
-- Bullet travel time is short at these ranges, but the system is in place for penetration/ricochet in Milestone 2.
+- Speeds are deliberately low (rifle 520 m/s, pistol 300, guard rifle 450) with `gravity_scale` 1.5, so shots can be seen and led at range.
 
 ---
 

@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # Handoff and progress
 
-Last updated: 2026-11-09. Read `docs/architecture.md` first.
+Last updated: 2026-11-15. Read `docs/architecture.md` first.
 
 ## Status
 
@@ -25,6 +25,7 @@ Milestone 1 (core prototype): code-complete for work packages 1 to 13. Work pack
 | (weapons) | Weapon switching (keys 1/2/3) with a suppressed pistol and a combat knife | Merged (#26) |
 | (weapons) | Viewmodel sway and walk bob | Merged (#23) |
 | (docs) | Free community downloads with no stated licence allowed on probation | Merged (#24) |
+| (weapons) | Glowing tracers, bullets leave the muzzle, slower bullets with more drop, per-surface impacts, ricochet, penetration | On `feat/glowing-tracers`, waiting for a playtest |
 | 12b | Hero art area | Not started, needs art decisions |
 
 Weapons: the player carries three weapons on keys 1, 2 and 3: the animated M4 with gloved arms and a reflex sight, a suppressed pistol and a combat knife. Each weapon has its own ammo and the loadout is saved. Switching is blocked while reloading or swinging (`LoadoutRules`, `Player._switch_weapon`). The knife: fire button = quick slash (45 damage), aim button = heavy thrust (80 damage, 2.3 m reach); from behind either one does 200 (silent takedown, `MeleeRules`); noise radius 3 m; numbers in `data/weapons/knife.tres`. Pistol and knife are static models held in the M4 pack's right arm (`content/weapons/hands_rig.gd`) with hand-keyed clips built in code (`content/weapons/clip_builder.gd`; the keys are in each viewmodel script). The crosshair stays up while aiming and its gap shows the accuracy. Sway and bob apply to every weapon. Credits for the pistol, knife, M4 pack and sight are in `content/LICENSES.md`.
@@ -68,6 +69,7 @@ Prototype mission on the graybox course: reach the compound, download data at th
 - Weapons are checked by rendered screenshots and tests, not yet by a person playing: ADS alignment (`viewmodel_ads_position` in each weapon's `.tres`), the pistol and knife clip timing, and how sway looks on the pistol and knife need a playtest pass.
 - The knife and pistol have no sounds of their own (they reuse the rifle and impact sounds). The pistol and knife have no reload or fire animation from a real animator; the clips are keyed by hand.
 - The old M416 model files (`content/weapons/rifle_suppressed.glb/.tscn`, `source/build_rifle.py`, `m416_blendswap_*`) are no longer used by the player; delete them or keep them for a second rifle.
+- Bullet feel (tracers, ricochet, penetration, impact effects by surface) is checked by tests and rendered frames, not yet by a person playing. Tune in `data/weapons/*.tres` and `data/surfaces/surface_table.tres`. Impact sounds are still the one generic world sound for every surface; per-surface sounds need recordings.
 - Not built yet: pickups for ammo and weapons, a weapon-select wheel, throwables.
 
 ## Next steps, in order

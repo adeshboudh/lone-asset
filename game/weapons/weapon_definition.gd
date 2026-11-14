@@ -22,7 +22,8 @@ extends Resource
 @export var max_range: float = 400.0
 ## Raycast segments per physics tick.
 @export var projectile_steps_per_tick: int = 4
-## Unused until penetration is implemented (Milestone 2).
+## Passes through thin penetrable surfaces: each metre of material costs the surface's
+## penetration_cost_per_m, and damage drops by the share of power used up. 0 = never penetrates.
 @export var penetration_power: float = 0.0
 
 @export_group("Tracer")

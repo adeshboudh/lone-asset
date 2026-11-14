@@ -7,6 +7,10 @@ const GROUP: StringName = &"ballistics"
 const MAX_LIFETIME_S: float = 2.0
 const MAX_IMPACT_MARKS: int = 64
 const MAX_TRACERS: int = 128
+const MAX_RICOCHETS: int = 1
+## Thickest layer a bullet can pass through; thicker objects stop it however much power it has.
+const MAX_PENETRATION_THICKNESS_M: float = 1.0
+const MAX_IMPACT_FX: int = 12
 ## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
 const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
 
@@ -27,9 +31,16 @@ class Projectile:
 	var tracer_length: float
 	var tracer_width: float
 	var tracer_start: float
+	var power: float
+	var ricochets: int
+	var impacts: int
+	## Distance flown when the bullet last changed course; the tracer trail does not reach back past it.
+	var trail_from: float
 
 
 @export var hit_zones: HitZoneTable
+## Per-surface impact effects, ricochet and penetration. Null = every surface behaves as plain stopping geometry.
+@export var surfaces: SurfaceTable
 ## World (1) and characters/targets (2).
 @export_flags_3d_physics var collision_mask: int = 3
 
@@ -47,6 +58,8 @@ var _gravity: Vector3 = Vector3.DOWN * float(ProjectSettings.get_setting("physic
 var _marks: Array[MeshInstance3D] = []
 var _next_mark: int = 0
 var _tracers: MultiMesh
+var _fx: Array[CPUParticles3D] = []
+var _next_fx: int = 0
 ## Shots fired so far per shooter (instance id), for the every-nth tracer rule.
 var _shot_counts: Dictionary = {}
 
@@ -71,6 +84,7 @@ func _ready() -> void:
 		add_child(mark)
 		_marks.append(mark)
 	_build_tracers()
+	_build_impact_fx()
 
 
 ## shooter is excluded from the bullet's collisions.
@@ -97,6 +111,10 @@ func fire(origin: Vector3, direction: Vector3, weapon: WeaponDefinition, shooter
 	projectile.tracer_length = weapon.tracer_length_m
 	projectile.tracer_width = weapon.tracer_width_m
 	projectile.tracer_start = weapon.tracer_start_m
+	projectile.power = weapon.penetration_power
+	projectile.ricochets = 0
+	projectile.impacts = 0
+	projectile.trail_from = 0.0
 	_active.append(projectile)
 
 
@@ -120,7 +138,9 @@ func _advance(projectile: Projectile, delta: float, space: PhysicsDirectSpaceSta
 			projectile.position, next, collision_mask, projectile.exclude)
 		var hit: Dictionary = space.intersect_ray(query)
 		if not hit.is_empty():
-			_resolve_hit(projectile, hit)
+			projectile.travelled += projectile.position.distance_to(hit["position"])
+			if _resolve_hit(projectile, hit):
+				return projectile.age < MAX_LIFETIME_S
 			return false
 		projectile.travelled += projectile.position.distance_to(next)
 		projectile.position = next
@@ -129,17 +149,28 @@ func _advance(projectile: Projectile, delta: float, space: PhysicsDirectSpaceSta
 	return projectile.age < MAX_LIFETIME_S
 
 
-func _resolve_hit(projectile: Projectile, hit: Dictionary) -> void:
+## Returns true when the bullet carries on (it ricocheted or went through), false when it is finished.
+func _resolve_hit(projectile: Projectile, hit: Dictionary) -> bool:
 	var collider: Object = hit["collider"]
 	var position: Vector3 = hit["position"]
 	var normal: Vector3 = hit["normal"]
+	var surface: SurfaceDefinition = _surface_of(collider)
 	_place_mark(collider as Node3D, position, normal)
-	NoiseSystem.emit_noise(NoiseEvent.IMPACT, position, NoiseSystem.profiles.impact_m, projectile.source)
+	_spawn_impact_fx(surface, position, normal)
+	# One noise per bullet, however many surfaces it passes.
+	if projectile.impacts == 0:
+		NoiseSystem.emit_noise(NoiseEvent.IMPACT, position, NoiseSystem.profiles.impact_m, projectile.source)
+	projectile.impacts += 1
 
 	var health: HealthComponent = HealthComponent.of(collider)
-	Audio.play_3d(&"impact_world" if health == null else &"impact_body", position, &"Weapons", -2.0, projectile.source)
+	var sound: StringName = &"impact_world"
+	if health != null:
+		sound = &"impact_body"
+	elif surface != null and surface.impact_sound != &"" and Audio.bank.has_sound(surface.impact_sound):
+		sound = surface.impact_sound
+	Audio.play_3d(sound, position, &"Weapons", -2.0, projectile.source)
 	if health == null:
-		return
+		return _bounce_or_pass(projectile, surface, collider, position, normal)
 	var zone: StringName = HitZoneTable.zone_of(collider, hit["shape"])
 	var info: DamageInfo = DamageInfo.new()
 	info.type = &"ballistic"
@@ -150,6 +181,58 @@ func _resolve_hit(projectile: Projectile, hit: Dictionary) -> void:
 	info.hit_zone = zone
 	info.amount = projectile.damage * (hit_zones.multiplier(zone) if hit_zones != null else 1.0)
 	health.apply_damage(info)
+	return false
+
+
+## World hit: skip off at a shallow angle, else punch through thin material if the bullet has the power.
+func _bounce_or_pass(projectile: Projectile, surface: SurfaceDefinition, collider: Object, position: Vector3,
+		normal: Vector3) -> bool:
+	if surface == null:
+		return false
+	var direction: Vector3 = projectile.velocity.normalized()
+	var grazing: float = ImpactRules.grazing_angle_deg(direction, normal)
+	if ImpactRules.ricochets(surface.ricochet_max_angle_deg, grazing, projectile.ricochets, MAX_RICOCHETS):
+		projectile.ricochets += 1
+		projectile.velocity = ImpactRules.reflect(direction, normal) * projectile.velocity.length() * surface.ricochet_speed_keep
+		projectile.damage *= surface.ricochet_damage_keep
+		projectile.position = position + normal * 0.02
+		projectile.trail_from = projectile.travelled
+		return true
+	if not surface.penetrable or projectile.power <= 0.0:
+		return false
+	# The far side of the same object: a ray from beyond it back to the hit point meets the exit face first.
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+		position + direction * MAX_PENETRATION_THICKNESS_M, position, collision_mask, projectile.exclude)
+	var exit: Dictionary = space.intersect_ray(query)
+	if exit.is_empty() or exit["collider"] != collider:
+		return false
+	var exit_position: Vector3 = exit["position"]
+	var left: float = ImpactRules.remaining_power(projectile.power, position.distance_to(exit_position),
+		surface.penetration_cost_per_m)
+	if left <= 0.0:
+		return false
+	projectile.damage *= left / projectile.power
+	projectile.power = left
+	_place_mark(collider as Node3D, exit_position, exit["normal"])
+	_spawn_impact_fx(surface, exit_position, exit["normal"])
+	projectile.position = exit_position + direction * 0.02
+	projectile.trail_from = projectile.travelled
+	return true
+
+
+## The surface definition for what the bullet hit: the `surface` metadata on the collider or a parent.
+func _surface_of(collider: Object) -> SurfaceDefinition:
+	if surfaces == null:
+		return null
+	var node: Node = collider as Node
+	for i: int in 3:
+		if node == null:
+			break
+		if node.has_meta(&"surface"):
+			return surfaces.lookup(node.get_meta(&"surface"))
+		node = node.get_parent()
+	return surfaces.default_surface
 
 
 func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
@@ -200,7 +283,8 @@ func _update_tracers() -> void:
 			continue
 		# At least the distance flown per tick, so the streak is a continuous line and not a dash every few metres.
 		var full_length: float = maxf(projectile.tracer_length, projectile.velocity.length() * tick_s)
-		var length: float = TracerRules.visible_length(projectile.travelled, projectile.tracer_start, full_length)
+		var length: float = TracerRules.visible_length(
+			projectile.travelled - projectile.trail_from, projectile.tracer_start if projectile.trail_from == 0.0 else 0.0, full_length)
 		if length <= 0.0:
 			continue
 		var width: float = projectile.tracer_width
@@ -216,3 +300,52 @@ func _update_tracers() -> void:
 		_tracers.set_instance_color(count, projectile.tracer_color)
 		count += 1
 	_tracers.visible_instance_count = count
+
+
+func _build_impact_fx() -> void:
+	var quad: QuadMesh = QuadMesh.new()
+	quad.size = Vector2.ONE
+	var material: StandardMaterial3D = StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	# Without this the billboard ignores the particle scale and every spark is a metre wide.
+	material.billboard_keep_scale = true
+	material.vertex_color_use_as_albedo = true
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	quad.material = material
+	var fade: Gradient = Gradient.new()
+	fade.set_color(0, Color.WHITE)
+	fade.set_color(1, Color(1.0, 1.0, 1.0, 0.0))
+	for i: int in MAX_IMPACT_FX:
+		var particles: CPUParticles3D = CPUParticles3D.new()
+		particles.mesh = quad
+		particles.one_shot = true
+		particles.emitting = false
+		particles.explosiveness = 1.0
+		particles.spread = 55.0
+		particles.gravity = Vector3(0.0, -6.0, 0.0)
+		particles.color_ramp = fade
+		particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		particles.top_level = true
+		add_child(particles)
+		_fx.append(particles)
+
+
+## Sparks, dust or splash at the hit point, thrown out along the surface normal.
+func _spawn_impact_fx(surface: SurfaceDefinition, position: Vector3, normal: Vector3) -> void:
+	if surface == null:
+		return
+	var particles: CPUParticles3D = _fx[_next_fx]
+	_next_fx = (_next_fx + 1) % _fx.size()
+	particles.emitting = false
+	particles.global_position = position + normal * 0.02
+	particles.direction = normal
+	particles.amount = surface.fx_count
+	particles.lifetime = surface.fx_lifetime_s
+	particles.initial_velocity_min = surface.fx_speed_m * 0.5
+	particles.initial_velocity_max = surface.fx_speed_m
+	particles.scale_amount_min = surface.fx_size_m
+	particles.scale_amount_max = surface.fx_size_m * 1.6
+	particles.color = surface.fx_color
+	particles.restart()
+	particles.emitting = true

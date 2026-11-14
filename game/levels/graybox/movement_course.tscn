@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://game/player/player.tscn" id="3_player"]
 [ext_resource type="Script" uid="uid://cl2781yr5bojj" path="res://game/weapons/ballistics_system.gd" id="4_ballistics"]
 [ext_resource type="Resource" path="res://data/damage/hit_zones.tres" id="5_zones"]
+[ext_resource type="Resource" path="res://data/surfaces/surface_table.tres" id="5_surfaces"]
 [ext_resource type="PackedScene" path="res://game/targets/target_dummy.tscn" id="6_dummy"]
 [ext_resource type="Script" uid="uid://b4ko6b4088kbx" path="res://game/ai/stealth/level_lighting.gd" id="7_lighting"]
 [ext_resource type="Script" uid="uid://bxyf25wwner1w" path="res://game/ai/stealth/light_volume.gd" id="8_volume"]
@@ -266,6 +267,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
 [node name="BallisticsSystem" type="Node3D" parent="." unique_id=1953448208]
 script = ExtResource("4_ballistics")
 hit_zones = ExtResource("5_zones")
+surfaces = ExtResource("5_surfaces")
 
 [node name="Range" type="Node3D" parent="." unique_id=291938252]
 

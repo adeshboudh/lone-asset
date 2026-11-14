@@ -163,6 +163,12 @@ func test_knife_is_heard_only_up_close() -> void:
 
 
 func test_rifle_shot_leaves_the_muzzle_but_hits_where_the_camera_aims() -> void:
+	# No spread, so the shot is deterministic; a copy so the shared resource stays untouched.
+	var perfect: WeaponDefinition = _player.weapon.definition.duplicate()
+	perfect.spread_hip_deg = 0.0
+	perfect.spread_move_add_deg = 0.0
+	perfect.spread_per_shot_deg = 0.0
+	_player.weapon.definition = perfect
 	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0), 0.0)
 	await _ticks(2)
 	_intent.fire_pressed = true

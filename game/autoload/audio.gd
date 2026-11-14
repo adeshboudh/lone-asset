@@ -13,7 +13,7 @@ const MAX_VOICES_3D: int = 24
 const VOICES_2D: int = 8
 const MAX_AUDIBLE_DISTANCE_M: float = 120.0
 const UNIT_SIZE_M: float = 8.0
-## Left / right footstep recordings, built by tools/audio/make_footsteps.py.
+## Left / right footstep recordings.
 const SIDED_FOOTSTEP_PATH: String = "res://content/audio/sfx/footstep_%s_%s.wav"
 
 var bank: SoundBank = preload("res://data/audio/sound_bank.tres")

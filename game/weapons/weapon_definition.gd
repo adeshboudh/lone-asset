@@ -35,7 +35,7 @@ extends Resource
 @export var tracer_glow: float = 4.0
 @export var tracer_length_m: float = 2.5
 @export var tracer_width_m: float = 0.03
-## Distance from the muzzle before the streak first appears.
+## Distance flown before the streak first appears.
 @export var tracer_start_m: float = 3.0
 
 @export_group("Accuracy (cone half-angle, degrees)")

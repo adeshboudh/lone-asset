@@ -162,6 +162,16 @@ func test_knife_is_heard_only_up_close() -> void:
 	assert_int(far.size()).is_equal(0)
 
 
+func test_rifle_shot_leaves_the_muzzle_but_hits_where_the_camera_aims() -> void:
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -12.0), 0.0)
+	await _ticks(2)
+	_intent.fire_pressed = true
+	await _ticks(2)
+	_intent.fire_pressed = false
+	await _ticks(30)
+	assert_float(HealthComponent.of(dummy).health).is_less(100.0)
+
+
 func _press_slot(slot: int) -> void:
 	_intent.weapon_slot = slot
 	await _ticks(2)

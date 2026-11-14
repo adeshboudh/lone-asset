@@ -9,6 +9,8 @@ signal fired(origin: Vector3, direction: Vector3)
 const KICK_DISTANCE: float = 0.035
 const KICK_RECOVERY: float = 14.0
 const FLASH_TIME_S: float = 0.05
+## World and characters, same as the bullets.
+const MUZZLE_RAY_MASK: int = 3
 ## Raising a weapon after a switch.
 const EQUIP_TIME_S: float = 0.35
 ## World (1) and characters/targets (2): what a blade can hit.
@@ -30,6 +32,7 @@ var _ballistics: BallisticsSystem
 var _viewmodel: Node3D
 var _anim: AnimationPlayer
 var _flash: OmniLight3D
+var _muzzle: Node3D
 var _kick: float = 0.0
 var _turn_rate: Vector2 = Vector2.ZERO
 var _strafe_speed: float = 0.0
@@ -116,7 +119,8 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	_was_reloading = logic.is_reloading
 	for i: int in shots:
 		var direction: Vector3 = WeaponSpread.random_direction(-aim.basis.z, current_spread_deg, _rng)
-		_ballistics.fire(aim.origin, direction, definition, shooter)
+		var start: Array = _bullet_start(direction, shooter, aim)
+		_ballistics.fire(start[0], start[1], definition, shooter)
 		Audio.play_2d(definition.fire_sound, &"Weapons", 0.0, _rng.randf_range(0.96, 1.04))
 		spread.on_shot(definition)
 		current_spread_deg = spread.current_deg(definition, aiming, moving, crouched)
@@ -129,6 +133,28 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 		_flash_remaining = FLASH_TIME_S
 		fired.emit(aim.origin, direction)
 	return kick
+
+
+## Bullets leave the muzzle, aimed at the point the crosshair ray (camera, with spread) hits, so they land where
+## the player aims. Returns [origin, direction]. Falls back to firing from the camera when there is no muzzle or
+## it is blocked (gun pushed into a wall), where firing from the muzzle would shoot through the wall.
+func _bullet_start(direction: Vector3, shooter: CollisionObject3D, aim: Transform3D) -> Array:
+	if _muzzle == null or not _muzzle.is_inside_tree() or shooter == null:
+		return [aim.origin, direction]
+	var space: PhysicsDirectSpaceState3D = shooter.get_world_3d().direct_space_state
+	var exclude: Array[RID] = [shooter.get_rid()]
+	var muzzle_pos: Vector3 = _muzzle.global_position
+	var blocked: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(aim.origin, muzzle_pos, MUZZLE_RAY_MASK, exclude))
+	if not blocked.is_empty():
+		return [aim.origin, direction]
+	var far: Vector3 = aim.origin + direction * definition.max_range
+	var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(aim.origin, far, MUZZLE_RAY_MASK, exclude))
+	var target: Vector3 = hit["position"] if not hit.is_empty() else far
+	var to_target: Vector3 = target - muzzle_pos
+	# A target closer than the muzzle (or behind it) cannot be aimed at from there.
+	if to_target.dot(direction) <= 0.0:
+		return [aim.origin, direction]
+	return [muzzle_pos, to_target.normalized()]
 
 
 func _process(delta: float) -> void:
@@ -228,7 +254,8 @@ func _build_viewmodel() -> void:
 	_flash.omni_range = 2.5
 	_flash.visible = false
 	var muzzle: Node3D = _viewmodel.get_node_or_null(^"Muzzle") as Node3D
-	(muzzle if muzzle != null else _viewmodel).add_child(_flash)
+	_muzzle = muzzle if muzzle != null else _viewmodel
+	_muzzle.add_child(_flash)
 	_anim = _viewmodel.get_node_or_null(^"AnimationPlayer") as AnimationPlayer
 	if _anim == null:
 		_anim = _viewmodel.find_child("AnimationPlayer", true, false) as AnimationPlayer

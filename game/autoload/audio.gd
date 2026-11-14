@@ -13,8 +13,8 @@ const MAX_VOICES_3D: int = 24
 const VOICES_2D: int = 8
 const MAX_AUDIBLE_DISTANCE_M: float = 120.0
 const UNIT_SIZE_M: float = 8.0
-## Local-only recordings (gitignored, not redistributable): tools/audio/make_local_footsteps.py.
-const LOCAL_FOOTSTEP_PATH: String = "res://content/audio/local/footstep_%s_%s.wav"
+## Left / right footstep recordings.
+const SIDED_FOOTSTEP_PATH: String = "res://content/audio/sfx/footstep_%s_%s.wav"
 
 var bank: SoundBank = preload("res://data/audio/sound_bank.tres")
 
@@ -28,7 +28,7 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	_rng.randomize()
-	_load_local_footsteps()
+	_load_sided_footsteps()
 	for i: int in MAX_VOICES_3D:
 		var voice: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
 		voice.unit_size = UNIT_SIZE_M
@@ -46,13 +46,12 @@ func _ready() -> void:
 	add_child(_ui_voice)
 
 
-## Adds left / right footstep recordings to the bank when they exist on this machine.
-func _load_local_footsteps() -> void:
+## Adds the left / right footstep recordings to the bank.
+func _load_sided_footsteps() -> void:
 	for surface: StringName in AudioRules.FOOTSTEP_SURFACES:
 		for side: String in ["left", "right"]:
-			var path: String = LOCAL_FOOTSTEP_PATH % [surface, side]
-			if ResourceLoader.exists(path):
-				bank.sounds[StringName("footstep_%s_%s" % [surface, side])] = [load(path)]
+			var path: String = SIDED_FOOTSTEP_PATH % [surface, side]
+			bank.sounds[StringName("footstep_%s_%s" % [surface, side])] = [load(path)]
 
 
 ## Positional sound. Walls between it and the camera muffle it. Returns the voice, or null if unknown.

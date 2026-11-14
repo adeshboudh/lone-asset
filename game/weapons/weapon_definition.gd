@@ -32,11 +32,11 @@ extends Resource
 @export var tracer_every_n: int = 1
 ## Streak colour; glow multiplies it above 1 so the glow effect picks it up.
 @export var tracer_color: Color = Color(1.0, 0.7, 0.25)
-@export var tracer_glow: float = 4.0
-@export var tracer_length_m: float = 2.5
-@export var tracer_width_m: float = 0.03
-## Distance flown before the streak first appears.
-@export var tracer_start_m: float = 3.0
+@export var tracer_glow: float = 2.0
+@export var tracer_length_m: float = 40.0
+@export var tracer_width_m: float = 0.015
+## Distance flown before the streak first appears (0 = from the muzzle).
+@export var tracer_start_m: float = 0.0
 
 @export_group("Accuracy (cone half-angle, degrees)")
 @export var spread_hip_deg: float = 2.5

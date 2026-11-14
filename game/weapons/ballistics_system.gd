@@ -7,6 +7,8 @@ const GROUP: StringName = &"ballistics"
 const MAX_LIFETIME_S: float = 2.0
 const MAX_IMPACT_MARKS: int = 64
 const MAX_TRACERS: int = 128
+## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
+const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
 
 
 class Projectile:
@@ -189,18 +191,27 @@ func _build_tracers() -> void:
 ## Draws one stretched glowing box per live tracer bullet, from its head back along its velocity.
 func _update_tracers() -> void:
 	var count: int = 0
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	var tick_s: float = 1.0 / float(Engine.physics_ticks_per_second)
 	for projectile: Projectile in _active:
 		if count >= MAX_TRACERS:
 			break
 		if not projectile.tracer:
 			continue
-		var length: float = TracerRules.visible_length(projectile.travelled, projectile.tracer_start, projectile.tracer_length)
+		# At least the distance flown per tick, so the streak is a continuous line and not a dash every few metres.
+		var full_length: float = maxf(projectile.tracer_length, projectile.velocity.length() * tick_s)
+		var length: float = TracerRules.visible_length(projectile.travelled, projectile.tracer_start, full_length)
 		if length <= 0.0:
 			continue
+		var width: float = projectile.tracer_width
+		if camera != null:
+			# Measured at the nearest end: a streak from the gun to far away would otherwise be a fat wedge.
+			var tail: Vector3 = projectile.position - projectile.velocity.normalized() * length
+			width = maxf(width, camera.global_position.distance_to(tail) * TRACER_MIN_ANGULAR_WIDTH)
 		var direction: Vector3 = projectile.velocity.normalized()
 		var up_hint: Vector3 = Vector3.FORWARD if absf(direction.y) > 0.99 else Vector3.UP
 		var basis: Basis = Basis.looking_at(direction, up_hint).scaled_local(
-			Vector3(projectile.tracer_width, projectile.tracer_width, length))
+			Vector3(width, width, length))
 		_tracers.set_instance_transform(count, Transform3D(basis, projectile.position - direction * (length * 0.5)))
 		_tracers.set_instance_color(count, projectile.tracer_color)
 		count += 1

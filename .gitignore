@@ -22,5 +22,5 @@
 # Blender backups
 *.blend1
 
-# Local-only audio (licence does not allow redistribution; see tools/audio/make_local_footsteps.py)
+# Local-only source recordings for tools/audio/make_footsteps.py (CC BY-ND, not redistributable)
 /content/audio/local/

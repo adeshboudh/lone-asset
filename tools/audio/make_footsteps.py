@@ -2,17 +2,16 @@
 # SPDX-License-Identifier: MIT
 """Builds the player's left/right footstep sounds for concrete, metal and grass from two recordings.
 
-The recordings (Footstep_Boot_Concrete-left.wav / -right.wav, CC BY-ND 4.0) may not be redistributed or
-adapted in shared builds, so they and their output stay local and gitignored. Put the two source files in
-content/audio/local/source/, run this script, and the game picks up the results at startup
-(Audio._load_local_footsteps). Without them the game uses the generated placeholder footsteps.
+The recordings (Footstep_Boot_Concrete-left.wav / -right.wav, CC BY-ND 4.0) are kept in
+content/audio/local/source/ (gitignored). Run this script to write footstep_<surface>_<side>.wav into
+content/audio/sfx/, which the game loads at startup (Audio._load_sided_footsteps).
 """
 import wave
 from pathlib import Path
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[2] / "content" / "audio" / "local"
+AUDIO = Path(__file__).resolve().parents[2] / "content" / "audio"
 RATE = 44100
 KEEP_S = 0.35  # the recorded step is over by about 0.3 s
 PEAK = 0.6
@@ -70,9 +69,9 @@ def grass(x: np.ndarray, rng: np.random.Generator) -> np.ndarray:
 def main() -> None:
     rng = np.random.default_rng(7)
     for side in ("left", "right"):
-        step = read_wav(ROOT / "source" / f"Footstep_Boot_Concrete-{side}.wav")[: int(KEEP_S * RATE)]
+        step = read_wav(AUDIO / "local" / "source" / f"Footstep_Boot_Concrete-{side}.wav")[: int(KEEP_S * RATE)]
         for surface, sound in (("concrete", step), ("metal", metal(step)), ("grass", grass(step, rng))):
-            write_wav(ROOT / f"footstep_{surface}_{side}.wav", sound[: int(KEEP_S * RATE)].copy())
+            write_wav(AUDIO / "sfx" / f"footstep_{surface}_{side}.wav", sound[: int(KEEP_S * RATE)].copy())
             print(f"footstep_{surface}_{side}.wav")
 
 

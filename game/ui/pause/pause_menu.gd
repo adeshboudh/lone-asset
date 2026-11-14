@@ -20,13 +20,9 @@ func _ready() -> void:
 	add_child(_settings)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	_resume_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
-	_quit_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
-	_settings_button.pressed.connect(func() -> void:
-		Audio.play_ui(&"ui_click")
-		_settings.open())
+	UiSounds.wire(self)
+	_settings_button.pressed.connect(_settings.open)
 	_settings.closed.connect(_settings_button.grab_focus)
-	_restart_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
 	_restart_button.pressed.connect(restart_requested.emit)
 	_resume_button.pressed.connect(resume_requested.emit)
 	_quit_button.pressed.connect(quit_requested.emit)

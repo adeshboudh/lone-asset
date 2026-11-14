@@ -67,7 +67,7 @@ Prototype mission on the graybox course: reach the compound, download data at th
 - Windows run and OpenGL fallback not yet checked by a person.
 
 - Weapons are checked by rendered screenshots and tests, not yet by a person playing: ADS alignment (`viewmodel_ads_position` in each weapon's `.tres`), the pistol and knife clip timing, and how sway looks on the pistol and knife need a playtest pass.
-- The knife and pistol have no sounds of their own (they reuse the rifle and impact sounds). The pistol and knife have no reload or fire animation from a real animator; the clips are keyed by hand.
+- Sounds: gun shots are named per gun (`m4_shot_raw`, `m4_shot_suppressed`, each with one variant per recorded shot, `pistol_shot_*`), so a new gun adds its own ids; `tools/audio/convert_recorded_shots.py` slices a recording into single shots. Menu sounds: `ui_hover`, `ui_click`, `ui_start` (Play and Continue) through `UiSounds.wire`, set on each menu. The knife has no sound of its own and impacts share one generic sound. The pistol and knife have no reload or fire animation from a real animator; the clips are keyed by hand.
 - The old M416 model files (`content/weapons/rifle_suppressed.glb/.tscn`, `source/build_rifle.py`, `m416_blendswap_*`) are no longer used by the player; delete them or keep them for a second rifle.
 - Bullet feel (tracers, ricochet, penetration, impact effects by surface) is checked by tests and rendered frames, not yet by a person playing. Tune in `data/weapons/*.tres` and `data/surfaces/surface_table.tres`. Impact sounds are still the one generic world sound for every surface; per-surface sounds need recordings.
 - Not built yet: pickups for ammo and weapons, a weapon-select wheel, throwables.

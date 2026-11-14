@@ -691,6 +691,7 @@ class_name EquipmentDefinition extends Resource
 Implemented early (with WP 5) because silence made the prototype hard to judge.
 
 - **Buses** (`game/audio/default_bus_layout.tres`): `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
+- **Menu sounds**: `UiSounds.wire(menu)` connects `ui_hover` (mouse-over, keyboard focus) and a press sound to every button under a node; a button picks its press sound with the `ui_sound` metadata (default `ui_click`, `ui_start` on Play and Continue). Call it before connecting actions that leave the screen.
 - **`Audio` autoload**: `play_2d` (the player's own weapon, footsteps and landings, 8 pooled voices), `play_3d` (positional sounds such as bullet impacts, at most 24 pooled voices), `play_ui` (plays while paused) and `make_loop` (level ambience, e.g. wind).
 - **Sound bank** (`data/audio/sound_bank.tres`): sound id → variants, picked at random so footsteps and shots do not repeat exactly. Weapons name their sounds in their `WeaponDefinition` (fire, dry fire, reload, reload from empty).
 - **Placeholder sounds** are synthesised by `tools/audio/make_placeholder_sounds.py` (our own work, CC BY 4.0). Replace a file and keep its name to swap in a real recording.

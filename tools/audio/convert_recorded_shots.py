@@ -18,10 +18,22 @@ SOURCE = Path(__file__).resolve().parent / "source"
 KEEP_S = 1.2
 FADE_S = 0.3
 SHOTS = {
-    "rifle_shot_suppressed": "rifle_shot_suppressed_s1.wav",
-    "rifle_shot_loud": "rifle_shot_loud_s2.wav",
     "pistol_shot_suppressed": "pistol_shot_suppressed_s1.wav",
     "pistol_shot_loud": "pistol_shot_loud_s1.wav",
+}
+# One gun's recording holding several single shots: each shot becomes a variant (id_1, id_2, ...).
+# Add a gun by adding its recordings here and its sound ids in sound_bank.tres.
+SLICED_SHOTS = {
+    "m4_shot_raw": "m4_raw.mp3",
+    "m4_shot_suppressed": "m4_suppressed.mp3",
+}
+SHOT_LENGTH_S = 0.7
+SHOT_LEAD_S = 0.03
+# Menu sounds: (source, kept seconds, peak level). Hover is quieter than the rest.
+UI_SOUNDS = {
+    "ui_hover": ("ui_hover.wav", 0.3, 0.5),
+    "ui_click": ("ui_click.wav", 0.3, 0.8),
+    "ui_start": ("ui_start.wav", 0.6, 0.9),
 }
 
 
@@ -79,11 +91,51 @@ def dry_fire() -> None:
         print(sound_id)
 
 
+def split_shots(x: np.ndarray) -> list[np.ndarray]:
+    """One slice per gunshot in a recording: finds the loud peaks (at least 0.3 s apart) and cuts from just
+    before each, so reverb tails and neighbouring shots do not leak in."""
+    window = int(0.005 * SR)
+    env = np.array([np.abs(x[i: i + window]).max() for i in range(0, len(x) - window, window)])
+    reach = int(0.15 * SR / window)
+    peaks: list[int] = []
+    for i, level in enumerate(env):
+        if level > 0.4 * env.max() and level == env[max(0, i - reach): i + reach].max():
+            if not peaks or (i - peaks[-1]) * window > 0.3 * SR:
+                peaks.append(i)
+    slices = []
+    for peak in peaks:
+        start = max(0, peak * window - int(SHOT_LEAD_S * SR))
+        shot = x[start: start + int(SHOT_LENGTH_S * SR)].copy()
+        fade = int(FADE_S * SR)
+        shot[-fade:] *= np.linspace(1.0, 0.0, fade)
+        slices.append(shot)
+    return slices
+
+
+def sliced_shots() -> None:
+    for sound_id, file in SLICED_SHOTS.items():
+        for i, shot in enumerate(split_shots(decode(SOURCE / file)), 1):
+            write_wav(f"{sound_id}_{i}", normalise(shot))
+            write_wav(f"{sound_id}_{i}_muffled", normalise(fft_filter(shot, None, MUFFLE_CUTOFF_HZ), 0.7))
+            print(f"{sound_id}_{i}")
+
+
+def ui_sounds() -> None:
+    for sound_id, (file, keep_s, peak) in UI_SOUNDS.items():
+        x = decode(SOURCE / file)[: int(keep_s * SR)]
+        fade = int(0.06 * SR)
+        x[-fade:] *= np.linspace(1.0, 0.0, fade)
+        write_wav(sound_id, normalise(x, peak))
+        print(sound_id)
+
+
 def main() -> None:
-    # --shots: only the gun shots (the sources of the other sounds are unchanged).
+    # --shots: only the gun shots and menu sounds (the sources of the other sounds are unchanged).
     if "--shots" not in sys.argv:
         dry_fire()
         reloads()
+    sliced_shots()
+    ui_sounds()
     for sound_id, file in SHOTS.items():
         x = decode(SOURCE / file)[: int(KEEP_S * SR)]
         fade = int(FADE_S * SR)

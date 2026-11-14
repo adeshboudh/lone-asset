@@ -16,8 +16,7 @@ signal quit_requested
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	_retry_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
-	_quit_button.pressed.connect(func() -> void: Audio.play_ui(&"ui_click"))
+	UiSounds.wire(self)
 	_retry_button.pressed.connect(retry_requested.emit)
 	_quit_button.pressed.connect(quit_requested.emit)
 

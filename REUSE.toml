@@ -70,7 +70,13 @@ SPDX-FileCopyrightText = "Unknown author (recorded sounds, original page not fou
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = ["tools/audio/source/*_shot_*.wav", "content/audio/sfx/rifle_shot_suppressed*.wav*", "content/audio/sfx/rifle_shot_loud*.wav*", "content/audio/sfx/pistol_shot_suppressed*.wav*", "content/audio/sfx/pistol_shot_loud*.wav*"]
+path = ["tools/audio/source/pistol_shot_*.wav", "tools/audio/source/ui_*.wav", "content/audio/sfx/pistol_shot_suppressed*.wav*", "content/audio/sfx/pistol_shot_loud*.wav*", "content/audio/sfx/ui_*.wav*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Generated with Stable Audio (small-sfx) by the project developer, prompts in text_to_sfx.ipynb"
 SPDX-License-Identifier = "LicenseRef-Stable-Audio-generated"
+
+[[annotations]]
+path = ["tools/audio/source/m4_*.mp3", "content/audio/sfx/m4_shot_*.wav*"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Lone Asset contributors (M4 sounds made by the project developer)"
+SPDX-License-Identifier = "CC-BY-4.0"

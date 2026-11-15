@@ -838,7 +838,7 @@ The project has no asset budget. Assets may be made by the developer or found on
 #### Rules
 
 - List every third-party asset in `content/LICENSES.md` (author and source if known, the licence or terms as stated or as the developer understands them, date, modifications) and annotate it in `REUSE.toml`, so `reuse lint` passes. There is no list of allowed or forbidden licences.
-- Anything ripped or copied from an existing commercial game, or using another game's name, is **never** allowed.
+- Anything ripped or copied from an existing commercial game's files, or using another game's name, is **never** allowed. Fan-made 3D art inspired by an existing game, with changes, is allowed: the developer judges whether an asset is fan-made, and the ledger records the author, source, licence and "fan-made, per the developer". The other game's name appears only in the ledger, never in the game, its UI or its marketing. If the owner of the other game objects, the asset is removed and replaced.
 - Assets are published with the public repository and in `main` releases. Licences that bar redistribution or adaptation (some ND, NC or "no redistribution" terms) are the developer's risk: if an owner objects, the asset is removed and replaced. An asset that must not be published can be kept local and gitignored.
 
 #### Project licensing

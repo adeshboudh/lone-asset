@@ -1,0 +1,120 @@
+extends Node3D
+## First-person M4A1 Custom: the fan-made model split into named parts (see content/LICENSES.md) on the animated
+## gloved-arms rig of the M4 pack (BarcodeGames, CC-BY). The pack's own rifle is hidden; the gun body, sights, optic
+## and suppressor follow the rig's Main bone and the magazine follows its two magazine bones, so the pack's Draw,
+## Fire, Reload and Reload_Empty animations still drive the new gun. Exposes the Muzzle node and animation names
+## the Weapon node looks for.
+const TEX := "res://content/weapons/m4/textures/"
+const PARTS_SCENE := "res://content/weapons/m4a1_custom/m4a1_custom_parts.glb"
+## Muzzle in the pack camera's frame (metres, camera looks along -z).
+const MUZZLE := Vector3(0.071, -0.07, -0.74)
+## Where the gun model's own frame (forward +x, up +y) sits in the pack camera's frame: turned to look down -z,
+## suppressor tip on the old muzzle, lens of the optic on the old red-dot lens height.
+const GUN_ORIGIN := Vector3(0.069, -0.1485, -0.114)
+const GUN_YAW: float = PI * 0.5
+## Parts that ride the rig's Main bone.
+const BODY_PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights", &"m4a1_custom_foregrip",
+		&"m4a1_custom_optic", &"m4a1_custom_optic_lens", &"m4a1_custom_suppressor", &"m4a1_custom_muzzle_brake"]
+const MAGAZINE_PART: StringName = &"m4a1_custom_magazine"
+
+var animation_player: AnimationPlayer
+
+var _suppressor: Node3D
+var _muzzle_brake: Node3D
+
+
+func _ready() -> void:
+	var rig: Node3D = (load("res://content/weapons/m4/source/M4.fbx") as PackedScene).instantiate()
+	add_child(rig)
+	animation_player = rig.get_node("AnimationPlayer") as AnimationPlayer
+	animation_player.get_animation(&"Idle").loop_mode = Animation.LOOP_LINEAR
+	animation_player.play(&"Idle")
+	animation_player.seek(0.0, true)
+	var skel: Skeleton3D = rig.get_node("Skeleton3D") as Skeleton3D
+	skel.force_update_all_bone_transforms()
+	var cam: Node3D = skel.get_node("FPS_Camera/FPS_Camera") as Node3D
+	# camera pose relative to this node, not to the world: the wrapper sits under the player's camera
+	var cam_xf: Transform3D = global_transform.affine_inverse() * cam.global_transform
+	rig.transform = cam_xf.affine_inverse()
+	_texture_hands(rig)
+	_hide_old_gun(skel)
+	_fit_new_gun(skel)
+	var muzzle := Node3D.new()
+	muzzle.name = "Muzzle"
+	add_child(muzzle)
+	muzzle.position = MUZZLE
+
+
+## Suppressor on (suppressed variant) or the muzzle brake instead.
+func show_suppressor(on: bool) -> void:
+	if _suppressor != null:
+		_suppressor.visible = on
+	if _muzzle_brake != null:
+		_muzzle_brake.visible = not on
+
+
+func _pbr(albedo: String, normal: String, metallic: float, rough: float, base: Material) -> StandardMaterial3D:
+	var m: StandardMaterial3D = (base as StandardMaterial3D).duplicate() as StandardMaterial3D
+	m.albedo_texture = load(TEX + albedo) as Texture2D
+	if normal != "":
+		m.normal_enabled = true
+		m.normal_texture = load(TEX + normal) as Texture2D
+	m.metallic = metallic
+	m.roughness = rough
+	return m
+
+
+func _texture_hands(rig: Node3D) -> void:
+	var hands: MeshInstance3D = rig.find_child("Hand_Mesh", true, false) as MeshInstance3D
+	var skin: Material = hands.mesh.surface_get_material(0)
+	var glove: Material = hands.mesh.surface_get_material(1)
+	var mesh: ArrayMesh = hands.mesh.duplicate() as ArrayMesh
+	mesh.surface_set_material(0, _pbr("Hand_D.jpg", "Hand_N.png", 0.0, 0.7, skin))
+	mesh.surface_set_material(1, _pbr("Glove_D.png", "Glove_N.png", 0.0, 0.85, glove))
+	hands.mesh = HandsRig.with_sleeves(mesh, hands.skin)
+
+
+## The pack's own rifle, magazines, bolt and loose rounds are not drawn; the bones still animate.
+func _hide_old_gun(skel: Skeleton3D) -> void:
+	for child: Node in skel.get_children():
+		if child is BoneAttachment3D:
+			(child as Node3D).visible = false
+
+
+## Hangs the model's parts on the rig's bones, in the pose the Idle animation starts from.
+func _fit_new_gun(skel: Skeleton3D) -> void:
+	var parts: Node3D = (load(PARTS_SCENE) as PackedScene).instantiate() as Node3D
+	var gun_in_view: Transform3D = Transform3D(Basis(Vector3.UP, GUN_YAW), GUN_ORIGIN)
+	var main: int = skel.find_bone("Main_j")
+	var main_in_view: Transform3D = _bone_in_view(skel, main)
+	var holder := BoneAttachment3D.new()
+	holder.name = "M4A1CustomBody"
+	skel.add_child(holder)
+	holder.set_use_external_skeleton(false)
+	holder.bone_name = "Main_j"
+	for part_name: StringName in BODY_PARTS:
+		var part: MeshInstance3D = parts.get_node(NodePath(part_name)) as MeshInstance3D
+		part.owner = null
+		parts.remove_child(part)
+		holder.add_child(part)
+		part.transform = main_in_view.affine_inverse() * gun_in_view
+	_suppressor = holder.get_node("m4a1_custom_suppressor") as Node3D
+	_muzzle_brake = holder.get_node("m4a1_custom_muzzle_brake") as Node3D
+	show_suppressor(true)
+	var mag_source: MeshInstance3D = parts.get_node(NodePath(MAGAZINE_PART)) as MeshInstance3D
+	mag_source.owner = null
+	parts.remove_child(mag_source)
+	for bone_name: String in ["Mag1_j", "Mag2_j"]:
+		var bone: int = skel.find_bone(bone_name)
+		var mag_holder := BoneAttachment3D.new()
+		mag_holder.name = "M4A1Custom" + bone_name.trim_suffix("_j")
+		skel.add_child(mag_holder)
+		mag_holder.bone_name = bone_name
+		var mag: MeshInstance3D = mag_source if bone_name == "Mag1_j" else mag_source.duplicate() as MeshInstance3D
+		mag_holder.add_child(mag)
+		mag.transform = _bone_in_view(skel, bone).affine_inverse() * gun_in_view
+	parts.queue_free()
+
+
+func _bone_in_view(skel: Skeleton3D, bone: int) -> Transform3D:
+	return global_transform.affine_inverse() * skel.global_transform * skel.get_bone_global_pose(bone)

@@ -2,16 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cnmu7gthp5vnr"
-path="res://.godot/imported/Bullet5.56x45mm_N.png-a54b5add325c6d5f78d0483ead4274cd.ctex"
+uid="uid://c2kbfx1ow5g6d"
+path="res://.godot/imported/m4a1_custom_parts_Image_6.png-97e5e1709fa6afb24b4361de6822b63d.ctex"
 metadata={
 "vram_texture": false
+}
+generator_parameters={
+"md5": "43fb3feb962736a09da093d0d2803b0f"
 }
 
 [deps]
 
-source_file="res://content/weapons/m4/textures/Bullet5.56x45mm_N.png"
-dest_files=["res://.godot/imported/Bullet5.56x45mm_N.png-a54b5add325c6d5f78d0483ead4274cd.ctex"]
+source_file="res://content/weapons/m4a1_custom/m4a1_custom_parts_Image_6.png"
+dest_files=["res://.godot/imported/m4a1_custom_parts_Image_6.png-97e5e1709fa6afb24b4361de6822b63d.ctex"]
 
 [params]
 
@@ -23,7 +26,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

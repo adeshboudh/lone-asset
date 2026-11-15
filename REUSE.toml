@@ -46,10 +46,10 @@ SPDX-FileCopyrightText = "BarcodeGames (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = "content/weapons/m4/sight/**"
+path = "content/weapons/m4a1_custom/m4a1_custom_parts*"
 precedence = "override"
-SPDX-FileCopyrightText = "Michael Makivic (Sketchfab)"
-SPDX-License-Identifier = "CC-BY-4.0"
+SPDX-FileCopyrightText = "xlisov (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
 
 [[annotations]]
 path = ["content/weapons/pistol/source/**", "content/weapons/pistol/textures/**"]

@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 
 
 func test_viewmodel_arms_have_a_sleeve_surface_with_triangles() -> void:
-	var viewmodel: Node3D = auto_free((load("res://content/weapons/m4/m4_viewmodel.tscn") as PackedScene).instantiate())
+	var viewmodel: Node3D = auto_free((load("res://content/weapons/m4a1_custom/m4a1_custom_viewmodel.tscn") as PackedScene).instantiate())
 	add_child(viewmodel)
 	var hands: MeshInstance3D = viewmodel.find_child("Hand_Mesh", true, false) as MeshInstance3D
 	var mesh: ArrayMesh = hands.mesh as ArrayMesh
@@ -16,7 +16,7 @@ func test_viewmodel_arms_have_a_sleeve_surface_with_triangles() -> void:
 
 
 func test_sleeve_and_skin_split_covers_every_triangle_once() -> void:
-	var viewmodel: Node3D = auto_free((load("res://content/weapons/m4/m4_viewmodel.tscn") as PackedScene).instantiate())
+	var viewmodel: Node3D = auto_free((load("res://content/weapons/m4a1_custom/m4a1_custom_viewmodel.tscn") as PackedScene).instantiate())
 	add_child(viewmodel)
 	var hands: MeshInstance3D = viewmodel.find_child("Hand_Mesh", true, false) as MeshInstance3D
 	var source: Node = auto_free((load("res://content/weapons/m4/source/M4.fbx") as PackedScene).instantiate())

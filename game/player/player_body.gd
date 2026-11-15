@@ -168,6 +168,8 @@ func _sync_gun(weapon: Weapon) -> BodyGun:
 		return null
 	var gun: BodyGun = _guns[weapon]
 	gun.node.global_transform = weapon.viewmodel.global_transform
+	if gun.node.has_method(&"show_suppressor"):
+		gun.node.call(&"show_suppressor", weapon.definition.suppressed)
 	var source: AnimationPlayer = weapon.animation_player
 	if gun.animation != null and source != null and source.current_animation != &"":
 		gun.animation.assigned_animation = source.current_animation

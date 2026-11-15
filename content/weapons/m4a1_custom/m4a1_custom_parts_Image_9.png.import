@@ -2,16 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7pp1yrnxohqh"
-path="res://.godot/imported/rds_low_DefaultMaterial_BaseColor.tga.png-cfba8abf50dbf81a81accdd8e8454e21.ctex"
+uid="uid://cvtm5n7f0l0im"
+path="res://.godot/imported/m4a1_custom_parts_Image_9.png-c9b43da530f95413434c014ff14ce364.ctex"
 metadata={
 "vram_texture": false
+}
+generator_parameters={
+"md5": "0248fdec6a05b2102ad21cbfc8cf3bbd"
 }
 
 [deps]
 
-source_file="res://content/weapons/m4/sight/textures/rds_low_DefaultMaterial_BaseColor.tga.png"
-dest_files=["res://.godot/imported/rds_low_DefaultMaterial_BaseColor.tga.png-cfba8abf50dbf81a81accdd8e8454e21.ctex"]
+source_file="res://content/weapons/m4a1_custom/m4a1_custom_parts_Image_9.png"
+dest_files=["res://.godot/imported/m4a1_custom_parts_Image_9.png-c9b43da530f95413434c014ff14ce364.ctex"]
 
 [params]
 
@@ -23,7 +26,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

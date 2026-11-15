@@ -131,6 +131,8 @@ func set_variant(index: int) -> void:
 	_variant_index = index
 	definition = _variants[index]
 	logic.swap_definition(definition)
+	if _viewmodel != null and _viewmodel.has_method(&"show_suppressor"):
+		_viewmodel.call(&"show_suppressor", definition.suppressed)
 	if _flash != null:
 		_flash.light_energy = 0.6 if definition.suppressed else 2.5
 

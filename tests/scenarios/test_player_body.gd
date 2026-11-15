@@ -26,43 +26,14 @@ func test_camera_does_not_render_the_hidden_layer() -> void:
 	assert_int(_player.camera.cull_mask & PlayerBody.HIDDEN_LAYER).is_equal(0)
 
 
-func test_the_body_is_on_the_hidden_layer_and_still_casts_shadows_but_the_arms_show() -> void:
-	var hidden: int = 0
-	var shown: int = 0
-	for node: Node in _player.get_node("Body").find_children("*", "MeshInstance3D", true, false):
+func test_the_whole_body_is_on_the_hidden_layer_and_still_casts_shadows() -> void:
+	# The first-person camera shows the dedicated arms (FpsArms) instead.
+	var meshes: Array[Node] = _player.get_node("Body").find_children("*", "MeshInstance3D", true, false)
+	assert_int(meshes.size()).is_equal(7)
+	for node: Node in meshes:
 		var mesh: MeshInstance3D = node as MeshInstance3D
-		if mesh.name.begins_with("Arm"):
-			# The hand copy: the player's own hands in first person, no shadow (the whole mesh has it).
-			assert_int(mesh.layers).is_equal(1)
-			assert_int(mesh.cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
-			shown += 1
-		elif PlayerBodyRules.hidden_from_camera(mesh.name):
-			assert_int(mesh.cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
-			assert_int(mesh.layers).is_equal(PlayerBody.HIDDEN_LAYER)
-			hidden += 1
-		else:
-			# The jacket: torso and both whole arms, so looking down the arms join the body.
-			assert_int(mesh.layers).is_equal(1)
-			assert_int(mesh.cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
-			shown += 1
-	assert_int(hidden).is_equal(6)
-	assert_int(shown).is_equal(2)
-
-
-func test_the_arm_copies_are_a_cut_of_the_jacket_and_the_hands() -> void:
-	var body: Node = _player.get_node("Body")
-	for pair: Array in [["pol hand", "Armpolhand"]]:
-		var original: MeshInstance3D = body.find_child(pair[0], true, false) as MeshInstance3D
-		var copy: MeshInstance3D = body.find_child(pair[1], true, false) as MeshInstance3D
-		assert_object(copy).is_not_null()
-		var kept: int = 0
-		for surface: int in copy.mesh.get_surface_count():
-			kept += (copy.mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX] as PackedInt32Array).size()
-		var total: int = 0
-		for surface: int in original.mesh.get_surface_count():
-			total += (original.mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX] as PackedInt32Array).size()
-		assert_int(kept).is_greater(0)
-		assert_int(kept).is_less(total)
+		assert_int(mesh.cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
+		assert_int(mesh.layers).is_equal(PlayerBody.HIDDEN_LAYER)
 
 
 func test_body_has_no_collision() -> void:
@@ -235,25 +206,3 @@ func test_the_real_viewmodel_parts_do_not_cast_shadows() -> void:
 	for node: Node in _player.weapon.viewmodel.find_children("*", "GeometryInstance3D", true, false):
 		assert_int((node as GeometryInstance3D).cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
 
-
-func test_the_hands_close_around_the_grip_when_holding_a_weapon() -> void:
-	await get_tree().process_frame
-	var body: PlayerBody = _player.get_node("Body") as PlayerBody
-	var skeleton: Skeleton3D = body.get("_skeleton") as Skeleton3D
-	var hands: Dictionary = body.get("_hands")
-	for right: bool in [true, false]:
-		var fingers: Array = (hands[right] as RefCounted).get("fingers")
-		var chain: PackedInt32Array = fingers[0]
-		var rest_bend: float = (skeleton.get_bone_global_rest(chain[2]).origin - skeleton.get_bone_global_rest(chain[1]).origin).angle_to(
-				skeleton.get_bone_global_rest(chain[3]).origin - skeleton.get_bone_global_rest(chain[2]).origin)
-		var bend: float = (skeleton.get_bone_global_pose(chain[2]).origin - skeleton.get_bone_global_pose(chain[1]).origin).angle_to(
-				skeleton.get_bone_global_pose(chain[3]).origin - skeleton.get_bone_global_pose(chain[2]).origin)
-		assert_float(bend).is_greater(rest_bend + deg_to_rad(30.0))
-
-
-func test_the_model_has_four_fingers_and_a_thumb_on_each_hand() -> void:
-	var hands: Dictionary = (_player.get_node("Body") as PlayerBody).get("_hands")
-	for right: bool in [true, false]:
-		var rig: RefCounted = hands[right]
-		assert_int((rig.get("fingers") as Array).size()).is_equal(4)
-		assert_int((rig.get("thumb") as PackedInt32Array).size()).is_equal(3)

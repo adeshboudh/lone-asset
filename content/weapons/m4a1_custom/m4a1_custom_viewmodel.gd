@@ -144,8 +144,8 @@ func _exit_tree() -> void:
 		RenderingServer.frame_pre_draw.disconnect(_sync_scope_camera)
 
 
-## The pack's gloved arms are not drawn: the player's own arms (the agent body's forearms and hands) hold the gun
-## in first person, reaching the pack's hand bones, which the animations still move.
+## The pack's gloved arms are not drawn: the first-person arms (FpsArms, added by Weapon) follow the pack's bones,
+## which the animations still move.
 func _hide_pack_hands(rig: Node3D) -> void:
 	(rig.find_child("Hand_Mesh", true, false) as MeshInstance3D).visible = false
 

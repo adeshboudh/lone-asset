@@ -1,7 +1,7 @@
 class_name HandsRig
 extends RefCounted
 ## The arm rig from the M4 pack (BarcodeGames, CC-BY, see content/LICENSES.md) without the rifle, for weapons
-## that come without hands. Its gloved arms are not drawn: the agent body's own arms reach its hand bones.
+## that come without hands. Its gloved arms are not drawn: the first-person arms (FpsArms) follow its bones.
 ## Posed from the pack's idle frame, so the right hand is a closed fist on a grip; the left arm can be hidden
 ## for one-handed weapons.
 
@@ -30,7 +30,7 @@ static func build(parent: Node3D, show_left_arm: bool, hand_scale: float = 1.0, 
 			(child as Node3D).visible = false  # the rifle's parts
 	if not show_left_arm:
 		skeleton.set_bone_pose_scale(skeleton.find_bone("LeftArm"), Vector3.ONE * 0.001)
-	# The pack's gloved arms are not drawn: the player's own arms (the agent body's) reach the hand bones.
+	# The pack's gloved arms are not drawn: the first-person arms (FpsArms) follow the bones.
 	(skeleton.get_node("Hand_Mesh") as MeshInstance3D).visible = false
 	return skeleton
 

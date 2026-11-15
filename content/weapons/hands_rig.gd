@@ -36,7 +36,7 @@ static func build(parent: Node3D, show_left_arm: bool, hand_scale: float = 1.0, 
 	var mesh: ArrayMesh = hands.mesh.duplicate() as ArrayMesh
 	mesh.surface_set_material(0, _pbr("Hand_D.jpg", "Hand_N.png", hands.mesh.surface_get_material(0)))
 	mesh.surface_set_material(1, _pbr("Glove_D.png", "Glove_N.png", hands.mesh.surface_get_material(1)))
-	hands.mesh = mesh
+	hands.mesh = with_sleeves(mesh, hands.skin)
 	hands.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return skeleton
 
@@ -63,4 +63,64 @@ static func _pbr(albedo: String, normal: String, base: Material) -> StandardMate
 	m.normal_enabled = true
 	m.normal_texture = load(TEX + normal) as Texture2D
 	m.roughness = 0.8
+	return m
+
+
+const SLEEVE_ALBEDO: String = "res://content/characters/agent/agent_body_pol_jaket_a.jpg"
+const SLEEVE_NORMAL: String = "res://content/characters/agent/agent_body_pol_jaket_n.jpg"
+## Share of a vertex's skin weight on the upper arm and forearm bones above which it is sleeve.
+const SLEEVE_WEIGHT: float = 0.5
+
+
+## Returns the arm mesh with the forearms re-skinned as the agent's camouflage sleeves, so the first-person
+## arms match the body (bare skin stays on the hands; the gloves keep their own surface).
+## mesh: surface 0 skin, surface 1 glove, as in the pack; skin: the mesh instance's skin.
+static func with_sleeves(mesh: ArrayMesh, skin: Skin) -> ArrayMesh:
+	var arrays: Array = mesh.surface_get_arrays(0)
+	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
+	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var per_vertex: int = bones.size() / (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()
+	var sleeve_bind: Dictionary = {}
+	for bind: int in skin.get_bind_count():
+		var bone_name: String = String(skin.get_bind_name(bind))
+		if bone_name.ends_with("Arm") or bone_name.ends_with("ForeArm"):
+			sleeve_bind[bind] = true
+	var is_sleeve: PackedByteArray = PackedByteArray()
+	is_sleeve.resize(bones.size() / per_vertex)
+	for vertex: int in is_sleeve.size():
+		var weight: float = 0.0
+		for slot: int in per_vertex:
+			if sleeve_bind.has(bones[vertex * per_vertex + slot]):
+				weight += weights[vertex * per_vertex + slot]
+		is_sleeve[vertex] = 1 if weight >= SLEEVE_WEIGHT else 0
+	var skin_indices: PackedInt32Array = PackedInt32Array()
+	var sleeve_indices: PackedInt32Array = PackedInt32Array()
+	for tri: int in indices.size() / 3:
+		var a: int = indices[tri * 3]
+		var b: int = indices[tri * 3 + 1]
+		var c: int = indices[tri * 3 + 2]
+		var target: PackedInt32Array = sleeve_indices if is_sleeve[a] + is_sleeve[b] + is_sleeve[c] >= 2 else skin_indices
+		target.append_array(PackedInt32Array([a, b, c]))
+	var out: ArrayMesh = ArrayMesh.new()
+	arrays[Mesh.ARRAY_INDEX] = skin_indices
+	out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	out.surface_set_material(0, mesh.surface_get_material(0))
+	out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh.surface_get_arrays(1))
+	out.surface_set_material(1, mesh.surface_get_material(1))
+	arrays[Mesh.ARRAY_INDEX] = sleeve_indices
+	out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	out.surface_set_material(2, sleeve_material())
+	return out
+
+
+static func sleeve_material() -> StandardMaterial3D:
+	var m: StandardMaterial3D = StandardMaterial3D.new()
+	m.albedo_texture = load(SLEEVE_ALBEDO) as Texture2D
+	m.normal_enabled = true
+	m.normal_texture = load(SLEEVE_NORMAL) as Texture2D
+	m.roughness = 0.9
+	# The arm mesh has its own UVs, so the camouflage is projected instead.
+	m.uv1_triplanar = true
+	m.uv1_scale = Vector3.ONE * 4.0
 	return m

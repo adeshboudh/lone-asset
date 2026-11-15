@@ -56,7 +56,7 @@ func _texture(m4: Node3D) -> void:
 				var mesh: ArrayMesh = mi.mesh.duplicate() as ArrayMesh
 				mesh.surface_set_material(0, _pbr("Hand_D.jpg", "Hand_N.png", 0.0, 0.7, skin))
 				mesh.surface_set_material(1, _pbr("Glove_D.png", "Glove_N.png", 0.0, 0.85, glove))
-				mi.mesh = mesh
+				mi.mesh = HandsRig.with_sleeves(mesh, mi.skin)
 			&"Bullet5_56x45mm", &"Bullet5_56x45mm2":
 				mi.material_override = _pbr("Bullet5.56x45mm_D.png", "Bullet5.56x45mm_N.png", 0.9, 0.35, mi.mesh.surface_get_material(0))
 			_:

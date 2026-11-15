@@ -46,10 +46,10 @@ SPDX-FileCopyrightText = "BarcodeGames (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = "content/weapons/m4/sight/**"
+path = "content/weapons/m4a1_custom/m4a1_custom_parts*"
 precedence = "override"
-SPDX-FileCopyrightText = "Michael Makivic (Sketchfab)"
-SPDX-License-Identifier = "CC-BY-4.0"
+SPDX-FileCopyrightText = "xlisov (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
 
 [[annotations]]
 path = ["content/weapons/pistol/source/**", "content/weapons/pistol/textures/**"]
@@ -79,4 +79,29 @@ SPDX-License-Identifier = "LicenseRef-Stable-Audio-generated"
 path = ["tools/audio/source/m4_*.mp3", "content/audio/sfx/m4_shot_*.wav*"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Lone Asset contributors (M4 sounds made by the project developer)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["content/characters/agent/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "buh (Sketchfab)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = "addons/godot_mcp_bridge/**"
+precedence = "override"
+SPDX-FileCopyrightText = "GodotBridge contributors (https://github.com/godotbridge/addon)"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "content/animations/source/kimodo/**"
+precedence = "override"
+SPDX-FileCopyrightText = "The developer, generated with NVIDIA Kimodo"
+SPDX-License-Identifier = "LicenseRef-NVIDIA-Open-Model-generated"
+
+
+[[annotations]]
+path = ["content/characters/fps_arms/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "DJMaesen (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"

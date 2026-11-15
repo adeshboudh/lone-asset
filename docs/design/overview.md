@@ -15,7 +15,7 @@ This document describes the technical and gameplay direction only. Story, charac
 
 The project is **open source** and built with a **zero budget**: free and open-source tools only, and every third-party asset recorded in the licence ledger (see [Milestone 1 technical design](m1-technical-design.md), §17.4).
 
-Lone Asset is an original project. It does not use names, characters, logos, maps, assets or audio from any existing game or franchise, and its marketing must not reference other games' trademarks.
+Lone Asset is an original project. It does not use names, characters, logos, maps or audio from any existing game or franchise, nor assets ripped from one, and its marketing must not reference other games' trademarks. Fan-made 3D art inspired by another game, with changes, may be used if it is recorded in the licence ledger; the game, its UI and its marketing never show the other game's name.
 
 ---
 

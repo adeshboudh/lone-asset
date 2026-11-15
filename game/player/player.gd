@@ -47,6 +47,7 @@ var _idle_intent: InputIntent = InputIntent.new()
 var _recoil_pitch: float = 0.0
 var _base_fov: float = 0.0
 var _bob_phase: float = 0.0
+var _pose: BodyPoseState = BodyPoseState.new()
 ## Every weapon carried, in slot order, and the index of the one in hand.
 var _weapons: Array[Weapon] = []
 var _slot: int = 0
@@ -68,6 +69,7 @@ var _weapon: Weapon
 @onready var _audio: PlayerAudio = %PlayerAudio
 @onready var _interactor: Interactor = %Interactor
 @onready var _binoculars: Binoculars = %Binoculars
+@onready var _body: PlayerBody = %Body
 
 
 func _ready() -> void:
@@ -75,6 +77,7 @@ func _ready() -> void:
 	floor_snap_length = settings.step_height + 0.05
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
+	_body.setup(_camera, settings.stand_eye_height, settings.crouch_eye_height)
 	_base_fov = Settings.fov_deg
 	_camera.fov = _base_fov
 	Settings.changed.connect(func() -> void: _base_fov = Settings.fov_deg)
@@ -157,6 +160,16 @@ func _process(delta: float) -> void:
 	_head.rotation.x = clampf(_pitch + _recoil_pitch, -max_pitch, max_pitch)
 	_head.position.y = _stance.eye_height + _head_bob_offset(delta)
 	_lean.apply(_lean_pivot, settings)
+	_pose.eye_height = _stance.eye_height
+	_pose.ground_speed = horizontal_speed
+	_pose.stride_m = NoiseSystem.profiles.stride(NoiseRules.footstep_type(_stance.is_crouched, _movement.is_sprinting))
+	_pose.grounded = is_on_floor()
+	_pose.vertical_speed = velocity.y
+	_pose.sprinting = _movement.is_sprinting
+	_pose.lean = _lean.amount
+	_pose.aim_blend = _weapon.aim_blend
+	_pose.binoculars_blend = _binoculars.raise_blend
+	_body.update(_pose, _weapon, delta)
 
 
 func _physics_process(delta: float) -> void:
@@ -187,6 +200,7 @@ func _build_loadout() -> void:
 		extra.name = String(definition.id).to_pascal_case()
 		_primary_weapon.get_parent().add_child(extra)
 		_weapons.append(extra)
+	_body.attach_guns(_weapons)
 	for held: Weapon in _weapons:
 		held.fired.connect(_on_weapon_fired.bind(held))
 	_weapon = _primary_weapon

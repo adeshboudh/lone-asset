@@ -13,7 +13,7 @@ An open-source tactical stealth FPS for **Windows and Linux desktop**, built wit
 
 Hard rules about identity and content:
 
-- Never use the name of, or any asset, text, level, sound or model from, any existing game. The public name is **Lone Asset**.
+- Never use the name of any existing game, or any asset, text, level, sound or model ripped or extracted from one. Fan-made 3D art (made by a community artist, inspired by another game, with changes) is allowed when it is recorded in the ledger with its author, source and licence. The public name is **Lone Asset**.
 - No browser or WebAssembly target. Desktop only (decided 2026-11-02).
 - Every asset needs a licence entry (`content/LICENSES.md`, `REUSE.toml`). CI runs `reuse lint`. Any licence is accepted; record the author, source and terms as far as they are known.
 

@@ -64,10 +64,43 @@ extends Resource
 @export var recoil_ads_mult: float = 0.6
 @export var recoil_recovery_deg_per_s: float = 8.0
 
+@export_group("Viewmodel kick")
+## The gun's own kick in first person, on top of its animation (ViewmodelRecoilRules): how far one shot throws it
+## back toward the eye and up (m), how far the muzzle tips up (deg) and the random sideways turn and roll (± deg).
+## 0 = no kick.
+@export var recoil_kick_back_m: float = 0.0
+@export var recoil_kick_up_m: float = 0.0
+@export var recoil_kick_pitch_deg: float = 0.0
+@export var recoil_kick_yaw_deg: float = 0.0
+@export var recoil_kick_roll_deg: float = 0.0
+## Share of the kick left while aimed.
+@export_range(0.0, 1.0) var recoil_kick_ads_mult: float = 0.5
+## How fast the gun springs back (Hz) and how much it overshoots (1 = none, lower = more).
+@export var recoil_spring_hz: float = 4.0
+@export_range(0.05, 1.0) var recoil_spring_damping: float = 0.45
+
+@export_group("Body hold")
+## Where the player's hands rest on the weapon, in metres from the feet (x right, y up, z forward is -z).
+## Only the body model uses them (shadow and other cameras); the viewmodel has its own hands.
+@export var hold_right_hand: Vector3 = Vector3(0.16, 1.28, -0.38)
+@export var hold_left_hand: Vector3 = Vector3(-0.1, 1.3, -0.35)
+## Both hands move by this when fully aimed (up toward the sights).
+@export var hold_ads_offset: Vector3 = Vector3(-0.06, 0.1, -0.02)
+## Both hands move by this when sprinting (weapon lowered and pulled in).
+@export var hold_sprint_offset: Vector3 = Vector3(0.0, -0.22, 0.1)
+## False lets the left arm hang (knife).
+@export var hold_uses_left_hand: bool = true
+
 @export_group("Aiming")
 @export var ads_fov: float = 55.0
-## Seconds from hip to fully aimed.
-@export var ads_time: float = 0.18
+## Magnification of the scope picture shown in the optic lens while aiming (1 = none: the lens is plain glass).
+@export_range(1.0, 12.0) var scope_zoom: float = 1.0
+## Seconds from hip to fully aimed. Longer feels heavier.
+@export var ads_time: float = 0.28
+## How far the gun overshoots the sights before settling (0 = none). Visual only.
+@export_range(0.0, 0.6) var ads_settle: float = 0.3
+## Metres the gun dips mid-move, so it swings into the sights instead of sliding. Visual only.
+@export var ads_arc_m: float = 0.02
 
 @export_group("Sway (viewmodel lag while turning and strafing)")
 ## Turn rate that gives full sway; faster turns are clamped.
@@ -113,6 +146,11 @@ extends Resource
 ## put the sight on the camera axis; it depends on the model, so it lives with the definition.
 @export var viewmodel_hip_position: Vector3 = Vector3(0.16, -0.17, -0.32)
 @export var viewmodel_ads_position: Vector3 = Vector3(0.0, -0.105, -0.24)
+## Turn of the gun at the hip (Euler degrees: x pitch up, y yaw left, z roll), about viewmodel_pivot, faded out
+## while aiming, so the muzzle can point in toward the crosshair.
+@export var viewmodel_hip_rotation_deg: Vector3 = Vector3.ZERO
+## Point the gun turns about for the hip turn and the kick (camera frame, metres): about where the right hand grips.
+@export var viewmodel_pivot: Vector3 = Vector3(0.1, -0.16, -0.05)
 @export_subgroup("Viewmodel animations")
 ## Names in the viewmodel's AnimationPlayer. Empty = the model has none and the kick and reload dip are
 ## procedural. When "fire" is set the animation carries the recoil and the procedural kick is off.

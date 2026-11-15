@@ -1,11 +1,9 @@
 class_name HandsRig
 extends RefCounted
-## The gloved arms from the M4 pack (BarcodeGames, CC-BY, see content/LICENSES.md) without the rifle,
-## for weapons that come without hands. Posed from the pack's idle frame, so the right hand is a
-## closed fist on a grip; the left arm can be hidden for one-handed weapons.
-
-const TEX := "res://content/weapons/m4/textures/"
-
+## The arm rig from the M4 pack (BarcodeGames, CC-BY, see content/LICENSES.md) without the rifle, for weapons
+## that come without hands. Its gloved arms are not drawn: the first-person arms (FpsArms) follow its bones.
+## Posed from the pack's idle frame, so the right hand is a closed fist on a grip; the left arm can be hidden
+## for one-handed weapons.
 
 ## Adds the arms under parent, in the pack's camera frame (the camera is the origin of parent).
 ## Returns the skeleton so the caller can pose bones.
@@ -32,12 +30,8 @@ static func build(parent: Node3D, show_left_arm: bool, hand_scale: float = 1.0, 
 			(child as Node3D).visible = false  # the rifle's parts
 	if not show_left_arm:
 		skeleton.set_bone_pose_scale(skeleton.find_bone("LeftArm"), Vector3.ONE * 0.001)
-	var hands: MeshInstance3D = skeleton.get_node("Hand_Mesh") as MeshInstance3D
-	var mesh: ArrayMesh = hands.mesh.duplicate() as ArrayMesh
-	mesh.surface_set_material(0, _pbr("Hand_D.jpg", "Hand_N.png", hands.mesh.surface_get_material(0)))
-	mesh.surface_set_material(1, _pbr("Glove_D.png", "Glove_N.png", hands.mesh.surface_get_material(1)))
-	hands.mesh = mesh
-	hands.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# The pack's gloved arms are not drawn: the first-person arms (FpsArms) follow the bones.
+	(skeleton.get_node("Hand_Mesh") as MeshInstance3D).visible = false
 	return skeleton
 
 
@@ -55,12 +49,3 @@ static func _drop_arm(skeleton: Skeleton3D, rig: Node3D, degrees: float) -> void
 		var moved: Transform3D = Transform3D(turn.basis * pose.basis, pivot + turn.basis * (pose.origin - pivot))
 		skeleton.set_bone_global_pose(bone, moved)
 	skeleton.set_bone_global_pose(hand, hand_pose)
-
-
-static func _pbr(albedo: String, normal: String, base: Material) -> StandardMaterial3D:
-	var m: StandardMaterial3D = (base as StandardMaterial3D).duplicate() as StandardMaterial3D
-	m.albedo_texture = load(TEX + albedo) as Texture2D
-	m.normal_enabled = true
-	m.normal_texture = load(TEX + normal) as Texture2D
-	m.roughness = 0.8
-	return m

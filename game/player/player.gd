@@ -47,6 +47,7 @@ var _idle_intent: InputIntent = InputIntent.new()
 var _recoil_pitch: float = 0.0
 var _base_fov: float = 0.0
 var _bob_phase: float = 0.0
+var _pose: BodyPoseState = BodyPoseState.new()
 ## Every weapon carried, in slot order, and the index of the one in hand.
 var _weapons: Array[Weapon] = []
 var _slot: int = 0
@@ -159,8 +160,16 @@ func _process(delta: float) -> void:
 	_head.rotation.x = clampf(_pitch + _recoil_pitch, -max_pitch, max_pitch)
 	_head.position.y = _stance.eye_height + _head_bob_offset(delta)
 	_lean.apply(_lean_pivot, settings)
-	_body.update(_stance.eye_height, _weapon.definition, horizontal_speed,
-			NoiseSystem.profiles.stride(NoiseRules.footstep_type(_stance.is_crouched, _movement.is_sprinting)), is_on_floor(), delta)
+	_pose.eye_height = _stance.eye_height
+	_pose.ground_speed = horizontal_speed
+	_pose.stride_m = NoiseSystem.profiles.stride(NoiseRules.footstep_type(_stance.is_crouched, _movement.is_sprinting))
+	_pose.grounded = is_on_floor()
+	_pose.vertical_speed = velocity.y
+	_pose.sprinting = _movement.is_sprinting
+	_pose.lean = _lean.amount
+	_pose.aim_blend = _weapon.aim_blend
+	_pose.binoculars_blend = _binoculars.raise_blend
+	_body.update(_pose, _weapon.definition, delta)
 
 
 func _physics_process(delta: float) -> void:

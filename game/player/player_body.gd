@@ -20,6 +20,14 @@ const HIDDEN_LAYER: int = 1 << 19
 ## Longest half-step of a foot, in metres.
 @export var max_foot_amplitude_m: float = 0.32
 @export var pelvis_bob_m: float = 0.04
+@export var air_tuck_m: float = 0.25
+## Extra pelvis drop on a hard landing, in metres.
+@export var landing_dip_max_m: float = 0.2
+@export var sprint_lean_deg: float = 10.0
+@export_group("Lean")
+## Spine tilt at full lean, in degrees, and the sideways reach of the hands in metres.
+@export var lean_body_deg: float = 25.0
+@export var lean_offset_m: float = 0.3
 @export_group("Crouch")
 ## How far the pelvis drops when fully crouched, in metres.
 @export var crouch_drop_m: float = 0.5
@@ -42,6 +50,11 @@ var _skeleton: Skeleton3D
 var _phase: float = 0.0
 ## 0 = standing still, 1 = walking (smoothed).
 var _gait: float = 0.0
+var _sprint: float = 0.0
+var _air: float = 0.0
+var _was_airborne: bool = false
+var _fall_speed: float = 0.0
+var _landing: float = 0.0
 
 
 func setup(camera: Camera3D, stand_eye_height: float, crouch_eye_height: float) -> void:
@@ -66,35 +79,60 @@ func setup(camera: Camera3D, stand_eye_height: float, crouch_eye_height: float) 
 			instance.layers = HIDDEN_LAYER
 
 
-## ground_speed in m/s along the floor; stride_m is the footstep stride of the current gait.
-func update(eye_height: float, weapon: WeaponDefinition, ground_speed: float, stride_m: float, grounded: bool, delta: float) -> void:
+func update(state: BodyPoseState, weapon: WeaponDefinition, delta: float) -> void:
 	if _skeleton == null:
 		return
-	var crouch: float = smoothstep(0.0, 1.0, GaitRules.crouch_amount(eye_height, _stand_eye_height, _crouch_eye_height))
-	var walking: bool = grounded and ground_speed > 0.3
+	var crouch: float = smoothstep(0.0, 1.0, GaitRules.crouch_amount(state.eye_height, _stand_eye_height, _crouch_eye_height))
+	var walking: bool = state.grounded and state.ground_speed > 0.3
 	_gait = move_toward(_gait, 1.0 if walking else 0.0, delta * 6.0)
+	_sprint = move_toward(_sprint, 1.0 if state.sprinting and walking else 0.0, delta * 5.0)
+	_air = move_toward(_air, 0.0 if state.grounded else 1.0, delta * 8.0)
 	if walking:
-		_phase = GaitRules.advance_phase(_phase, ground_speed, stride_m, delta)
-	var pelvis_drop: float = crouch * crouch_drop_m - GaitRules.pelvis_offset_m(_phase, pelvis_bob_m) * _gait * (1.0 - crouch * 0.5)
-	_pose_torso(pelvis_drop, crouch)
-	var amplitude: float = GaitRules.foot_amplitude_m(stride_m, max_foot_amplitude_m) * _gait
-	_pose_leg(LEFT_LEG, GaitRules.foot_offset(_phase, amplitude, foot_lift_m * _gait))
-	_pose_leg(RIGHT_LEG, GaitRules.foot_offset(_phase + PI, amplitude, foot_lift_m * _gait))
-	if weapon != null:
-		var lowered: Vector3 = Vector3(0.0, -(_stand_eye_height - eye_height), 0.0)
-		_pose_arm(RIGHT_ARM, weapon.hold_right_hand + lowered, true)
-		_pose_arm(LEFT_ARM, weapon.hold_left_hand + lowered, weapon.hold_uses_left_hand)
+		_phase = GaitRules.advance_phase(_phase, state.ground_speed, state.stride_m, delta)
+	# Landing: remember how fast the fall was, dip when the feet touch, recover.
+	if not state.grounded:
+		_fall_speed = maxf(_fall_speed, -state.vertical_speed)
+	elif _was_airborne:
+		_landing = GaitRules.landing_dip_m(_fall_speed, landing_dip_max_m)
+		_fall_speed = 0.0
+	_was_airborne = not state.grounded
+	_landing = move_toward(_landing, 0.0, delta * 0.8)
+	var bob: float = -GaitRules.pelvis_offset_m(_phase, pelvis_bob_m) * _gait * (1.0 - crouch * 0.5)
+	var pelvis_drop: float = crouch * crouch_drop_m + bob + _landing
+	_pose_torso(pelvis_drop, crouch, state.lean, _sprint)
+	var amplitude: float = GaitRules.foot_amplitude_m(state.stride_m, max_foot_amplitude_m) * _gait
+	var lift: float = foot_lift_m * _gait * (1.0 + _sprint * 0.6)
+	# In the air the knees tuck: both feet come up.
+	var tuck: Vector2 = Vector2(0.05, air_tuck_m) * _air
+	_pose_leg(LEFT_LEG, GaitRules.foot_offset(_phase, amplitude, lift) + tuck)
+	_pose_leg(RIGHT_LEG, GaitRules.foot_offset(_phase + PI, amplitude, lift) + tuck)
+	var eye_drop: float = _stand_eye_height - state.eye_height
+	var lean_shift: float = state.lean * lean_offset_m
+	if state.binoculars_blend > 0.01:
+		var blend: float = smoothstep(0.0, 1.0, state.binoculars_blend)
+		_pose_arm(RIGHT_ARM, _hand(weapon, true, state, eye_drop, lean_shift).lerp(PlayerBodyRules.binocular_hand(1.0, state.eye_height) + Vector3(lean_shift, 0.0, 0.0), blend), true)
+		_pose_arm(LEFT_ARM, _hand(weapon, false, state, eye_drop, lean_shift).lerp(PlayerBodyRules.binocular_hand(-1.0, state.eye_height) + Vector3(lean_shift, 0.0, 0.0), blend), true)
+	elif weapon != null:
+		_pose_arm(RIGHT_ARM, _hand(weapon, true, state, eye_drop, lean_shift), true)
+		_pose_arm(LEFT_ARM, _hand(weapon, false, state, eye_drop, lean_shift), weapon.hold_uses_left_hand)
 
 
-## Lowers the pelvis (metres) and leans the spine forward when crouched.
-func _pose_torso(drop_m: float, crouch: float) -> void:
+func _hand(weapon: WeaponDefinition, right: bool, state: BodyPoseState, eye_drop: float, lean_shift: float) -> Vector3:
+	return PlayerBodyRules.hand_target(weapon.hold_right_hand if right else weapon.hold_left_hand, weapon.hold_ads_offset,
+			smoothstep(0.0, 1.0, state.aim_blend), weapon.hold_sprint_offset, _sprint, eye_drop, lean_shift)
+
+
+## Lowers the pelvis (metres), leans the spine forward when crouched or sprinting and sideways when peeking.
+func _pose_torso(drop_m: float, crouch: float, lean: float, sprint: float) -> void:
 	var root: int = _skeleton.find_bone(ROOT_BONE)
 	var spine: int = _skeleton.find_bone(SPINE_BONE)
 	if root < 0 or spine < 0:
 		return
 	_skeleton.set_bone_pose_position(root, _skeleton.get_bone_rest(root).origin + Vector3(0.0, -drop_m / model_scale, 0.0))
-	var lean: Basis = Basis(Vector3.RIGHT, deg_to_rad(crouch_lean_deg) * crouch)
-	_set_global_basis(spine, lean * _skeleton.get_bone_global_rest(spine).basis)
+	var forward: Basis = Basis(Vector3.RIGHT, deg_to_rad(crouch_lean_deg * crouch + sprint_lean_deg * sprint))
+	# The model's -x side is the player's right; rotating about +z tips the head toward -x.
+	var sideways: Basis = Basis(Vector3(0.0, 0.0, 1.0), deg_to_rad(lean_body_deg) * lean)
+	_set_global_basis(spine, sideways * forward * _skeleton.get_bone_global_rest(spine).basis)
 
 
 ## Bends one leg so the ankle reaches its standing spot plus the step offset (x forward, y up).

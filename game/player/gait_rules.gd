@@ -32,3 +32,8 @@ static func crouch_amount(eye_height: float, stand_eye_height: float, crouch_eye
 	if span <= 0.0001:
 		return 0.0
 	return clampf((stand_eye_height - eye_height) / span, 0.0, 1.0)
+
+
+## Extra pelvis drop on landing from a fall (metres): nothing below 2 m/s, full at 8 m/s.
+static func landing_dip_m(fall_speed: float, max_m: float) -> float:
+	return clampf((fall_speed - 2.0) / 6.0, 0.0, 1.0) * max_m

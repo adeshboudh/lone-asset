@@ -47,3 +47,9 @@ func test_crouch_amount_follows_the_eye_height() -> void:
 	assert_float(GaitRules.crouch_amount(1.65, 1.65, 1.0)).is_equal_approx(0.0, 0.0001)
 	assert_float(GaitRules.crouch_amount(1.0, 1.65, 1.0)).is_equal_approx(1.0, 0.0001)
 	assert_float(GaitRules.crouch_amount(1.325, 1.65, 1.0)).is_equal_approx(0.5, 0.0001)
+
+
+func test_landing_dip_scales_with_fall_speed() -> void:
+	assert_float(GaitRules.landing_dip_m(1.0, 0.2)).is_equal(0.0)
+	assert_float(GaitRules.landing_dip_m(8.0, 0.2)).is_equal_approx(0.2, 0.0001)
+	assert_float(GaitRules.landing_dip_m(5.0, 0.2)).is_equal_approx(0.1, 0.0001)

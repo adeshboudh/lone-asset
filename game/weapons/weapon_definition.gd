@@ -69,6 +69,10 @@ extends Resource
 ## Only the body model uses them (shadow and other cameras); the viewmodel has its own hands.
 @export var hold_right_hand: Vector3 = Vector3(0.16, 1.28, -0.38)
 @export var hold_left_hand: Vector3 = Vector3(-0.1, 1.3, -0.35)
+## Both hands move by this when fully aimed (up toward the sights).
+@export var hold_ads_offset: Vector3 = Vector3(-0.06, 0.1, -0.02)
+## Both hands move by this when sprinting (weapon lowered and pulled in).
+@export var hold_sprint_offset: Vector3 = Vector3(0.0, -0.22, 0.1)
 ## False lets the left arm hang (knife).
 @export var hold_uses_left_hand: bool = true
 

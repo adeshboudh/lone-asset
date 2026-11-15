@@ -25,7 +25,7 @@ const PICTURE_SIZE: int = 768
 const LENS_RADIUS_M: float = 0.0095
 ## The optic is drawn larger than the model so the scope picture reads on screen, scaled about its feet on the
 ## rail: the lens centre, in the gun model's frame (forward +x, up +y).
-const OPTIC_SCALE: float = 1.5
+const OPTIC_SCALE: float = 1.25
 const OPTIC_PIVOT := Vector3(0.088, 0.105, 0.002)
 const OPTIC_PARTS: Array[StringName] = [&"m4a1_custom_optic", &"m4a1_custom_optic_lens"]
 
@@ -38,6 +38,8 @@ var _lens_material: ShaderMaterial
 var _lens_center_local: Vector3
 var _scope_viewport: SubViewport
 var _scope_camera: Camera3D
+var _zoom: float = 1.0
+var _scope_wanted: bool = false
 
 
 func _ready() -> void:
@@ -78,26 +80,32 @@ func show_suppressor(on: bool) -> void:
 func set_aim(aim_blend: float, zoom: float) -> void:
 	if _lens_material == null:
 		return
-	var blend: float = ScopeRules.picture_blend(aim_blend) if zoom > 1.0 else 0.0
-	_lens_material.set_shader_parameter(&"picture_blend", blend)
-	if not ScopeRules.should_render(aim_blend, zoom):
-		if _scope_viewport != null:
-			_scope_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-		return
-	if _scope_viewport == null:
+	_zoom = zoom
+	_scope_wanted = ScopeRules.should_render(aim_blend, zoom)
+	_lens_material.set_shader_parameter(&"picture_blend", ScopeRules.picture_blend(aim_blend) if zoom > 1.0 else 0.0)
+	if _scope_wanted and _scope_viewport == null:
 		_build_scope_camera()
+	if _scope_viewport != null:
+		_scope_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if _scope_wanted else SubViewport.UPDATE_DISABLED
+
+
+## Runs right before the frame is drawn, after the animation, the sway and the bones have moved the lens, so the
+## scope camera and the lens shader use the pose that is actually on screen (set earlier in the frame, the
+## picture lags the gun by a frame and tears while moving).
+func _sync_scope_camera() -> void:
+	if not _scope_wanted or _scope_camera == null or not is_inside_tree():
+		return
 	var eye: Camera3D = get_viewport().get_camera_3d()
 	if eye == null:
 		return
-	var lens_world: Vector3 = _lens.global_transform * _lens_center_local
+	var lens_xf: Transform3D = _lens.global_transform
+	var lens_world: Vector3 = lens_xf * _lens_center_local
 	var lens_tan: float = ScopeRules.lens_tan(LENS_RADIUS_M * OPTIC_SCALE, eye.global_position.distance_to(lens_world))
 	_lens_material.set_shader_parameter(&"lens_tan", lens_tan)
-	_scope_camera.fov = ScopeRules.camera_fov_deg(lens_tan, zoom)
+	_scope_camera.fov = ScopeRules.camera_fov_deg(lens_tan, _zoom)
 	# The camera sits on the lens and looks down the bore (the model's +x axis).
-	var xf: Transform3D = _lens.global_transform
-	_scope_camera.global_transform = Transform3D(xf.basis * Basis(Vector3.UP, -PI * 0.5), lens_world)
+	_scope_camera.global_transform = Transform3D(lens_xf.basis.orthonormalized() * Basis(Vector3.UP, -PI * 0.5), lens_world)
 	_scope_camera.cull_mask = eye.cull_mask & ~(VIEWMODEL_LAYER | HIDDEN_LAYER)
-	_scope_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 
 ## Replaces the lens' plain material with the scope glass shader.
@@ -127,6 +135,12 @@ func _build_scope_camera() -> void:
 	_scope_viewport.add_child(_scope_camera)
 	_scope_camera.current = true
 	_lens_material.set_shader_parameter(&"scope_picture", _scope_viewport.get_texture())
+	RenderingServer.frame_pre_draw.connect(_sync_scope_camera)
+
+
+func _exit_tree() -> void:
+	if RenderingServer.frame_pre_draw.is_connected(_sync_scope_camera):
+		RenderingServer.frame_pre_draw.disconnect(_sync_scope_camera)
 
 
 func _pbr(albedo: String, normal: String, metallic: float, rough: float, base: Material) -> StandardMaterial3D:

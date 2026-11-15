@@ -222,6 +222,8 @@ func _process(delta: float) -> void:
 	_bob_phase = WeaponSwayRules.advance_bob_phase(_bob_phase, _ground_speed, _stride_m, _grounded, delta)
 	var bob_position: Vector3 = WeaponSwayRules.bob_position(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
 	var bob_rotation_deg: Vector3 = WeaponSwayRules.bob_rotation_deg(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
+	if _viewmodel.has_method(&"set_aim"):
+		_viewmodel.call(&"set_aim", aim_blend, definition.scope_zoom)
 	var rotation_deg: Vector3 = _sway_rotation_deg + bob_rotation_deg
 	var sway_rotation: Vector3 = Vector3(deg_to_rad(rotation_deg.x), deg_to_rad(rotation_deg.y), deg_to_rad(rotation_deg.z))
 	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, AdsRules.visual_blend(aim_blend, definition.ads_settle)) \

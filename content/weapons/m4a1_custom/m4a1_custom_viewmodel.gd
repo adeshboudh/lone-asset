@@ -16,11 +16,28 @@ const GUN_YAW: float = PI * 0.5
 const BODY_PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights", &"m4a1_custom_foregrip",
 		&"m4a1_custom_optic", &"m4a1_custom_optic_lens", &"m4a1_custom_suppressor", &"m4a1_custom_muzzle_brake"]
 const MAGAZINE_PART: StringName = &"m4a1_custom_magazine"
+const LENS_SHADER := "res://content/weapons/m4a1_custom/scope_lens.gdshader"
+## Layer the viewmodel is drawn on, so the scope camera can leave the gun itself out of its picture.
+const VIEWMODEL_LAYER: int = 1 << 18
+const HIDDEN_LAYER: int = 1 << 19
+const PICTURE_SIZE: int = 768
+## Lens disc radius in the model's own units (it is about 19 mm across).
+const LENS_RADIUS_M: float = 0.0095
+## The optic is drawn larger than the model so the scope picture reads on screen, scaled about its feet on the
+## rail: the lens centre, in the gun model's frame (forward +x, up +y).
+const OPTIC_SCALE: float = 1.5
+const OPTIC_PIVOT := Vector3(0.088, 0.105, 0.002)
+const OPTIC_PARTS: Array[StringName] = [&"m4a1_custom_optic", &"m4a1_custom_optic_lens"]
 
 var animation_player: AnimationPlayer
 
 var _suppressor: Node3D
 var _muzzle_brake: Node3D
+var _lens: MeshInstance3D
+var _lens_material: ShaderMaterial
+var _lens_center_local: Vector3
+var _scope_viewport: SubViewport
+var _scope_camera: Camera3D
 
 
 func _ready() -> void:
@@ -39,6 +56,9 @@ func _ready() -> void:
 	_texture_hands(rig)
 	_hide_old_gun(skel)
 	_fit_new_gun(skel)
+	_build_lens()
+	for node: Node in find_children("*", "GeometryInstance3D", true, false):
+		(node as GeometryInstance3D).layers = VIEWMODEL_LAYER
 	var muzzle := Node3D.new()
 	muzzle.name = "Muzzle"
 	add_child(muzzle)
@@ -51,6 +71,62 @@ func show_suppressor(on: bool) -> void:
 		_suppressor.visible = on
 	if _muzzle_brake != null:
 		_muzzle_brake.visible = not on
+
+
+## Called every frame by the Weapon: how far the gun is raised to aim (0-1) and the scope zoom of its definition.
+## The scope camera is only created and rendered while the picture can be seen.
+func set_aim(aim_blend: float, zoom: float) -> void:
+	if _lens_material == null:
+		return
+	var blend: float = ScopeRules.picture_blend(aim_blend) if zoom > 1.0 else 0.0
+	_lens_material.set_shader_parameter(&"picture_blend", blend)
+	if not ScopeRules.should_render(aim_blend, zoom):
+		if _scope_viewport != null:
+			_scope_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+		return
+	if _scope_viewport == null:
+		_build_scope_camera()
+	var eye: Camera3D = get_viewport().get_camera_3d()
+	if eye == null:
+		return
+	var lens_world: Vector3 = _lens.global_transform * _lens_center_local
+	var lens_tan: float = ScopeRules.lens_tan(LENS_RADIUS_M * OPTIC_SCALE, eye.global_position.distance_to(lens_world))
+	_lens_material.set_shader_parameter(&"lens_tan", lens_tan)
+	_scope_camera.fov = ScopeRules.camera_fov_deg(lens_tan, zoom)
+	# The camera sits on the lens and looks down the bore (the model's +x axis).
+	var xf: Transform3D = _lens.global_transform
+	_scope_camera.global_transform = Transform3D(xf.basis * Basis(Vector3.UP, -PI * 0.5), lens_world)
+	_scope_camera.cull_mask = eye.cull_mask & ~(VIEWMODEL_LAYER | HIDDEN_LAYER)
+	_scope_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+
+
+## Replaces the lens' plain material with the scope glass shader.
+func _build_lens() -> void:
+	_lens = find_child("m4a1_custom_optic_lens", true, false) as MeshInstance3D
+	var aabb: AABB = _lens.get_aabb()
+	_lens_center_local = aabb.get_center()
+	_lens_material = ShaderMaterial.new()
+	_lens_material.shader = load(LENS_SHADER) as Shader
+	_lens_material.set_shader_parameter(&"lens_center", _lens_center_local)
+	_lens_material.set_shader_parameter(&"lens_radius", LENS_RADIUS_M)
+	_lens.material_override = _lens_material
+	_lens.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+func _build_scope_camera() -> void:
+	_scope_viewport = SubViewport.new()
+	_scope_viewport.name = "ScopeViewport"
+	_scope_viewport.size = Vector2i(PICTURE_SIZE, PICTURE_SIZE)
+	_scope_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	_scope_viewport.msaa_3d = Viewport.MSAA_DISABLED
+	add_child(_scope_viewport)
+	_scope_camera = Camera3D.new()
+	_scope_camera.name = "ScopeCamera"
+	_scope_camera.near = 0.05
+	_scope_camera.far = 600.0
+	_scope_viewport.add_child(_scope_camera)
+	_scope_camera.current = true
+	_lens_material.set_shader_parameter(&"scope_picture", _scope_viewport.get_texture())
 
 
 func _pbr(albedo: String, normal: String, metallic: float, rough: float, base: Material) -> StandardMaterial3D:
@@ -98,6 +174,8 @@ func _fit_new_gun(skel: Skeleton3D) -> void:
 		parts.remove_child(part)
 		holder.add_child(part)
 		part.transform = main_in_view.affine_inverse() * gun_in_view
+		if part_name in OPTIC_PARTS:
+			part.transform *= Transform3D(Basis.from_scale(Vector3.ONE * OPTIC_SCALE), OPTIC_PIVOT * (1.0 - OPTIC_SCALE))
 	_suppressor = holder.get_node("m4a1_custom_suppressor") as Node3D
 	_muzzle_brake = holder.get_node("m4a1_custom_muzzle_brake") as Node3D
 	show_suppressor(true)

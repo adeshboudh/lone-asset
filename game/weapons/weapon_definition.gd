@@ -78,6 +78,8 @@ extends Resource
 
 @export_group("Aiming")
 @export var ads_fov: float = 55.0
+## Magnification of the scope picture shown in the optic lens while aiming (1 = none: the lens is plain glass).
+@export_range(1.0, 12.0) var scope_zoom: float = 1.0
 ## Seconds from hip to fully aimed. Longer feels heavier.
 @export var ads_time: float = 0.28
 ## How far the gun overshoots the sights before settling (0 = none). Visual only.

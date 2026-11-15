@@ -63,3 +63,34 @@ func test_the_spare_magazine_follows_its_bone_in_the_reload() -> void:
 	for index: int in 2:
 		moved = maxf(moved, (magazines[index] as Node3D).global_position.distance_to(before[index]))
 	assert_float(moved).is_greater(0.05)
+
+
+func test_the_lens_is_scope_glass() -> void:
+	var lens: MeshInstance3D = _viewmodel.find_child("m4a1_custom_optic_lens", true, false) as MeshInstance3D
+	assert_object(lens.material_override).is_instanceof(ShaderMaterial)
+
+
+func test_no_scope_camera_until_aimed_with_a_zoom() -> void:
+	_viewmodel.call(&"set_aim", 0.2, 3.0)
+	assert_object(_viewmodel.get_node_or_null(^"ScopeViewport")).is_null()
+	_viewmodel.call(&"set_aim", 1.0, 1.0)
+	assert_object(_viewmodel.get_node_or_null(^"ScopeViewport")).is_null()
+	_viewmodel.call(&"set_aim", 1.0, 3.0)
+	assert_object(_viewmodel.get_node_or_null(^"ScopeViewport")).is_not_null()
+
+
+func test_the_scope_renders_only_while_aimed() -> void:
+	_viewmodel.call(&"set_aim", 1.0, 3.0)
+	var viewport: SubViewport = _viewmodel.get_node(^"ScopeViewport") as SubViewport
+	assert_int(viewport.render_target_update_mode).is_equal(SubViewport.UPDATE_ALWAYS)
+	_viewmodel.call(&"set_aim", 0.1, 3.0)
+	assert_int(viewport.render_target_update_mode).is_equal(SubViewport.UPDATE_DISABLED)
+
+
+func test_the_rifle_has_a_scope_zoom() -> void:
+	assert_float(RIFLE.scope_zoom).is_greater(1.0)
+
+
+func test_the_gun_is_on_its_own_layer_so_the_scope_camera_can_skip_it() -> void:
+	var body: MeshInstance3D = _viewmodel.find_child("m4a1_custom_body", true, false) as MeshInstance3D
+	assert_int(body.layers).is_equal(1 << 18)

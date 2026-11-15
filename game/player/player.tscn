@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://data/player/player_movement.tres" id="2_settings"]
@@ -19,6 +19,9 @@
 [ext_resource type="Script" path="res://game/interaction/interactor.gd" id="14_interactor"]
 [ext_resource type="Script" path="res://game/equipment/binoculars.gd" id="15_binoculars"]
 
+[ext_resource type="Script" path="res://game/player/player_body.gd" id="16_body"]
+[ext_resource type="PackedScene" path="res://content/characters/agent/agent_body.glb" id="17_model"]
+
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
 collision_mask = 3
@@ -28,6 +31,11 @@ extra_weapons = Array[ExtResource("8_def")]([ExtResource("8_pistol"), ExtResourc
 
 [node name="CollisionShape" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("16_body")
+model = ExtResource("17_model")
 
 [node name="Head" type="Node3D" parent="."]
 unique_name_in_owner = true

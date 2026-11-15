@@ -68,6 +68,7 @@ var _weapon: Weapon
 @onready var _audio: PlayerAudio = %PlayerAudio
 @onready var _interactor: Interactor = %Interactor
 @onready var _binoculars: Binoculars = %Binoculars
+@onready var _body: PlayerBody = %Body
 
 
 func _ready() -> void:
@@ -75,6 +76,7 @@ func _ready() -> void:
 	floor_snap_length = settings.step_height + 0.05
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
+	_body.setup(_camera, settings.stand_eye_height)
 	_base_fov = Settings.fov_deg
 	_camera.fov = _base_fov
 	Settings.changed.connect(func() -> void: _base_fov = Settings.fov_deg)
@@ -157,6 +159,7 @@ func _process(delta: float) -> void:
 	_head.rotation.x = clampf(_pitch + _recoil_pitch, -max_pitch, max_pitch)
 	_head.position.y = _stance.eye_height + _head_bob_offset(delta)
 	_lean.apply(_lean_pivot, settings)
+	_body.update(_stance.eye_height)
 
 
 func _physics_process(delta: float) -> void:

@@ -301,7 +301,7 @@ func _build_viewmodel() -> void:
 		return
 	_viewmodel = definition.viewmodel_scene.instantiate()
 	add_child(_viewmodel)
-	for node: Node in _viewmodel.find_children("*", "GeometryInstance3D"):
+	for node: Node in _viewmodel.find_children("*", "GeometryInstance3D", true, false):
 		(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_flash = OmniLight3D.new()
 	_flash.light_color = Color(1.0, 0.8, 0.5)

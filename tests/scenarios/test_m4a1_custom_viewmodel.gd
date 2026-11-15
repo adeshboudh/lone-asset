@@ -94,3 +94,22 @@ func test_the_rifle_has_a_scope_zoom() -> void:
 func test_the_gun_is_on_its_own_layer_so_the_scope_camera_can_skip_it() -> void:
 	var body: MeshInstance3D = _viewmodel.find_child("m4a1_custom_body", true, false) as MeshInstance3D
 	assert_int(body.layers).is_equal(1 << 18)
+
+
+func test_aimed_the_lens_centre_is_on_the_crosshair_line() -> void:
+	var camera: Camera3D = auto_free(Camera3D.new())
+	add_child(camera)
+	var viewmodel: Node3D = (load("res://content/weapons/m4a1_custom/m4a1_custom_viewmodel.tscn") as PackedScene).instantiate()
+	camera.add_child(viewmodel)
+	viewmodel.position = RIFLE.viewmodel_ads_position
+	await await_idle_frame()
+	await await_idle_frame()
+	var lens: MeshInstance3D = viewmodel.find_child("m4a1_custom_optic_lens", true, false) as MeshInstance3D
+	var centre: Vector3 = lens.global_transform * lens.get_aabb().get_center()
+	assert_float(centre.x).is_between(-0.002, 0.002)
+	assert_float(centre.y).is_between(-0.002, 0.002)
+
+
+func test_the_muzzle_brake_variant_aims_the_same_way() -> void:
+	var muzzle: WeaponDefinition = load("res://data/weapons/rifle_muzzle.tres")
+	assert_vector(muzzle.viewmodel_ads_position).is_equal(RIFLE.viewmodel_ads_position)

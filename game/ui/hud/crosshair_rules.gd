@@ -11,3 +11,11 @@ const MIN_GAP_PX: float = 3.0
 static func gap_px(spread_deg: float, fov_deg: float, half_height_px: float) -> float:
 	var half_fov: float = tan(deg_to_rad(maxf(fov_deg, 1.0) * 0.5))
 	return maxf(tan(deg_to_rad(maxf(spread_deg, 0.0))) / half_fov * half_height_px, MIN_GAP_PX)
+
+
+## Opacity of the plus ticks: they fade out as a scoped weapon is aimed, because the scope's own red dot is
+## the aim guide there. Weapons without a scope zoom keep them.
+static func tick_alpha(aim_blend: float, scope_zoom: float) -> float:
+	if scope_zoom <= 1.0:
+		return 1.0
+	return 1.0 - ScopeRules.picture_blend(aim_blend)

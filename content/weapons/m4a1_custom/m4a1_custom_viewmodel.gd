@@ -1,16 +1,15 @@
 extends Node3D
 ## First-person M4A1 Custom: the fan-made model split into named parts (see content/LICENSES.md) on the animated
-## gloved-arms rig of the M4 pack (BarcodeGames, CC-BY). The pack's own rifle is hidden; the gun body, sights, optic
+## arm rig of the M4 pack (BarcodeGames, CC-BY; its gloved arms are not drawn). The pack's own rifle is hidden; the gun body, sights, optic
 ## and suppressor follow the rig's Main bone and the magazine follows its two magazine bones, so the pack's Draw,
 ## Fire, Reload and Reload_Empty animations still drive the new gun. Exposes the Muzzle node and animation names
 ## the Weapon node looks for.
-const TEX := "res://content/weapons/m4/textures/"
 const PARTS_SCENE := "res://content/weapons/m4a1_custom/m4a1_custom_parts.glb"
 ## Muzzle in the pack camera's frame (metres, camera looks along -z).
 const MUZZLE := Vector3(0.071, -0.07, -0.74)
 ## Where the gun model's own frame (forward +x, up +y) sits in the pack camera's frame: turned to look down -z,
 ## suppressor tip on the old muzzle, lens of the optic on the old red-dot lens height.
-const GUN_ORIGIN := Vector3(0.069, -0.1485, -0.114)
+const GUN_ORIGIN := Vector3(0.069, -0.1485, -0.174)
 const GUN_YAW: float = PI * 0.5
 ## Parts that ride the rig's Main bone.
 const BODY_PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights", &"m4a1_custom_foregrip",
@@ -55,7 +54,7 @@ func _ready() -> void:
 	# camera pose relative to this node, not to the world: the wrapper sits under the player's camera
 	var cam_xf: Transform3D = global_transform.affine_inverse() * cam.global_transform
 	rig.transform = cam_xf.affine_inverse()
-	_texture_hands(rig)
+	_hide_pack_hands(rig)
 	_hide_old_gun(skel)
 	_fit_new_gun(skel)
 	_build_lens()
@@ -103,8 +102,9 @@ func _sync_scope_camera() -> void:
 	var lens_tan: float = ScopeRules.lens_tan(LENS_RADIUS_M * OPTIC_SCALE, eye.global_position.distance_to(lens_world))
 	_lens_material.set_shader_parameter(&"lens_tan", lens_tan)
 	_scope_camera.fov = ScopeRules.camera_fov_deg(lens_tan, _zoom)
-	# The camera sits on the lens and looks down the bore (the model's +x axis).
-	_scope_camera.global_transform = Transform3D(lens_xf.basis.orthonormalized() * Basis(Vector3.UP, -PI * 0.5), lens_world)
+	# The camera sits on the lens and looks where the view camera looks, which is where the bullets are aimed
+	# (the shot goes from the muzzle to the point under the crosshair), so the reticle and the hits agree.
+	_scope_camera.global_transform = Transform3D(eye.global_transform.basis.orthonormalized(), lens_world)
 	_scope_camera.cull_mask = eye.cull_mask & ~(VIEWMODEL_LAYER | HIDDEN_LAYER)
 
 
@@ -126,7 +126,8 @@ func _build_scope_camera() -> void:
 	_scope_viewport.name = "ScopeViewport"
 	_scope_viewport.size = Vector2i(PICTURE_SIZE, PICTURE_SIZE)
 	_scope_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	_scope_viewport.msaa_3d = Viewport.MSAA_DISABLED
+	_scope_viewport.msaa_3d = Viewport.MSAA_2X  # the zoomed picture shimmers on thin edges without it
+	_scope_viewport.positional_shadow_atlas_size = 0
 	add_child(_scope_viewport)
 	_scope_camera = Camera3D.new()
 	_scope_camera.name = "ScopeCamera"
@@ -143,25 +144,10 @@ func _exit_tree() -> void:
 		RenderingServer.frame_pre_draw.disconnect(_sync_scope_camera)
 
 
-func _pbr(albedo: String, normal: String, metallic: float, rough: float, base: Material) -> StandardMaterial3D:
-	var m: StandardMaterial3D = (base as StandardMaterial3D).duplicate() as StandardMaterial3D
-	m.albedo_texture = load(TEX + albedo) as Texture2D
-	if normal != "":
-		m.normal_enabled = true
-		m.normal_texture = load(TEX + normal) as Texture2D
-	m.metallic = metallic
-	m.roughness = rough
-	return m
-
-
-func _texture_hands(rig: Node3D) -> void:
-	var hands: MeshInstance3D = rig.find_child("Hand_Mesh", true, false) as MeshInstance3D
-	var skin: Material = hands.mesh.surface_get_material(0)
-	var glove: Material = hands.mesh.surface_get_material(1)
-	var mesh: ArrayMesh = hands.mesh.duplicate() as ArrayMesh
-	mesh.surface_set_material(0, _pbr("Hand_D.jpg", "Hand_N.png", 0.0, 0.7, skin))
-	mesh.surface_set_material(1, _pbr("Glove_D.png", "Glove_N.png", 0.0, 0.85, glove))
-	hands.mesh = HandsRig.with_sleeves(mesh, hands.skin)
+## The pack's gloved arms are not drawn: the player's own arms (the agent body's forearms and hands) hold the gun
+## in first person, reaching the pack's hand bones, which the animations still move.
+func _hide_pack_hands(rig: Node3D) -> void:
+	(rig.find_child("Hand_Mesh", true, false) as MeshInstance3D).visible = false
 
 
 ## The pack's own rifle, magazines, bolt and loose rounds are not drawn; the bones still animate.

@@ -205,13 +205,14 @@ func _draw_crosshair() -> void:
 	var weapon: Weapon = _player.weapon
 	if weapon.definition.melee:
 		return
-	# Stays visible while aiming: it is the aim guide, and its gap shows the accuracy.
-	var color: Color = Color(1.0, 1.0, 1.0, 0.85)
+	# Stays visible while aiming (its gap shows the accuracy), except through a scope, whose red dot is the aim guide.
+	var color: Color = Color(1.0, 1.0, 1.0, 0.85 * CrosshairRules.tick_alpha(weapon.aim_blend, weapon.definition.scope_zoom))
 	var camera: Camera3D = _player.camera
 	var gap: float = CrosshairRules.gap_px(weapon.current_spread_deg, camera.fov, _crosshair.size.y * 0.5)
 	var length: float = 8.0
-	for direction: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-		_crosshair.draw_line(center + direction * gap, center + direction * (gap + length), color, 2.0)
+	if color.a > 0.01:
+		for direction: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
+			_crosshair.draw_line(center + direction * gap, center + direction * (gap + length), color, 2.0)
 
 	if _hit_marker_remaining > 0.0:
 		var marker_color: Color = Color(1.0, 0.3, 0.25) if _hit_marker_killed else Color.WHITE

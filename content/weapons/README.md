@@ -12,7 +12,7 @@ Original work for this project, CC BY 4.0 (see `REUSE.toml`), except the third-p
 
 ## `m4/` (arm rig and animations)
 
-The arm skeleton and the animations (Idle, Draw, Fire, Reload, Reload_Empty) from "M4 - FPS Weapon Animations Pack (v.1)" by BarcodeGames (CC BY 4.0, https://skfb.ly/pNQJN). The pack's own rifle and its gloved arms are not drawn (`Hand_Mesh` is hidden); its hand bones still move with the animations and are where the player's own arms reach (see `docs/handoff.md`, Player body). The animation names are in `data/weapons/rifle_suppressed.tres`, which also sets the hip and ADS positions. The pistol and knife use the same rig through `hands_rig.gd`. The hand and glove textures stay only because the FBX refers to them.
+The arm skeleton and the animations (Idle, Draw, Fire, Reload, Reload_Empty) from "M4 - FPS Weapon Animations Pack (v.1)" by BarcodeGames (CC BY 4.0, https://skfb.ly/pNQJN). The pack's own rifle and its gloved arms are not drawn (`Hand_Mesh` is hidden); its bones still move with the animations, and the first-person arms (`content/characters/fps_arms/`, posed by `game/player/fps_arms.gd`) copy them bone by bone, fingers included. A new weapon on this rig gets arms with no extra work; a weapon on another rig needs a skeleton with the same bone names (`RightHand`, `RightHandIndex1` ...) or a new name map in `FpsArmsRules.JOINTS`. The animation names are in `data/weapons/rifle_suppressed.tres`, which also sets the hip and ADS positions. The pistol and knife use the same rig through `hands_rig.gd`. The hand and glove textures stay only because the FBX refers to them.
 
 ## `rifle_suppressed.glb` / `.tscn` (not used by the player now)
 

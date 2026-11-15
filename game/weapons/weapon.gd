@@ -13,6 +13,8 @@ const FLASH_TIME_S: float = 0.05
 const MUZZLE_RAY_MASK: int = 3
 ## Raising a weapon after a switch.
 const EQUIP_TIME_S: float = 0.35
+## The player's first-person arms, put on the weapon's arm rig (game/player/fps_arms.gd).
+const FPS_ARMS: FpsArmsSettings = preload("res://data/player/fps_arms.tres")
 ## World (1) and characters/targets (2): what a blade can hit.
 const MELEE_MASK: int = 3
 
@@ -301,6 +303,7 @@ func _build_viewmodel() -> void:
 		return
 	_viewmodel = definition.viewmodel_scene.instantiate()
 	add_child(_viewmodel)
+	FpsArms.attach(_viewmodel, FPS_ARMS)
 	for node: Node in _viewmodel.find_children("*", "GeometryInstance3D", true, false):
 		(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_flash = OmniLight3D.new()

@@ -16,7 +16,8 @@ little random roll, and springs back with a slight overshoot in about 0.3 s.
    keeps `recoil_kick_ads_mult` of it. It rides on top of the weapon's animation, turning about `viewmodel_pivot`
    (the right-hand grip). Numbers per weapon in `data/weapons/*.tres`.
 2. **Hip turn** (`viewmodel_hip_rotation_deg`, about the same pivot, faded out while aiming so the sight alignment
-   is untouched).
+   is untouched). Kept to a slight cant: the barrel must point at the crosshair (test), because the reference's
+   strong turn-in made the gun look as if it shot in the wrong direction.
 3. **Left hand forward**: the rifle's left-hand hold moved 6 cm toward the muzzle (`LEFT_HOLD_WRIST`).
 
 ## Later

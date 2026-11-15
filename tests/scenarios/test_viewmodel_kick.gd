@@ -45,3 +45,16 @@ func test_a_shot_throws_the_gun_back_and_up_then_it_settles() -> void:
 
 func test_the_rifle_turns_in_at_the_hip() -> void:
 	assert_float(_player.weapon.definition.viewmodel_hip_rotation_deg.y).is_greater(0.0)
+
+
+## At the hip the barrel points where the bullets go: its line passes close to the crosshair point 20 m out.
+func test_at_the_hip_the_barrel_points_at_the_crosshair() -> void:
+	var weapon: Weapon = _player.weapon
+	weapon._process(0.0)
+	var cam: Transform3D = _player.camera.global_transform
+	var muzzle: Vector3 = (weapon.viewmodel.get_node("Muzzle") as Node3D).global_position
+	var barrel: Vector3 = -weapon.viewmodel.global_basis.z.normalized()
+	var target: Vector3 = cam.origin - cam.basis.z.normalized() * 20.0
+	var along: float = barrel.dot(target - muzzle)
+	var closest: Vector3 = muzzle + barrel * along
+	assert_float(closest.distance_to(target)).is_less(0.4)

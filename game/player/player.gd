@@ -169,7 +169,7 @@ func _process(delta: float) -> void:
 	_pose.lean = _lean.amount
 	_pose.aim_blend = _weapon.aim_blend
 	_pose.binoculars_blend = _binoculars.raise_blend
-	_body.update(_pose, _weapon.definition, delta)
+	_body.update(_pose, _weapon, delta)
 
 
 func _physics_process(delta: float) -> void:
@@ -200,6 +200,7 @@ func _build_loadout() -> void:
 		extra.name = String(definition.id).to_pascal_case()
 		_primary_weapon.get_parent().add_child(extra)
 		_weapons.append(extra)
+	_body.attach_guns(_weapons)
 	for held: Weapon in _weapons:
 		held.fired.connect(_on_weapon_fired.bind(held))
 	_weapon = _primary_weapon

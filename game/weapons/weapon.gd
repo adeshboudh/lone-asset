@@ -31,6 +31,13 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _ballistics: BallisticsSystem
 var _viewmodel: Node3D
 var _anim: AnimationPlayer
+## The first-person model and its animation player, for the player's body to copy.
+var viewmodel: Node3D:
+	get:
+		return _viewmodel
+var animation_player: AnimationPlayer:
+	get:
+		return _anim
 var _flash: OmniLight3D
 var _muzzle: Node3D
 var _kick: float = 0.0

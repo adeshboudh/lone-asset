@@ -45,6 +45,17 @@ const SPINE_BONE: StringName = &"Bone.002"
 
 var _stand_eye_height: float = 1.65
 var _crouch_eye_height: float = 1.0
+## A copy of each weapon's model that only the body shows: shadows and other cameras see the gun in the
+## body's hands, the first-person camera does not draw it (the real viewmodel does that).
+class BodyGun extends RefCounted:
+	var node: Node3D
+	var skeleton: Skeleton3D
+	var animation: AnimationPlayer
+	var right_hand: int = -1
+	var left_hand: int = -1
+
+var _guns: Dictionary = {}
+var _gun_root: Node3D
 var _visual: Node3D
 var _skeleton: Skeleton3D
 var _phase: float = 0.0
@@ -61,6 +72,9 @@ func setup(camera: Camera3D, stand_eye_height: float, crouch_eye_height: float) 
 	_stand_eye_height = stand_eye_height
 	_crouch_eye_height = crouch_eye_height
 	camera.cull_mask &= ~HIDDEN_LAYER
+	_gun_root = Node3D.new()
+	_gun_root.name = "BodyGuns"
+	camera.add_child(_gun_root)
 	if model == null:
 		return
 	_visual = model.instantiate()
@@ -79,7 +93,32 @@ func setup(camera: Camera3D, stand_eye_height: float, crouch_eye_height: float) 
 			instance.layers = HIDDEN_LAYER
 
 
-func update(state: BodyPoseState, weapon: WeaponDefinition, delta: float) -> void:
+## Makes a body-only copy of each weapon's model. Call once the weapons exist.
+func attach_guns(weapons: Array[Weapon]) -> void:
+	for weapon: Weapon in weapons:
+		if weapon.definition.viewmodel_scene == null or _guns.has(weapon):
+			continue
+		var gun: BodyGun = BodyGun.new()
+		gun.node = weapon.definition.viewmodel_scene.instantiate()
+		_gun_root.add_child(gun.node)
+		for mesh: Node in gun.node.find_children("*", "GeometryInstance3D"):
+			var instance: GeometryInstance3D = mesh as GeometryInstance3D
+			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			instance.layers = HIDDEN_LAYER
+			# The first-person arms are replaced by the body's own.
+			if instance.name == &"Hand_Mesh":
+				instance.visible = false
+		var skeletons: Array[Node] = gun.node.find_children("*", "Skeleton3D", true, false)
+		if not skeletons.is_empty():
+			gun.skeleton = skeletons[0] as Skeleton3D
+			gun.right_hand = gun.skeleton.find_bone("RightHand")
+			gun.left_hand = gun.skeleton.find_bone("LeftHand")
+		gun.animation = gun.node.find_child("AnimationPlayer", true, false) as AnimationPlayer
+		gun.node.visible = false
+		_guns[weapon] = gun
+
+
+func update(state: BodyPoseState, weapon: Weapon, delta: float) -> void:
 	if _skeleton == null:
 		return
 	var crouch: float = smoothstep(0.0, 1.0, GaitRules.crouch_amount(state.eye_height, _stand_eye_height, _crouch_eye_height))
@@ -108,13 +147,46 @@ func update(state: BodyPoseState, weapon: WeaponDefinition, delta: float) -> voi
 	_pose_leg(RIGHT_LEG, GaitRules.foot_offset(_phase + PI, amplitude, lift) + tuck)
 	var eye_drop: float = _stand_eye_height - state.eye_height
 	var lean_shift: float = state.lean * lean_offset_m
-	if state.binoculars_blend > 0.01:
+	var definition: WeaponDefinition = weapon.definition if weapon != null else null
+	for held: Weapon in _guns:
+		(_guns[held] as BodyGun).node.visible = held == weapon and held.visible
+	var gun: BodyGun = _sync_gun(weapon)
+	if state.binoculars_blend > 0.01 or definition == null:
 		var blend: float = smoothstep(0.0, 1.0, state.binoculars_blend)
-		_pose_arm(RIGHT_ARM, _hand(weapon, true, state, eye_drop, lean_shift).lerp(PlayerBodyRules.binocular_hand(1.0, state.eye_height) + Vector3(lean_shift, 0.0, 0.0), blend), true)
-		_pose_arm(LEFT_ARM, _hand(weapon, false, state, eye_drop, lean_shift).lerp(PlayerBodyRules.binocular_hand(-1.0, state.eye_height) + Vector3(lean_shift, 0.0, 0.0), blend), true)
-	elif weapon != null:
-		_pose_arm(RIGHT_ARM, _hand(weapon, true, state, eye_drop, lean_shift), true)
-		_pose_arm(LEFT_ARM, _hand(weapon, false, state, eye_drop, lean_shift), weapon.hold_uses_left_hand)
+		var right: Vector3 = _hand_from_gun(gun, true, definition, state, eye_drop, lean_shift)
+		var left: Vector3 = _hand_from_gun(gun, false, definition, state, eye_drop, lean_shift)
+		_pose_arm(RIGHT_ARM, right.lerp(PlayerBodyRules.binocular_hand(1.0, state.eye_height) + Vector3(lean_shift, 0.0, 0.0), blend), true)
+		_pose_arm(LEFT_ARM, left.lerp(PlayerBodyRules.binocular_hand(-1.0, state.eye_height) + Vector3(lean_shift, 0.0, 0.0), blend), true)
+	else:
+		_pose_arm(RIGHT_ARM, _hand_from_gun(gun, true, definition, state, eye_drop, lean_shift), true)
+		_pose_arm(LEFT_ARM, _hand_from_gun(gun, false, definition, state, eye_drop, lean_shift), definition.hold_uses_left_hand)
+
+
+## Moves the weapon's body copy to where the real viewmodel is and plays the same animation frame.
+func _sync_gun(weapon: Weapon) -> BodyGun:
+	if weapon == null or not _guns.has(weapon) or weapon.viewmodel == null:
+		return null
+	var gun: BodyGun = _guns[weapon]
+	gun.node.global_transform = weapon.viewmodel.global_transform
+	var source: AnimationPlayer = weapon.animation_player
+	if gun.animation != null and source != null and source.current_animation != &"":
+		gun.animation.assigned_animation = source.current_animation
+		gun.animation.seek(source.current_animation_position, true)
+	return gun
+
+
+## Hand target in body space: the wrist of the gun's own arm rig when it has one (so the hands follow
+## the fire and reload animations), else the weapon's fixed hold point.
+func _hand_from_gun(gun: BodyGun, right: bool, definition: WeaponDefinition, state: BodyPoseState, eye_drop: float, lean_shift: float) -> Vector3:
+	var bone: int = -1
+	if gun != null and gun.skeleton != null:
+		bone = gun.right_hand if right else gun.left_hand
+	if bone >= 0:
+		var wrist: Vector3 = gun.skeleton.global_transform * gun.skeleton.get_bone_global_pose(bone).origin
+		return global_transform.affine_inverse() * wrist
+	if definition == null:
+		return Vector3(0.0, state.eye_height - 0.3, -0.4)
+	return _hand(definition, right, state, eye_drop, lean_shift)
 
 
 func _hand(weapon: WeaponDefinition, right: bool, state: BodyPoseState, eye_drop: float, lean_shift: float) -> Vector3:

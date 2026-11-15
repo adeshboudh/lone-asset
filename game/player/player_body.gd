@@ -40,6 +40,9 @@ const LEFT_ARM: PackedStringArray = ["Bone.013", "Bone.014", "Bone.015"]
 const RIGHT_ARM: PackedStringArray = ["Bone.036", "Bone.037", "Bone.038"]
 const LEFT_LEG: PackedStringArray = ["Bone.007", "Bone.008", "Bone.009"]
 const RIGHT_LEG: PackedStringArray = ["Bone.010", "Bone.011", "Bone.012"]
+## Extra roll of the left wrist about the forearm, in degrees, on top of the gun rig's hand (0 = as the rig).
+## -90 turns the left hand from lying under the handguard to gripping it from the side.
+const LEFT_ROLL_DEG: float = -90.0
 const ROOT_BONE: StringName = &"Bone"
 const SPINE_BONE: StringName = &"Bone.002"
 
@@ -48,13 +51,28 @@ var _crouch_eye_height: float = 1.0
 ## A copy of each weapon's model that only the body shows: shadows and other cameras see the gun in the
 ## body's hands, the first-person camera does not draw it (the real viewmodel does that).
 class BodyGun extends RefCounted:
+	## Hand frames of the gun rig's own hands at rest (its space), see PlayerBodyRules.hand_frame.
+	var right_frame: Basis = Basis()
+	var left_frame: Basis = Basis()
+
 	var node: Node3D
 	var skeleton: Skeleton3D
 	var animation: AnimationPlayer
 	var right_hand: int = -1
 	var left_hand: int = -1
 
+## One hand of the agent model: the wrist, the finger chains (bone indices, palm bone first) and the frame the
+## hand rests in, in skeleton space.
+class HandRig extends RefCounted:
+	var wrist: int = -1
+	var thumb: PackedInt32Array = PackedInt32Array()
+	var fingers: Array[PackedInt32Array] = []
+	var frame_rest: Basis = Basis()
+	## The way the fingers close: the sideways axis of the hand, in skeleton space at rest.
+	var curl_axis: Vector3 = Vector3.RIGHT
+
 var _guns: Dictionary = {}
+var _hands: Dictionary = {}
 var _gun_root: Node3D
 var _visual: Node3D
 var _skeleton: Skeleton3D
@@ -91,6 +109,12 @@ func setup(camera: Camera3D, stand_eye_height: float, crouch_eye_height: float) 
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		if PlayerBodyRules.hidden_from_camera(instance.name):
 			instance.layers = HIDDEN_LAYER
+			var lower: String = String(instance.name).to_lower()
+			if lower.contains("hand"):
+				_add_arm_copy(instance, PlayerBodyRules.bone_names(15, 34) + PlayerBodyRules.bone_names(38, 57))
+	if _skeleton != null:
+		_hands[true] = _build_hand_rig(RIGHT_ARM[2])
+		_hands[false] = _build_hand_rig(LEFT_ARM[2])
 
 
 ## Makes a body-only copy of each weapon's model. Call once the weapons exist.
@@ -101,7 +125,7 @@ func attach_guns(weapons: Array[Weapon]) -> void:
 		var gun: BodyGun = BodyGun.new()
 		gun.node = weapon.definition.viewmodel_scene.instantiate()
 		_gun_root.add_child(gun.node)
-		for mesh: Node in gun.node.find_children("*", "GeometryInstance3D"):
+		for mesh: Node in gun.node.find_children("*", "GeometryInstance3D", true, false):
 			var instance: GeometryInstance3D = mesh as GeometryInstance3D
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 			instance.layers = HIDDEN_LAYER
@@ -113,6 +137,8 @@ func attach_guns(weapons: Array[Weapon]) -> void:
 			gun.skeleton = skeletons[0] as Skeleton3D
 			gun.right_hand = gun.skeleton.find_bone("RightHand")
 			gun.left_hand = gun.skeleton.find_bone("LeftHand")
+			gun.right_frame = _pack_hand_frame(gun.skeleton, "Right")
+			gun.left_frame = _pack_hand_frame(gun.skeleton, "Left")
 		gun.animation = gun.node.find_child("AnimationPlayer", true, false) as AnimationPlayer
 		gun.node.visible = false
 		_guns[weapon] = gun
@@ -160,6 +186,144 @@ func update(state: BodyPoseState, weapon: Weapon, delta: float) -> void:
 	else:
 		_pose_arm(RIGHT_ARM, _hand_from_gun(gun, true, definition, state, eye_drop, lean_shift), true)
 		_pose_arm(LEFT_ARM, _hand_from_gun(gun, false, definition, state, eye_drop, lean_shift), definition.hold_uses_left_hand)
+		_pose_hand(true, gun, true)
+		_pose_hand(false, gun, definition.hold_uses_left_hand)
+
+
+## The jacket and the arm mesh are hidden from the first-person camera, but their forearms and hands are the
+## player's arms: a copy cut to the triangles skinned to the given bones shows to the camera and casts no shadow
+## (the original does).
+func _add_arm_copy(original: MeshInstance3D, bone_names: PackedStringArray) -> void:
+	var source: ArrayMesh = original.mesh as ArrayMesh
+	if source == null or original.skin == null or _skeleton == null:
+		return
+	var binds: Dictionary = {}
+	for bind: int in original.skin.get_bind_count():
+		if String(original.skin.get_bind_name(bind)) in bone_names:
+			binds[bind] = true
+	var mesh: ArrayMesh = ArrayMesh.new()
+	for surface: int in source.get_surface_count():
+		var arrays: Array = source.surface_get_arrays(surface)
+		var kept: PackedInt32Array = PlayerBodyRules.arm_triangles(arrays, binds)
+		if kept.is_empty():
+			continue
+		arrays[Mesh.ARRAY_INDEX] = kept
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		mesh.surface_set_material(mesh.get_surface_count() - 1, source.surface_get_material(surface))
+	var copy: MeshInstance3D = MeshInstance3D.new()
+	copy.name = "Arm" + String(original.name).replace(" ", "")
+	copy.mesh = mesh
+	copy.skin = original.skin
+	copy.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	original.get_parent().add_child(copy)
+	copy.skeleton = copy.get_path_to(_skeleton)
+
+
+## Finds the finger chains under a wrist bone and the frame and curl axis the hand rests in. The model's hand has a
+## three-bone thumb and four four-bone fingers; the fingers are told apart by where they sit across the palm.
+func _build_hand_rig(wrist_name: String) -> HandRig:
+	var rig: HandRig = HandRig.new()
+	rig.wrist = _skeleton.find_bone(wrist_name)
+	if rig.wrist < 0:
+		return rig
+	var chains: Array[PackedInt32Array] = []
+	for child: int in _skeleton.get_bone_children(rig.wrist):
+		var chain: PackedInt32Array = PackedInt32Array([child])
+		var next: PackedInt32Array = _skeleton.get_bone_children(chain[chain.size() - 1])
+		while not next.is_empty():
+			chain.append(next[0])
+			next = _skeleton.get_bone_children(chain[chain.size() - 1])
+		chains.append(chain)
+	var finger_chains: Array[PackedInt32Array] = []
+	for chain: PackedInt32Array in chains:
+		if chain.size() == 3:
+			rig.thumb = chain
+		elif chain.size() >= 4:
+			finger_chains.append(chain)
+	if rig.thumb.is_empty() or finger_chains.size() < 2:
+		return rig
+	# Across the palm: the two knuckles furthest apart are the first and the little finger; the first is the one
+	# nearer the thumb.
+	var knuckle: Callable = func(chain: PackedInt32Array) -> Vector3: return _skeleton.get_bone_global_rest(chain[1]).origin
+	var widest: float = -1.0
+	var pair: Array = [0, 1]
+	for i: int in finger_chains.size():
+		for j: int in range(i + 1, finger_chains.size()):
+			var gap: float = (knuckle.call(finger_chains[i]) as Vector3).distance_to(knuckle.call(finger_chains[j]))
+			if gap > widest:
+				widest = gap
+				pair = [i, j]
+	var thumb_point: Vector3 = _skeleton.get_bone_global_rest(rig.thumb[1]).origin
+	var first: int = pair[0]
+	var last: int = pair[1]
+	if (knuckle.call(finger_chains[first]) as Vector3).distance_to(thumb_point) > (knuckle.call(finger_chains[last]) as Vector3).distance_to(thumb_point):
+		first = pair[1]
+		last = pair[0]
+	var sideways: Vector3 = (knuckle.call(finger_chains[last]) as Vector3) - (knuckle.call(finger_chains[first]) as Vector3)
+	var middle: Vector3 = Vector3.ZERO
+	for chain: PackedInt32Array in finger_chains:
+		middle += knuckle.call(chain) as Vector3
+	middle /= float(finger_chains.size())
+	var wrist_point: Vector3 = _skeleton.get_bone_global_rest(rig.wrist).origin
+	rig.frame_rest = PlayerBodyRules.hand_frame(middle - wrist_point, sideways)
+	rig.curl_axis = rig.frame_rest.z
+	rig.fingers = finger_chains
+	return rig
+
+
+## Hand frame of one hand of the gun's arm rig at rest, in that rig's space.
+func _pack_hand_frame(pack: Skeleton3D, side: String) -> Basis:
+	var wrist: int = pack.find_bone(side + "Hand")
+	var middle: int = pack.find_bone(side + "HandMiddle1")
+	var index: int = pack.find_bone(side + "HandIndex1")
+	var pinky: int = pack.find_bone(side + "HandPinky1")
+	if wrist < 0 or middle < 0 or index < 0 or pinky < 0:
+		return Basis()
+	var origin: Vector3 = pack.get_bone_global_rest(wrist).origin
+	return PlayerBodyRules.hand_frame(pack.get_bone_global_rest(middle).origin - origin,
+			pack.get_bone_global_rest(pinky).origin - pack.get_bone_global_rest(index).origin)
+
+
+## Turns the wrist so the hand lies as the gun rig's hand does, and closes the fingers around the grip. A hand
+## that does not hold anything is let go back to its rest pose.
+func _pose_hand(right: bool, gun: BodyGun, holding: bool) -> void:
+	var rig: HandRig = _hands.get(right) as HandRig
+	if rig == null or rig.wrist < 0 or rig.fingers.is_empty():
+		return
+	var bone: int = -1
+	if gun != null and gun.skeleton != null:
+		bone = gun.right_hand if right else gun.left_hand
+	_skeleton.set_bone_pose_scale(rig.wrist, Vector3.ONE * PlayerBodyRules.HAND_SCALE)
+	if not holding or bone < 0:
+		_skeleton.set_bone_pose_rotation(rig.wrist, _skeleton.get_bone_rest(rig.wrist).basis.get_rotation_quaternion())
+		_curl(rig, 0.0)
+		return
+	var pack: Skeleton3D = gun.skeleton
+	var frame_rest_pack: Basis = gun.right_frame if right else gun.left_frame
+	# Pack space to this skeleton's space.
+	var to_model: Basis = _skeleton.global_basis.orthonormalized().inverse() * pack.global_basis.orthonormalized()
+	var pose: Basis = pack.get_bone_global_pose(bone).basis.orthonormalized()
+	var rest: Basis = pack.get_bone_global_rest(bone).basis.orthonormalized()
+	var wanted: Basis = to_model * PlayerBodyRules.frame_pose(pose, rest, frame_rest_pack)
+	if not right:
+		wanted = wanted * Basis(Vector3.RIGHT, deg_to_rad(LEFT_ROLL_DEG))  # the hand frame's x axis is its forward
+	_set_global_basis(rig.wrist, PlayerBodyRules.bone_basis_for_frame(wanted, rig.frame_rest, _skeleton.get_bone_global_rest(rig.wrist).basis))
+	_curl(rig, 1.0)
+
+
+## Bends every finger joint about the hand's sideways axis by its share of a full grip.
+func _curl(rig: HandRig, amount: float) -> void:
+	for chain: PackedInt32Array in rig.fingers:
+		for joint: int in range(1, chain.size()):
+			_bend(chain[joint], rig.curl_axis, deg_to_rad(PlayerBodyRules.FINGER_CURL_DEG[mini(joint - 1, 2)]) * amount)
+	for joint: int in range(1, rig.thumb.size()):
+		_bend(rig.thumb[joint], rig.curl_axis, deg_to_rad(PlayerBodyRules.THUMB_CURL_DEG[mini(joint - 1, 1)]) * amount)
+
+
+## Rests a bone's pose and bends it by angle about an axis given in skeleton space at rest.
+func _bend(bone: int, axis: Vector3, angle: float) -> void:
+	var local_axis: Vector3 = (_skeleton.get_bone_global_rest(bone).basis.inverse() * axis).normalized()
+	_skeleton.set_bone_pose_rotation(bone, _skeleton.get_bone_rest(bone).basis.get_rotation_quaternion() * Quaternion(local_axis, angle))
 
 
 ## Moves the weapon's body copy to where the real viewmodel is and plays the same animation frame.

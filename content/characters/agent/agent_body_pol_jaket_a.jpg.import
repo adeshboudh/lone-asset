@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://v51ik4bxj8jh"
-path="res://.godot/imported/agent_body_pol_jaket_a.jpg-afe8a5a29cd7d1a6489665da552b5d82.ctex"
+path.s3tc="res://.godot/imported/agent_body_pol_jaket_a.jpg-afe8a5a29cd7d1a6489665da552b5d82.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6ad6c77a5b6b1b02e0c6930106c2711e"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://content/characters/agent/agent_body_pol_jaket_a.jpg"
-dest_files=["res://.godot/imported/agent_body_pol_jaket_a.jpg-afe8a5a29cd7d1a6489665da552b5d82.ctex"]
+dest_files=["res://.godot/imported/agent_body_pol_jaket_a.jpg-afe8a5a29cd7d1a6489665da552b5d82.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

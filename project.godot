@@ -179,8 +179,3 @@ debug_views={
 
 common/max_physics_steps_per_frame=4
 3d/physics_engine="Jolt Physics"
-
-[rendering]
-
-renderer/rendering_method="forward_plus"
-rendering_device/fallback_to_opengl3=true

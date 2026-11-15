@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://pah6qmvf18mp"
-path="res://.godot/imported/agent_body_pol_head_a.jpg-e94fe7e64e3932c8bee1854330c8119c.ctex"
+path.s3tc="res://.godot/imported/agent_body_pol_head_a.jpg-e94fe7e64e3932c8bee1854330c8119c.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "7cfd35a8bbcfe6bee98353221fd3f315"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://content/characters/agent/agent_body_pol_head_a.jpg"
-dest_files=["res://.godot/imported/agent_body_pol_head_a.jpg-e94fe7e64e3932c8bee1854330c8119c.ctex"]
+dest_files=["res://.godot/imported/agent_body_pol_head_a.jpg-e94fe7e64e3932c8bee1854330c8119c.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

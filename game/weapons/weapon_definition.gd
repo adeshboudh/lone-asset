@@ -66,8 +66,12 @@ extends Resource
 
 @export_group("Aiming")
 @export var ads_fov: float = 55.0
-## Seconds from hip to fully aimed.
-@export var ads_time: float = 0.18
+## Seconds from hip to fully aimed. Longer feels heavier.
+@export var ads_time: float = 0.28
+## How far the gun overshoots the sights before settling (0 = none). Visual only.
+@export_range(0.0, 0.6) var ads_settle: float = 0.3
+## Metres the gun dips mid-move, so it swings into the sights instead of sliding. Visual only.
+@export var ads_arc_m: float = 0.02
 
 @export_group("Sway (viewmodel lag while turning and strafing)")
 ## Turn rate that gives full sway; faster turns are clamped.

@@ -215,8 +215,8 @@ func _process(delta: float) -> void:
 	var bob_rotation_deg: Vector3 = WeaponSwayRules.bob_rotation_deg(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
 	var rotation_deg: Vector3 = _sway_rotation_deg + bob_rotation_deg
 	var sway_rotation: Vector3 = Vector3(deg_to_rad(rotation_deg.x), deg_to_rad(rotation_deg.y), deg_to_rad(rotation_deg.z))
-	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, smoothstep(0.0, 1.0, aim_blend)) \
-		+ _sway_position + bob_position
+	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, AdsRules.visual_blend(aim_blend, definition.ads_settle)) \
+		+ Vector3(0.0, -AdsRules.arc_offset_m(aim_blend, definition.ads_arc_m), 0.0) + _sway_position + bob_position
 	if _anim != null:
 		_viewmodel.position = base  # the animations carry the kick and the reload
 		_viewmodel.rotation = sway_rotation

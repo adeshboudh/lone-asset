@@ -32,10 +32,10 @@ const OPTIC_PARTS: Array[StringName] = [&"m4a1_custom_optic", &"m4a1_custom_opti
 ## wrist, the direction wrist to middle knuckle and the direction index knuckle to little-finger knuckle (FpsArms
 ## reads the LeftHandHold node built from these), and how far the fingers open from the pack's foregrip fist
 ## (0 = as the pack, 1 = the arms model's relaxed rest) to wrap the wider handguard.
-const LEFT_HOLD_WRIST := Vector3(0.025, -0.125, -0.40)
-const LEFT_HOLD_FORWARD := Vector3(0.55, 0.3, -0.75)
-const LEFT_HOLD_SIDEWAYS := Vector3(0.0, 1.0, 0.0)
-const LEFT_HOLD_FINGER_OPEN: float = 0.1
+const LEFT_HOLD_WRIST := Vector3(0.017, -0.124, -0.337)
+const LEFT_HOLD_FORWARD := Vector3(0.55, -0.09, -0.83)
+const LEFT_HOLD_SIDEWAYS := Vector3(0.0, 0.0, 1.0)
+const LEFT_HOLD_FINGER_OPEN: float = 0.45
 
 var animation_player: AnimationPlayer
 

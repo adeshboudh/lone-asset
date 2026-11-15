@@ -93,24 +93,42 @@ func test_the_left_hand_follows_the_rig_through_the_reload() -> void:
 		assert_float(_wrist_gap(arms, "Right")).is_less(0.01)
 
 
-## The fingers close toward the palm, on the left hand as on the right: the middle fingertip is nearer the thumb
-## side of the palm than the knuckle line when the rig grips.
-func test_the_fingers_curl_like_the_rig_fingers() -> void:
-	await get_tree().process_frame
-	var arms: FpsArms = _arms(_player.weapon)
+## The right hand's fingers bend as much as the rig's fingers (it holds the pistol grip as the rig does).
+func test_the_right_fingers_curl_like_the_rig_fingers() -> void:
+	var arms: FpsArms = _idle_arms()
 	var rig: Skeleton3D = _rig(arms)
-	for side: String in ["Left", "Right"]:
-		var p: String = "L_" if side == "Left" else "R_"
-		var new_tip: Vector3 = _global(arms.skeleton, _new_bone(arms, p + "middle4_"))
-		var new_knuckle: Vector3 = _global(arms.skeleton, _new_bone(arms, p + "middle1_"))
-		var new_wrist: Vector3 = _global(arms.skeleton, _new_bone(arms, p + "wrist_"))
-		var rig_tip: Vector3 = _global(rig, rig.find_bone(side + "HandMiddle4"))
-		var rig_knuckle: Vector3 = _global(rig, rig.find_bone(side + "HandMiddle1"))
-		var rig_wrist: Vector3 = _global(rig, rig.find_bone(side + "Hand"))
-		# How far the fingertip bends back toward the wrist, compared with the rig: the same sign and similar size.
-		var new_bend: float = (new_tip - new_knuckle).normalized().dot((new_knuckle - new_wrist).normalized())
-		var rig_bend: float = (rig_tip - rig_knuckle).normalized().dot((rig_knuckle - rig_wrist).normalized())
-		assert_float(new_bend).is_equal_approx(rig_bend, 0.35)
+	var new_tip: Vector3 = _global(arms.skeleton, _new_bone(arms, "R_middle4_"))
+	var new_knuckle: Vector3 = _global(arms.skeleton, _new_bone(arms, "R_middle1_"))
+	var new_wrist: Vector3 = _global(arms.skeleton, _new_bone(arms, "R_wrist_"))
+	var rig_tip: Vector3 = _global(rig, rig.find_bone("RightHandMiddle4"))
+	var rig_knuckle: Vector3 = _global(rig, rig.find_bone("RightHandMiddle1"))
+	var rig_wrist: Vector3 = _global(rig, rig.find_bone("RightHand"))
+	var new_bend: float = (new_tip - new_knuckle).normalized().dot((new_knuckle - new_wrist).normalized())
+	var rig_bend: float = (rig_tip - rig_knuckle).normalized().dot((rig_knuckle - rig_wrist).normalized())
+	assert_float(new_bend).is_equal_approx(rig_bend, 0.35)
+
+
+## On the handguard the left fingers curl toward the barrel, not away from it (they once bent backwards).
+func test_the_left_fingers_curl_around_the_handguard() -> void:
+	var arms: FpsArms = _idle_arms()
+	var muzzle: Node3D = _player.weapon.viewmodel.get_node("Muzzle") as Node3D
+	var barrel: Vector3 = -_player.weapon.viewmodel.global_basis.z.normalized()
+	for finger: String in ["L_point", "L_middle", "L_ring"]:
+		var knuckle: Vector3 = _global(arms.skeleton, _new_bone(arms, finger + "1_"))
+		var tip: Vector3 = _global(arms.skeleton, _new_bone(arms, finger + "4_"))
+		var on_axis: Vector3 = muzzle.global_position + barrel * barrel.dot(knuckle - muzzle.global_position)
+		var to_axis: Vector3 = (on_axis - knuckle)
+		var curl: Vector3 = tip - knuckle
+		assert_float(curl.normalized().dot(to_axis.normalized())).is_greater(0.3)
+
+
+func _idle_arms() -> FpsArms:
+	var anim: AnimationPlayer = _player.weapon.animation_player
+	anim.play(_player.weapon.definition.anim_idle)
+	anim.seek(0.0, true)
+	var arms: FpsArms = _arms(_player.weapon)
+	arms.pose_from_rig()
+	return arms
 
 
 func _global(skeleton: Skeleton3D, bone: int) -> Vector3:

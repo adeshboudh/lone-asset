@@ -92,3 +92,10 @@ path = "addons/godot_mcp_bridge/**"
 precedence = "override"
 SPDX-FileCopyrightText = "GodotBridge contributors (https://github.com/godotbridge/addon)"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "content/animations/source/kimodo/**"
+precedence = "override"
+SPDX-FileCopyrightText = "The developer, generated with NVIDIA Kimodo"
+SPDX-License-Identifier = "LicenseRef-NVIDIA-Open-Model-generated"
+

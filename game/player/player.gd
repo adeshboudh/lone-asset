@@ -159,7 +159,7 @@ func _process(delta: float) -> void:
 	_head.rotation.x = clampf(_pitch + _recoil_pitch, -max_pitch, max_pitch)
 	_head.position.y = _stance.eye_height + _head_bob_offset(delta)
 	_lean.apply(_lean_pivot, settings)
-	_body.update(_stance.eye_height)
+	_body.update(_stance.eye_height, _weapon.definition)
 
 
 func _physics_process(delta: float) -> void:

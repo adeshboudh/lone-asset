@@ -64,6 +64,14 @@ extends Resource
 @export var recoil_ads_mult: float = 0.6
 @export var recoil_recovery_deg_per_s: float = 8.0
 
+@export_group("Body hold")
+## Where the player's hands rest on the weapon, in metres from the feet (x right, y up, z forward is -z).
+## Only the body model uses them (shadow and other cameras); the viewmodel has its own hands.
+@export var hold_right_hand: Vector3 = Vector3(0.16, 1.28, -0.38)
+@export var hold_left_hand: Vector3 = Vector3(-0.1, 1.3, -0.35)
+## False lets the left arm hang (knife).
+@export var hold_uses_left_hand: bool = true
+
 @export_group("Aiming")
 @export var ads_fov: float = 55.0
 ## Seconds from hip to fully aimed. Longer feels heavier.

@@ -29,3 +29,20 @@ func test_head_helmet_and_hands_are_on_the_hidden_layer_and_still_cast_shadows()
 
 func test_body_has_no_collision() -> void:
 	assert_int(_player.get_node("Body").find_children("*", "CollisionObject3D", true, false).size()).is_equal(0)
+
+
+func test_hands_reach_the_weapon_hold_points() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_assert_hands_reach(_player.weapon.definition)
+	var pistol: WeaponDefinition = load("res://data/weapons/pistol_suppressed.tres")
+	_player.get_node("Body").update(1.65, pistol)
+	_assert_hands_reach(pistol)
+
+
+func _assert_hands_reach(definition: WeaponDefinition) -> void:
+	var body: PlayerBody = _player.get_node("Body")
+	var skeleton: Skeleton3D = body.find_children("*", "Skeleton3D", true, false)[0]
+	for pair: Array in [["Bone.038", definition.hold_right_hand], ["Bone.015", definition.hold_left_hand]]:
+		var wrist: Vector3 = body.global_transform.affine_inverse() * (skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(pair[0])).origin)
+		assert_float(wrist.distance_to(pair[1])).is_less(0.06)

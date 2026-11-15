@@ -43,6 +43,11 @@ var animation_player: AnimationPlayer:
 var _flash: OmniLight3D
 var _muzzle: Node3D
 var _kick: float = 0.0
+## The gun's spring kick (ViewmodelRecoilRules): position (m) and rotation (deg) with their velocities.
+var _kick_position: Vector3 = Vector3.ZERO
+var _kick_position_velocity: Vector3 = Vector3.ZERO
+var _kick_rotation: Vector3 = Vector3.ZERO
+var _kick_rotation_velocity: Vector3 = Vector3.ZERO
 var _turn_rate: Vector2 = Vector2.ZERO
 var _strafe_speed: float = 0.0
 var _ground_speed: float = 0.0
@@ -184,10 +189,18 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 			deg_to_rad(definition.recoil_pitch_deg),
 			deg_to_rad(_rng.randf_range(-definition.recoil_yaw_deg, definition.recoil_yaw_deg))) * recoil_scale
 		_kick = 1.0
+		kick_viewmodel(_rng.randf_range(-1.0, 1.0), _rng.randf_range(-1.0, 1.0))
 		_play_anim(definition.anim_fire, 0.0)
 		_flash_remaining = FLASH_TIME_S
 		fired.emit(aim.origin, direction)
 	return kick
+
+
+## One shot's push on the gun's spring kick (ViewmodelRecoilRules); side and roll are random numbers in -1..1.
+func kick_viewmodel(side: float, roll: float) -> void:
+	var push: Array = ViewmodelRecoilRules.shot_velocity(definition, aim_blend, side, roll)
+	_kick_position_velocity += push[0]
+	_kick_rotation_velocity += push[1]
 
 
 ## Bullets leave the muzzle, aimed at the point the crosshair ray (camera, with spread) hits, so they land where
@@ -216,6 +229,12 @@ func _process(delta: float) -> void:
 	if _viewmodel == null or not is_visible_in_tree():
 		return
 	_kick = move_toward(_kick, 0.0, KICK_RECOVERY * delta)
+	var spring: Array = ViewmodelRecoilRules.step(_kick_position, _kick_position_velocity, definition.recoil_spring_hz, definition.recoil_spring_damping, delta)
+	_kick_position = spring[0]
+	_kick_position_velocity = spring[1]
+	spring = ViewmodelRecoilRules.step(_kick_rotation, _kick_rotation_velocity, definition.recoil_spring_hz, definition.recoil_spring_damping, delta)
+	_kick_rotation = spring[0]
+	_kick_rotation_velocity = spring[1]
 	_equip = move_toward(_equip, 0.0, delta / EQUIP_TIME_S)
 	_sway_position = WeaponSwayRules.approach(_sway_position,
 		WeaponSwayRules.target_position(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
@@ -231,8 +250,11 @@ func _process(delta: float) -> void:
 	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, AdsRules.visual_blend(aim_blend, definition.ads_settle)) \
 		+ Vector3(0.0, -AdsRules.arc_offset_m(aim_blend, definition.ads_arc_m), 0.0) + _sway_position + bob_position
 	if _anim != null:
-		_viewmodel.position = base  # the animations carry the kick and the reload
-		_viewmodel.rotation = sway_rotation
+		# The animations carry the reload; the spring kick and the hip turn go on top, about the grip.
+		var aimed: float = AdsRules.visual_blend(aim_blend, definition.ads_settle)
+		var turn: Vector3 = definition.viewmodel_hip_rotation_deg * (1.0 - aimed) + _kick_rotation
+		_viewmodel.transform = Transform3D(Basis.from_euler(sway_rotation), base + _kick_position) \
+				* ViewmodelRecoilRules.about_pivot(turn, definition.viewmodel_pivot)
 	else:
 		var reload_dip: float = sin(logic.reload_progress() * PI) * 0.12
 		var raise: float = _equip * _equip

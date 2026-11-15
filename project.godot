@@ -17,6 +17,10 @@ run/main_scene="res://game/ui/title/title_screen.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[audio]
+
+buses/default_bus_layout="res://game/audio/default_bus_layout.tres"
+
 [autoload]
 
 Log="*res://game/autoload/log.gd"
@@ -30,10 +34,7 @@ NoiseSystem="*res://game/autoload/noise_system.gd"
 Audio="*res://game/autoload/audio.gd"
 PerceptionScheduler="*res://game/autoload/perception_scheduler.gd"
 DebugViews="*res://game/debug/debug_views.gd"
-
-[audio]
-
-buses/default_bus_layout="res://game/audio/default_bus_layout.tres"
+GodotMCPRuntimeProbe="*uid://dpkwit1v1mr1q"
 
 [debug]
 
@@ -48,7 +49,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg", "res://addons/godot_mcp_bridge/plugin.cfg")
 
 [input]
 

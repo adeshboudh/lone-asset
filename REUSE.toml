@@ -86,3 +86,9 @@ path = ["content/characters/agent/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "buh (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = "addons/godot_mcp_bridge/**"
+precedence = "override"
+SPDX-FileCopyrightText = "GodotBridge contributors (https://github.com/godotbridge/addon)"
+SPDX-License-Identifier = "MIT"

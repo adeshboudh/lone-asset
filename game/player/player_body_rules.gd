@@ -13,11 +13,3 @@ static func hidden_from_camera(mesh_name: String) -> bool:
 		if lower.contains(part):
 			return true
 	return false
-
-
-## Vertical scale of the body for the current eye height. Placeholder until crouch has its own
-## animation: the model is squashed part-way so the feet stay on the floor and the head follows the eye.
-static func height_scale(eye_height: float, stand_eye_height: float, strength: float) -> float:
-	if stand_eye_height <= 0.0:
-		return 1.0
-	return lerpf(1.0, clampf(eye_height / stand_eye_height, 0.0, 1.0), strength)

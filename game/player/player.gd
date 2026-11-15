@@ -76,7 +76,7 @@ func _ready() -> void:
 	floor_snap_length = settings.step_height + 0.05
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
-	_body.setup(_camera, settings.stand_eye_height)
+	_body.setup(_camera, settings.stand_eye_height, settings.crouch_eye_height)
 	_base_fov = Settings.fov_deg
 	_camera.fov = _base_fov
 	Settings.changed.connect(func() -> void: _base_fov = Settings.fov_deg)
@@ -159,7 +159,8 @@ func _process(delta: float) -> void:
 	_head.rotation.x = clampf(_pitch + _recoil_pitch, -max_pitch, max_pitch)
 	_head.position.y = _stance.eye_height + _head_bob_offset(delta)
 	_lean.apply(_lean_pivot, settings)
-	_body.update(_stance.eye_height, _weapon.definition)
+	_body.update(_stance.eye_height, _weapon.definition, horizontal_speed,
+			NoiseSystem.profiles.stride(NoiseRules.footstep_type(_stance.is_crouched, _movement.is_sprinting)), is_on_floor(), delta)
 
 
 func _physics_process(delta: float) -> void:

@@ -9,6 +9,10 @@ extends Node3D
 const LAYER: int = 1 << 18
 ## A rig arm scaled below this is collapsed on purpose (one-handed weapons hide the left arm).
 const COLLAPSED_SCALE: float = 0.01
+## A weapon's own left-hand hold (a "LeftHandHold" node on the gun, see m4a1_custom_viewmodel.gd) applies fully
+## while the rig's left hand is within HOLD_NEAR_M of where it rests at Idle, and lets go by HOLD_FAR_M.
+const HOLD_NEAR_M: float = 0.04
+const HOLD_FAR_M: float = 0.12
 const KIND_OTHER: int = 0
 const KIND_UPPER_ARM: int = 1
 const KIND_THUMB: int = 2
@@ -28,6 +32,8 @@ class ArmSide extends RefCounted:
 	## Knuckles and wrist used for the hand's axes: [wrist, index1, middle1, pinky1] on each rig.
 	var hand: PackedInt32Array
 	var rig_hand: PackedInt32Array
+	## Index of the wrist in bones.
+	var wrist_entry: int = -1
 
 var skeleton: Skeleton3D
 var _rig: Skeleton3D
@@ -35,6 +41,9 @@ var _settings: FpsArmsSettings
 var _sides: Array[ArmSide] = []
 ## The new skeleton's space in the rig skeleton's space.
 var _to_rig: Transform3D
+## The weapon's left-hand hold, if it has one, and the rig's left wrist at Idle in the hold's frame.
+var _hold: Node3D
+var _hold_rest: Vector3
 
 
 ## Puts the arms on the first skeleton in the viewmodel that has a "RightHand" bone. Returns null when there is
@@ -48,6 +57,7 @@ static func attach(viewmodel: Node3D, settings: FpsArmsSettings) -> FpsArms:
 			var arms := FpsArms.new()
 			arms.name = "FpsArms"
 			rig.add_child(arms)
+			arms._hold = viewmodel.find_child("LeftHandHold", true, false) as Node3D
 			arms._setup(rig, settings)
 			return arms
 	return null
@@ -71,6 +81,8 @@ func _setup(rig: Skeleton3D, settings: FpsArmsSettings) -> void:
 		var side: ArmSide = _build_side(prefix)
 		if side != null:
 			_sides.append(side)
+	if _hold != null:
+		_hold_rest = hold_in_rig().affine_inverse() * _rig.get_bone_global_pose(_rig.find_bone("LeftHand")).origin
 	pose_from_rig()
 
 
@@ -117,6 +129,8 @@ func _build_side(prefix: String) -> ArmSide:
 	var rest: Callable = func(bone: int) -> Vector3: return skeleton.get_bone_global_rest(bone).origin
 	for entry: PackedInt32Array in side.bones:
 		side.frames_rest.append(_frame(entry[4], entry[0], entry[2], side.hand, rest))
+		if entry[0] == side.wrist:
+			side.wrist_entry = side.frames_rest.size() - 1
 	return side
 
 
@@ -160,12 +174,51 @@ func pose_from_rig() -> void:
 			var wanted: Basis = FpsArmsRules.retarget(to_new * rig_frame, side.frames_rest[i],
 					skeleton.get_bone_global_rest(entry[0]).basis.orthonormalized())
 			_set_global_basis(entry[0], wanted)
-		# The wrist lands on the rig's wrist; the shoulder moves to make it so.
+		# The wrist lands on the rig's wrist (or the weapon's hold); the shoulder moves to make it so.
 		var wrist_target: Vector3 = _to_rig.affine_inverse() * _rig.get_bone_global_pose(side.rig_wrist).origin
+		if side.prefix == "L_" and _hold != null:
+			wrist_target = _apply_hold(side, to_new, wrist_target)
 		var miss: Vector3 = wrist_target - skeleton.get_bone_global_pose(side.wrist).origin
 		var parent: int = skeleton.get_bone_parent(side.shoulder)
 		var parent_basis: Basis = skeleton.get_bone_global_pose(parent).basis if parent >= 0 else Basis()
 		skeleton.set_bone_pose_position(side.shoulder, skeleton.get_bone_pose_position(side.shoulder) + parent_basis.inverse() * miss)
+
+
+## Turns the left hand toward the weapon's hold and opens the fingers, by how near the rig's hand is to its Idle
+## place on the gun. Returns the wrist target (new skeleton's space).
+func _apply_hold(side: ArmSide, to_new: Basis, rig_wrist_target: Vector3) -> Vector3:
+	var hold_xf: Transform3D = hold_in_rig()
+	var weight: float = FpsArmsRules.hold_weight((hold_xf.affine_inverse() * _rig.get_bone_global_pose(side.rig_wrist).origin).distance_to(_hold_rest),
+			HOLD_NEAR_M, HOLD_FAR_M)
+	if weight <= 0.0:
+		return rig_wrist_target
+	var wanted: Basis = FpsArmsRules.retarget(to_new * hold_xf.basis.orthonormalized(), side.frames_rest[side.wrist_entry],
+			skeleton.get_bone_global_rest(side.wrist).basis.orthonormalized())
+	var current: Basis = skeleton.get_bone_global_pose(side.wrist).basis.orthonormalized()
+	var target: Basis = current.slerp(wanted, weight)
+	# The forearm takes the roll about its own length, so the wrist does not twist like a wrapper.
+	var elbow: int = skeleton.get_bone_parent(side.wrist)
+	var forearm: Vector3 = skeleton.get_bone_global_pose(side.wrist).origin - skeleton.get_bone_global_pose(elbow).origin
+	var roll: Quaternion = FpsArmsRules.twist((target * current.inverse()).get_rotation_quaternion(), forearm)
+	_set_global_basis(elbow, Basis(roll) * skeleton.get_bone_global_pose(elbow).basis.orthonormalized())
+	_set_global_basis(side.wrist, target)
+	var open: float = float(_hold.get_meta(&"finger_open", 0.0)) * weight
+	for entry: PackedInt32Array in side.bones:
+		if entry[0] == side.wrist or entry[4] == KIND_UPPER_ARM or skeleton.get_bone_name(entry[0]).contains("_elbow_"):
+			continue
+		var rest: Quaternion = skeleton.get_bone_rest(entry[0]).basis.get_rotation_quaternion()
+		skeleton.set_bone_pose_rotation(entry[0], skeleton.get_bone_pose_rotation(entry[0]).slerp(rest, open))
+	var hold_target: Vector3 = _to_rig.affine_inverse() * hold_xf.origin
+	return rig_wrist_target.lerp(hold_target, weight)
+
+
+## The weapon's left-hand hold in the rig skeleton's space, from the pose of the bone it rides (a BoneAttachment3D
+## only moves after the skeleton's deferred update, a frame late).
+func hold_in_rig() -> Transform3D:
+	var attachment: BoneAttachment3D = _hold.get_parent() as BoneAttachment3D
+	if attachment != null and attachment.get_parent() == _rig:
+		return _rig.get_bone_global_pose(_rig.find_bone(attachment.bone_name)) * _hold.transform
+	return _rig.global_transform.affine_inverse() * _hold.global_transform
 
 
 func _set_global_basis(bone: int, wanted: Basis) -> void:

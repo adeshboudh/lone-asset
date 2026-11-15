@@ -2,7 +2,7 @@ extends GdUnitTestSuite
 ## The M4A1 Custom viewmodel: the model's parts hang on the rig's bones, each named for the gun.
 
 const RIFLE: WeaponDefinition = preload("res://data/weapons/rifle_suppressed.tres")
-const PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights", &"m4a1_custom_foregrip",
+const PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights",
 		&"m4a1_custom_optic", &"m4a1_custom_optic_lens", &"m4a1_custom_suppressor", &"m4a1_custom_muzzle_brake",
 		&"m4a1_custom_magazine"]
 
@@ -113,3 +113,11 @@ func test_aimed_the_lens_centre_is_on_the_crosshair_line() -> void:
 func test_the_muzzle_brake_variant_aims_the_same_way() -> void:
 	var muzzle: WeaponDefinition = load("res://data/weapons/rifle_muzzle.tres")
 	assert_vector(muzzle.viewmodel_ads_position).is_equal(RIFLE.viewmodel_ads_position)
+
+
+func test_the_vertical_foregrip_is_left_off_and_the_left_hand_has_a_hold_on_the_handguard() -> void:
+	assert_object(_viewmodel.find_child("m4a1_custom_foregrip", true, false)).is_null()
+	var hold: Node3D = _viewmodel.find_child("LeftHandHold", true, false) as Node3D
+	assert_object(hold).is_not_null()
+	# It rides the gun (Main bone), so it follows the gun through every animation.
+	assert_str(String(hold.get_parent().name)).is_equal("M4A1CustomBody")

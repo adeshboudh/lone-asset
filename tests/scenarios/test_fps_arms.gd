@@ -54,11 +54,17 @@ func test_every_weapon_has_the_arms_on_the_viewmodel_layer_without_shadows() -> 
 			assert_int(mesh.cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
 
 
-func test_the_wrists_sit_on_the_rig_wrists() -> void:
-	await get_tree().process_frame
+func test_the_right_wrist_sits_on_the_rig_and_the_left_on_the_rifles_handguard_hold() -> void:
+	# At Idle (the weapon starts in its Draw clip, while the hand swings in).
+	var anim: AnimationPlayer = _player.weapon.animation_player
+	anim.play(_player.weapon.definition.anim_idle)
+	anim.seek(0.0, true)
 	var arms: FpsArms = _arms(_player.weapon)
+	arms.pose_from_rig()
 	assert_float(_wrist_gap(arms, "Right")).is_less(0.01)
-	assert_float(_wrist_gap(arms, "Left")).is_less(0.01)
+	assert_object(_player.weapon.viewmodel.find_child("LeftHandHold", true, false)).is_not_null()
+	var left: Vector3 = arms.skeleton.global_transform * arms.skeleton.get_bone_global_pose(_new_bone(arms, "L_wrist_")).origin
+	assert_float(left.distance_to(_rig(arms).global_transform * arms.hold_in_rig().origin)).is_less(0.01)
 
 
 func test_one_handed_weapons_fold_the_left_arm_away() -> void:
@@ -73,13 +79,14 @@ func test_one_handed_weapons_fold_the_left_arm_away() -> void:
 	assert_bool(_arms(_player._weapons[0]).skeleton.get_bone_pose_scale(_new_bone(_arms(_player._weapons[0]), "L_arm_")).x > 0.5).is_true()
 
 
-func test_the_left_hand_stays_on_the_rig_through_the_reload() -> void:
+func test_the_left_hand_follows_the_rig_through_the_reload() -> void:
 	var weapon: Weapon = _player.weapon
 	var player: AnimationPlayer = weapon.animation_player
 	player.play(weapon.definition.anim_reload)
 	var arms: FpsArms = _arms(weapon)
 	var length: float = player.current_animation_length
-	for fraction: float in [0.2, 0.5, 0.8]:
+	# Mid-reload the left hand is off the handguard (on the magazine), so it follows the rig, not the hold.
+	for fraction: float in [0.35, 0.5]:
 		player.seek(length * fraction, true)
 		arms.pose_from_rig()
 		assert_float(_wrist_gap(arms, "Left")).is_less(0.01)

@@ -42,3 +42,20 @@ static func pack_bone(arms_bone: String) -> String:
 	if not JOINTS.has(joint):
 		return ""
 	return ("Left" if parts[0] == "L" else "Right") + String(JOINTS[joint])
+
+
+## How much a weapon's own hand hold overrides the rig's hand: fully while the rig's hand is within near_m of
+## where it rests on the gun, nothing beyond far_m (a reload takes the hand away), smooth in between.
+static func hold_weight(distance_m: float, near_m: float, far_m: float) -> float:
+	return 1.0 - smoothstep(near_m, far_m, distance_m)
+
+
+## The part of a rotation that turns about an axis (swing-twist split), so a forearm can take the roll of its hand
+## instead of the wrist skin twisting.
+static func twist(rotation: Quaternion, axis: Vector3) -> Quaternion:
+	var a: Vector3 = axis.normalized()
+	var along: Vector3 = a * Vector3(rotation.x, rotation.y, rotation.z).dot(a)
+	var q: Quaternion = Quaternion(along.x, along.y, along.z, rotation.w)
+	if q.length_squared() < 0.000001:
+		return Quaternion.IDENTITY
+	return q.normalized()

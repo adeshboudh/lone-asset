@@ -51,3 +51,20 @@ func test_pack_bone_names() -> void:
 	assert_str(FpsArmsRules.pack_bone("L_ring1_015")).is_equal("LeftHandRing1")
 	assert_str(FpsArmsRules.pack_bone("L_point4_011")).is_equal("")
 	assert_str(FpsArmsRules.pack_bone("_rootJoint")).is_equal("")
+
+
+func test_the_hold_applies_near_its_rest_and_lets_go_when_the_hand_leaves() -> void:
+	assert_float(FpsArmsRules.hold_weight(0.0, 0.04, 0.12)).is_equal(1.0)
+	assert_float(FpsArmsRules.hold_weight(0.04, 0.04, 0.12)).is_equal(1.0)
+	assert_float(FpsArmsRules.hold_weight(0.08, 0.04, 0.12)).is_between(0.1, 0.9)
+	assert_float(FpsArmsRules.hold_weight(0.2, 0.04, 0.12)).is_equal(0.0)
+
+
+func test_twist_keeps_only_the_turn_about_the_axis() -> void:
+	var roll: Quaternion = Quaternion(Vector3.FORWARD, 1.2)
+	var bend: Quaternion = Quaternion(Vector3.RIGHT, 0.5)
+	var t: Quaternion = FpsArmsRules.twist(bend * roll, Vector3.FORWARD)
+	# What is left turns about the axis only, by about the roll.
+	assert_vector(t * Vector3.FORWARD).is_equal_approx(Vector3.FORWARD, Vector3.ONE * 0.0001)
+	assert_float(absf(t.get_angle() - 1.2)).is_less(0.15)
+	assert_float(FpsArmsRules.twist(bend, Vector3.FORWARD).get_angle()).is_less(0.0001)

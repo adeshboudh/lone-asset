@@ -11,8 +11,9 @@ const MUZZLE := Vector3(0.071, -0.07, -0.74)
 ## suppressor tip on the old muzzle, lens of the optic on the old red-dot lens height.
 const GUN_ORIGIN := Vector3(0.069, -0.1485, -0.174)
 const GUN_YAW: float = PI * 0.5
-## Parts that ride the rig's Main bone.
-const BODY_PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights", &"m4a1_custom_foregrip",
+## Parts that ride the rig's Main bone. The vertical foregrip (m4a1_custom_foregrip) is left off: the left hand
+## holds the handguard (LEFT_HOLD_*).
+const BODY_PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights",
 		&"m4a1_custom_optic", &"m4a1_custom_optic_lens", &"m4a1_custom_suppressor", &"m4a1_custom_muzzle_brake"]
 const MAGAZINE_PART: StringName = &"m4a1_custom_magazine"
 const LENS_SHADER := "res://content/weapons/m4a1_custom/scope_lens.gdshader"
@@ -27,6 +28,14 @@ const LENS_RADIUS_M: float = 0.0095
 const OPTIC_SCALE: float = 1.25
 const OPTIC_PIVOT := Vector3(0.088, 0.105, 0.002)
 const OPTIC_PARTS: Array[StringName] = [&"m4a1_custom_optic", &"m4a1_custom_optic_lens"]
+## Where the first-person arms' left hand holds the handguard, in the pack camera's frame at the Idle pose: the
+## wrist, the direction wrist to middle knuckle and the direction index knuckle to little-finger knuckle (FpsArms
+## reads the LeftHandHold node built from these), and how far the fingers open from the pack's foregrip fist
+## (0 = as the pack, 1 = the arms model's relaxed rest) to wrap the wider handguard.
+const LEFT_HOLD_WRIST := Vector3(0.025, -0.125, -0.40)
+const LEFT_HOLD_FORWARD := Vector3(0.55, 0.3, -0.75)
+const LEFT_HOLD_SIDEWAYS := Vector3(0.0, 1.0, 0.0)
+const LEFT_HOLD_FINGER_OPEN: float = 0.1
 
 var animation_player: AnimationPlayer
 
@@ -192,6 +201,11 @@ func _fit_new_gun(skel: Skeleton3D) -> void:
 		mag_holder.add_child(mag)
 		mag.transform = _bone_in_view(skel, bone).affine_inverse() * gun_in_view
 	parts.queue_free()
+	var hold := Node3D.new()
+	hold.name = "LeftHandHold"
+	holder.add_child(hold)
+	hold.transform = main_in_view.affine_inverse() * Transform3D(FpsArmsRules.bone_frame(LEFT_HOLD_FORWARD, LEFT_HOLD_SIDEWAYS), LEFT_HOLD_WRIST)
+	hold.set_meta(&"finger_open", LEFT_HOLD_FINGER_OPEN)
 
 
 func _bone_in_view(skel: Skeleton3D, bone: int) -> Transform3D:

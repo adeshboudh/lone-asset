@@ -813,7 +813,7 @@ Milestone 1 includes **one finished-art area** to prove that the visuals are goo
 | Location | The terminal building interior and its courtyard (where `obj_download_data` happens), roughly 25 m × 25 m |
 | Rest of level | Graybox with final collision and lighting volumes |
 | Lighting | Baked LightmapGI + reflection probes, 1 shadow-casting directional light, at most 2 dynamic lights |
-| Assets | Redistributable free assets only (§17.4): Poly Haven / ambientCG CC0 models and textures, re-textured for a consistent look; 2–3 hero props modelled in Blender |
+| Assets | Any assets the developer likes, under any licence (§17.4), e.g. Poly Haven / ambientCG models and textures, re-textured for a consistent look; 2–3 hero props modelled in Blender |
 | Look target | Night-time, moonlit exterior + sodium-lit interior; readable dark/lit zones that match the light volumes |
 | Post-processing | Tonemapping, colour grading, light vignette, night vision/thermal shaders on binoculars (later equipment) |
 
@@ -852,7 +852,7 @@ The project has no asset budget. Assets may be made by the developer or found on
 
 #### Sources
 
-| Need | Source (redistributable) |
+| Need | Suggested sources (any other source and licence is fine too) |
 |---|---|
 | PBR textures | Poly Haven (CC0), ambientCG (CC0) |
 | HDRI skies | Poly Haven (CC0) |
@@ -862,8 +862,8 @@ The project has no asset budget. Assets may be made by the developer or found on
 | Character animations | CMU motion capture database (free to use and redistribute; credit requested), plus custom Blender animation; check any other library's licence individually |
 | Weapon models | Modelled in Blender (simple, low/mid-poly rifle); OpenGameArt CC0/CC BY as reference or base |
 | First-person arms + weapon animation | Simple gloved-arms mesh modelled in Blender; **procedural animation** in Godot (recoil, sway, bob, reload via tweens and IK) |
-| Sound effects | Freesound (CC0 and CC BY only), OpenGameArt audio, Kenney audio (CC0), own Foley recordings |
-| Music | OpenGameArt / Free Music Archive tracks with CC0 or CC BY only; or none in Milestone 1 |
+| Sound effects | Freesound, OpenGameArt audio, Kenney audio (CC0), own Foley recordings |
+| Music | OpenGameArt / Free Music Archive tracks; or none in Milestone 1 |
 | Fonts | Google Fonts (SIL Open Font License) |
 | Particle textures | Kenney Particle Pack (CC0) |
 | Materials | Created in Material Maker (own work, CC BY 4.0) |

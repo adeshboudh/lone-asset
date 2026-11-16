@@ -12,4 +12,4 @@ Read `docs/architecture.md` (rules and layers) and `docs/handoff.md` (status and
 - Group related small changes (tuning, sounds, docs, minor fixes) on one branch with one PR, one commit per change, and run the tests once before pushing. Give a larger feature or refactor its own branch and PR. Wait for the developer to play the build and approve before merging.
 - Put tunable numbers in `data/**/*.tres`. Put logic in pure `*_rules.gd` classes with unit tests; scenario tests for scene behaviour.
 - Systems communicate through `EventBus` signals. Saved nodes implement `save_state()` / `load_state()`.
-- Before pushing: `tools/ci/run_tests.sh`; `reuse lint` must pass. Update `docs/handoff.md` and `docs/acceptance/m1-acceptance.md` when status changes.
+- Before pushing: `tools/ci/run_tests.sh`; `reuse lint` must pass. Chore-only changes (Markdown, `docs/`, `LICENSES/`, `REUSE.toml`) need only `reuse lint`; CI skips the build for them on PRs into `dev`. Update `docs/handoff.md` and `docs/acceptance/m1-acceptance.md` when status changes.

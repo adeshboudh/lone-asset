@@ -10,16 +10,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Licence check and change scope
+    runs-on: ubuntu-24.04
+    outputs:
+      game: ${{ steps.scope.outputs.game }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Licence compliance (REUSE)
+        uses: fsfe/reuse-action@v5
+
+      # Pull requests into dev skip the build when every changed file is a chore file
+      # (Markdown, docs, licence texts). Pull requests into main and pushes to main always build.
+      - name: Does the change affect the game?
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ] || [ "${{ github.base_ref }}" != "dev" ]; then
+            echo "game=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}")
+          echo "$changed"
+          game=$(echo "$changed" | grep -vE '\.md$|^docs/|^LICENSES/|^REUSE\.toml$' || true)
+          if [ -n "$game" ]; then echo "game=true" >> "$GITHUB_OUTPUT"; else echo "game=false" >> "$GITHUB_OUTPUT"; fi
+
   build:
     name: Lint, test and export desktop builds
+    needs: changes
+    if: needs.changes.outputs.game == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
           lfs: true
-
-      - name: Licence compliance (REUSE)
-        uses: fsfe/reuse-action@v5
 
       - name: Read engine version
         id: engine

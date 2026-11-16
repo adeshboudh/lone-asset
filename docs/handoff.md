@@ -41,7 +41,7 @@ All tests pass in CI. Acceptance rows 6, 10, 11, 13 and 16 are automated. `main`
 
 - `dev` is the main development track. Branch from it, open pull requests into it, merge when approved.
 - `main` is the release line: it only receives merges from `dev` when a build is ready to release. Pushes to `main` refresh the `preview` release.
-- CI runs on pull requests and on pushes to `main`, not on plain pushes to `dev`.
+- CI runs on pull requests and on pushes to `main`, not on plain pushes to `dev`. Pull requests into `dev` that only touch Markdown, `docs/`, `LICENSES/` or `REUSE.toml` run only the licence check.
 
 ## How to run it
 

@@ -36,7 +36,7 @@ make check      # reuse lint, all tests, headless smoke test (about 5 minutes)
 
 Or run the pieces: `make test` (or `make test-one T=res://tests/unit/test_x.gd`), `make smoke`, `make lint`. Scene changes need `make smoke`. After touching guard AI, patrol routes, navigation or compound geometry, run `make soak` (20 patrol passes per guard, about 15 s). Geometry changes to the movement course need `make bake-navmesh`.
 
-CI runs the same checks, plus the Windows and Linux exports and the size budgets (`tools/ci/check_budgets.sh`). It runs on pull requests and on pushes to `main`, not on plain pushes to `dev` or feature branches.
+CI runs the same checks, plus the Windows and Linux exports and the size budgets (`tools/ci/check_budgets.sh`). It runs on pull requests and on pushes to `main`, not on plain pushes to `dev` or feature branches. On pull requests into `dev` that only change chore files (Markdown, `docs/`, `LICENSES/`, `REUSE.toml`), only the licence check runs and the build job is skipped; pull requests into `main` always run everything.
 
 ## Code rules (short)
 

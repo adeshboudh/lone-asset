@@ -599,7 +599,8 @@ def verify_glb() -> None:
 
 
 MODES = {"build": build, "clips": make_clips, "check": check, "preview": preview, "export": export}
-if not ARGS or ARGS[0] not in MODES:
-    print("usage: blender -b --factory-startup --python pistol_rig.py -- {" + "|".join(MODES) + "}")
-    sys.exit(1)
-MODES[ARGS[0]]()
+if __name__ == "__main__":  # other scripts import this file for import_pistol() and the model's part rules
+    if not ARGS or ARGS[0] not in MODES:
+        print("usage: blender -b --factory-startup --python pistol_rig.py -- {" + "|".join(MODES) + "}")
+        sys.exit(1)
+    MODES[ARGS[0]]()

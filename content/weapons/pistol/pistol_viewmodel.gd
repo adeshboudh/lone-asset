@@ -1,80 +1,59 @@
 extends Node3D
-## First-person 9mm pistol: the "9mm Pistol" model by TORI106 (CC-BY, see content/LICENSES.md) in the
-## right hand of the M4 pack's gloved arms (see hands_rig.gd). Exposes the Muzzle node the Weapon node
-## looks for. The origin of this node is the camera, like the M4's.
-const DIR := "res://content/weapons/pistol/textures/"
-## The model is 2.4 units long, a 9mm pistol about 0.19 m.
-const MODEL_SCALE: float = 0.08
-## Where the pistol's centre sits in the camera frame, so the grip lies in the hand.
-const GUN_POSITION := Vector3(0.075, -0.165, -0.206)
-## The pack's arms are sized for a rifle; smaller ones sit better on a pistol. The arm swings down this
-## many degrees about the wrist.
-const HAND_SCALE: float = 0.85
-const ARM_DROP_DEG: float = 25.0
-## Extra turn of the pistol about the grip, degrees (pitch, yaw, roll).
-const GUN_TURN := Vector3(0.0, 0.0, 0.0)
+## First-person 9mm pistol with its own two-handed arms. One rig (content/weapons/pistol/rig/pistol_rig.blend, built by
+## tools/blender/pistol_rig.py) holds the arms ("fps arms" by DJMaesen, CC-BY) and the pistol ("9mm Pistol" by TORI106,
+## CC-BY, see content/LICENSES.md), and its clips move both, so the M4 pack's arms are not used here.
+## The model faces glTF's front (+Z); Model is turned half a turn so the muzzle points along -Z like the other
+## viewmodels. The origin of this node is the camera. Exposes the Muzzle node the Weapon node looks for.
+const ARMS_MODEL := "res://content/characters/fps_arms/fps_arms.glb"
+const TEXTURES := "res://content/weapons/pistol/textures/"
 
-
-## The grip: animations turn the arm and the pistol about this point.
-const GRIP: Vector3 = GUN_POSITION + Vector3(0.0, -0.02, 0.066)
-const V0 := Vector3.ZERO
+var _skeleton: Skeleton3D
+var _muzzle: Node3D
+var _muzzle_bone: int = -1
 
 
 func _ready() -> void:
-	var skeleton: Skeleton3D = HandsRig.build(self, false, HAND_SCALE, GRIP, ARM_DROP_DEG)
-	var holder: Node3D = Node3D.new()
-	holder.name = "Gun"
-	holder.position = GUN_POSITION
-	holder.rotation_degrees = GUN_TURN
-	add_child(holder)
-	var gun: Node3D = (load("res://content/weapons/pistol/source/9mmPistol.fbx") as PackedScene).instantiate()
-	holder.add_child(gun)
-	# the model points along -x; the muzzle has to point along -z
-	gun.rotation_degrees.y = -90.0
-	gun.scale = Vector3.ONE * MODEL_SCALE
-	var parts: Array[Node] = gun.find_children("*", "MeshInstance3D")
-	# first mesh is the frame (map 9m1), the second one the slide parts (map 9m2)
-	var maps: Array[StandardMaterial3D] = [LimbBuilder.pbr(DIR, "pistol_9m1"), LimbBuilder.pbr(DIR, "pistol_9m2")]
-	for i: int in parts.size():
-		(parts[i] as MeshInstance3D).set_surface_override_material(0, maps[mini(i, 1)])
-		(parts[i] as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var pivot: Node3D = Node3D.new()
-	pivot.name = "Pivot"
-	pivot.position = GRIP
-	add_child(pivot)
-	skeleton.get_parent().reparent(pivot, true)
-	holder.reparent(pivot, true)
-	var muzzle: Node3D = Node3D.new()
-	muzzle.name = "Muzzle"
-	add_child(muzzle)
-	muzzle.position = GUN_POSITION + Vector3(0.0, 0.052, -0.1)
-	ClipBuilder.add_player(self, ^"Pivot", GRIP, _clips())
+	var model: Node = $Model
+	_skeleton = model.find_child("Skeleton3D", true, false) as Skeleton3D
+	var player: AnimationPlayer = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	player.get_animation(&"Idle").loop_mode = Animation.LOOP_LINEAR
+	_apply_materials(model)
+	_muzzle = Node3D.new()
+	_muzzle.name = "Muzzle"
+	add_child(_muzzle)
+	_muzzle_bone = _skeleton.find_bone(&"gun_muzzle")
+	_skeleton.skeleton_updated.connect(_follow_muzzle)
+	_follow_muzzle()
 
 
-## Hand-keyed clips: Idle, Draw, Fire, Reload and Reload_Empty (lengths match the definition's reload times).
-func _clips() -> Dictionary:
-	return {
-		&"Idle": {"length": 3.0, "loop": true, "keys": [
-			[0.0, V0, V0], [1.5, Vector3(0.0, 0.002, 0.0), Vector3(0.4, 0.0, 0.0)], [3.0, V0, V0]]},
-		&"Draw": {"length": 0.45, "keys": [
-			[0.0, Vector3(0.05, -0.22, 0.06), Vector3(-35.0, 20.0, 10.0)],
-			[0.3, Vector3(0.0, 0.01, -0.01), Vector3(4.0, 0.0, 0.0)],
-			[0.45, V0, V0]]},
-		&"Fire": {"length": 0.14, "keys": [
-			[0.0, V0, V0], [0.03, Vector3(0.0, 0.004, 0.035), Vector3(6.0, 0.0, 0.0)], [0.14, V0, V0]]},
-		&"Reload": {"length": 1.5, "keys": [
-			[0.0, V0, V0],
-			[0.25, Vector3(0.03, -0.10, 0.05), Vector3(-25.0, 0.0, 25.0)],
-			[0.55, Vector3(0.03, -0.11, 0.05), Vector3(-28.0, 0.0, 28.0)],
-			[0.8, Vector3(0.03, -0.09, 0.04), Vector3(-22.0, 0.0, 22.0)],
-			[1.15, Vector3(0.01, -0.03, 0.0), Vector3(-6.0, 0.0, 6.0)],
-			[1.5, V0, V0]]},
-		&"Reload_Empty": {"length": 1.9, "keys": [
-			[0.0, V0, V0],
-			[0.25, Vector3(0.03, -0.10, 0.05), Vector3(-25.0, 0.0, 25.0)],
-			[0.6, Vector3(0.03, -0.11, 0.05), Vector3(-28.0, 0.0, 28.0)],
-			[0.95, Vector3(0.03, -0.09, 0.04), Vector3(-22.0, 0.0, 22.0)],
-			[1.3, Vector3(0.01, -0.02, 0.0), Vector3(-4.0, 0.0, 4.0)],
-			[1.5, Vector3(0.0, 0.0, 0.03), Vector3(3.0, 0.0, 0.0)],
-			[1.9, V0, V0]]},
+## The Muzzle node (a direct child, where Weapon looks for it) rides the muzzle bone, so the flash and the shot start
+## where the barrel is after the recoil.
+func _follow_muzzle() -> void:
+	_muzzle.global_position = (_skeleton.global_transform * _skeleton.get_bone_global_pose(_muzzle_bone)).origin
+
+
+## The GLB carries plain materials named for what they cover; the textures go on here.
+func _apply_materials(model: Node) -> void:
+	var by_name: Dictionary = {
+		&"arms": _arms_material(),
+		&"pistol_frame": LimbBuilder.pbr(TEXTURES, "pistol_9m1"),
+		&"pistol_slide": LimbBuilder.pbr(TEXTURES, "pistol_9m2"),
 	}
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = node as MeshInstance3D
+		mesh.layers = FpsArms.LAYER
+		for surface: int in mesh.mesh.get_surface_count():
+			var wanted: Material = by_name.get(StringName(mesh.mesh.surface_get_material(surface).resource_name)) as Material
+			if wanted != null:
+				mesh.set_surface_override_material(surface, wanted)
+			if wanted == by_name[&"arms"]:
+				mesh.add_to_group(&"first_person_arms")
+
+
+## The arms' own material, as the fps arms model imports it.
+func _arms_material() -> Material:
+	var scene: Node = (load(ARMS_MODEL) as PackedScene).instantiate()
+	var source: MeshInstance3D = scene.find_children("*", "MeshInstance3D", true, false)[0] as MeshInstance3D
+	var material: Material = source.mesh.surface_get_material(0)
+	scene.free()
+	return material

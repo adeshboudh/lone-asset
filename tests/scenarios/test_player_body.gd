@@ -194,12 +194,35 @@ func test_every_part_of_every_body_gun_is_off_the_camera_layers_and_casts_a_shad
 	var checked: int = 0
 	for node: Node in _player.camera.get_node("BodyGuns").find_children("*", "GeometryInstance3D", true, false):
 		var part: GeometryInstance3D = node as GeometryInstance3D
-		if part.name == &"Hand_Mesh":
+		if part.name == &"Hand_Mesh" or part.is_in_group(&"first_person_arms"):
 			continue
 		assert_int(part.layers).override_failure_message("%s is visible to the camera" % part.name).is_equal(PlayerBody.HIDDEN_LAYER)
 		assert_int(part.cast_shadow).is_equal(GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
 		checked += 1
 	assert_int(checked).is_greater(8)
+
+
+func test_the_pistol_body_copy_follows_its_own_wrists_and_hides_its_arms() -> void:
+	var found: bool = false
+	for node: Node in _player.camera.get_node("BodyGuns").find_children("*", "Skeleton3D", true, false):
+		var skeleton: Skeleton3D = node as Skeleton3D
+		if skeleton.find_bone(&"gun_root") < 0:
+			continue
+		found = true
+		assert_int(skeleton.find_bone(&"R_wrist_025")).is_greater_equal(0)
+		var arms: MeshInstance3D = skeleton.get_parent().find_child("arms", true, false) as MeshInstance3D
+		assert_object(arms).is_not_null()
+		assert_bool(arms.visible).is_false()
+	assert_bool(found).is_true()
+	var body: PlayerBody = _player.get_node("Body")
+	var pistol_guns: int = 0
+	for gun: Variant in body._guns.values():
+		var body_gun: PlayerBody.BodyGun = gun as PlayerBody.BodyGun
+		if body_gun.skeleton != null and body_gun.skeleton.find_bone(&"gun_root") >= 0:
+			pistol_guns += 1
+			assert_int(body_gun.right_hand).is_greater_equal(0)
+			assert_int(body_gun.left_hand).is_greater_equal(0)
+	assert_int(pistol_guns).is_equal(1)
 
 
 func test_the_real_viewmodel_parts_do_not_cast_shadows() -> void:

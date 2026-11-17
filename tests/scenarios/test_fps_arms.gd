@@ -21,6 +21,12 @@ func before_test() -> void:
 		await get_tree().physics_frame
 
 
+## A weapon with its own arms rig (the pistol) animates its arms directly and gets no FpsArms.
+func _has_own_rig(weapon: Weapon) -> bool:
+	var skeleton: Skeleton3D = weapon.viewmodel.find_child("Skeleton3D", true, false) as Skeleton3D
+	return skeleton != null and skeleton.find_bone(&"gun_root") >= 0
+
+
 func _arms(weapon: Weapon) -> FpsArms:
 	return weapon.viewmodel.find_child("FpsArms", true, false) as FpsArms
 
@@ -46,6 +52,8 @@ func _wrist_gap(arms: FpsArms, side: String) -> float:
 
 func test_every_weapon_has_the_arms_on_the_viewmodel_layer_without_shadows() -> void:
 	for weapon: Weapon in _player._weapons:
+		if _has_own_rig(weapon):
+			continue
 		var arms: FpsArms = _arms(weapon)
 		assert_object(arms).is_not_null()
 		for node: Node in arms.find_children("*", "GeometryInstance3D", true, false):
@@ -69,6 +77,8 @@ func test_the_right_wrist_sits_on_the_rig_and_the_left_on_the_rifles_handguard_h
 
 func test_one_handed_weapons_fold_the_left_arm_away() -> void:
 	for weapon: Weapon in _player._weapons:
+		if _has_own_rig(weapon):
+			continue
 		var arms: FpsArms = _arms(weapon)
 		var rig: Skeleton3D = _rig(arms)
 		var rig_left_folded: bool = rig.get_bone_pose_scale(rig.find_bone("LeftArm")).x < FpsArms.COLLAPSED_SCALE

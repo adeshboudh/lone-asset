@@ -80,11 +80,27 @@ Prototype mission on the graybox course: reach the compound, download data at th
 - Bullet feel (tracers, ricochet, penetration, impact effects by surface) is checked by tests and rendered frames, not yet by a person playing. Tune in `data/weapons/*.tres` and `data/surfaces/surface_table.tres`. Impact sounds are still the one generic world sound for every surface; per-surface sounds need recordings.
 - Not built yet: pickups for ammo and weapons, a weapon-select wheel, throwables.
 
+## Weapon and arms rigs: what is done and what is left
+
+Goal: every weapon has its own rig (the first-person arms and the weapon in one Blender armature, clips keyed in Blender, exported to a GLB) instead of arms retargeted from the M4 pack and clips keyed in GDScript. Design and how to edit: `docs/superpowers/specs/2026-11-17-pistol-arms-rig-design.md`, `content/weapons/README.md`. The Blender scripts run headless (`tools/blender/`); CI has no Blender, so `pistol_rig.py check` is run by hand.
+
+| Component | State | What is left |
+|---|---|---|
+| Arms model (`content/characters/fps_arms/fps_arms.glb`, DJMaesen) | Shared, unchanged. The rifle uses it through `FpsArms`; the pistol rig is built from a copy of it (`tools/blender/arms_rig.py`) | Sleeves are the model's black (retexture to the agent's camouflage); the hands read large in the pistol rig (scaling them is not done: do it in `arms_rig.py` or the grip pose) |
+| `tools/blender/arms_rig.py` | Done: import, metres, straighten bones, IK and control bones, follow switch, hand and finger posing | Reused as is by the next weapon. Do not pre-generalise `pistol_rig.py`; when the second weapon is built, move what it shares (island classification, gun-bone factory, key and action helpers, `check`, `preview`, `export`) into a common module |
+| Pistol (PR #42) | Rig, five clips, Godot viewmodel, body copy, tests, licences | Needs a playtest. Grip pose gaps: hands somewhat large, left hand beside the right (not over it), thumbs not clearly forward, muzzle not tilted up, forearms cross in the top view. Clip gaps: held spare magazine tilted about 35 degrees, hammer and trigger travel small, fingers slightly clip the slide in Reload_Empty, forearm untuned in the reload, Draw starts shallower than planned. ADS offset is derived from the muzzle, not yet judged by eye |
+| M4A1 Custom rifle | Still on the M4 pack rig, the pack's clips and the `FpsArms` retarget | Its own rig from `m4a1_custom_parts.glb`: bones for body, magazine, spare magazine, charging handle or bolt, trigger, selector, optic; the left hand on the handguard (today `LeftHandHold`); clips Idle, Draw, Fire, Reload, Reload_Empty (names and times in `data/weapons/rifle_*.tres`); suppressor and muzzle brake kept as parts toggled by `show_suppressor`; the scope lens and its second camera rechecked (tests `test_m4a1_custom_viewmodel.gd`, ADS lens on the crosshair); body copy; the licence (CC-BY-NC-4.0) still has to be replaced before a commercial release |
+| Knife | Static model in the M4 pack's right fist (`HandsRig`), clips keyed in code (`clip_builder.gd`) | Its own rig (arms and knife): clips Draw, Idle, Fire (quick slash) and Fire_Alt (heavy thrust); left arm hidden or placed; the `melee_*` numbers stay in `data/weapons/knife.tres` |
+| `PlayerBody.attach_guns` (shadow and other-camera copy of each weapon) | Handles the pistol rig: hides meshes in the group `first_person_arms`, falls back to the wrist bones `R_wrist_025` and `L_wrist_03` | Each new rig puts its arms mesh in the group `first_person_arms` (as `pistol_viewmodel.gd` does) and has those wrist bones; generalise the bone lookup when the second rig lands |
+| Old pieces to remove | Still used by the rifle and knife | Only after all three weapons have their own rig: `FpsArms` (`game/player/fps_arms.gd`, `fps_arms_rules.gd`, `fps_arms_settings.gd`, `data/player/fps_arms.tres`), `content/weapons/hands_rig.gd`, `clip_builder.gd`, the M4 pack (`content/weapons/m4/`, its `content/LICENSES.md` row) and the tests `test_fps_arms.gd`, `test_fps_arms_rules.gd` |
+
+Checklist for each new weapon rig, in order: split the model into parts (named for what they are); write the bone and island rules in a `<weapon>_rig.py` with an expected vertex count per bone; `build`, then pose the grip against a reference image; `clips`, then tune and `check`; `export`; the viewmodel scene and script (textures by material name, a `Muzzle` node following the muzzle bone, arms mesh in the group `first_person_arms`); a scenario test like `test_pistol_viewmodel.gd`; hip and ADS offsets from the measured muzzle; the body copy; licence rows (`content/LICENSES.md`, `REUSE.toml`); this table and `content/weapons/README.md`.
+
 ## Next steps, in order
 
 1. Run the Windows checklist above and report back.
 2. Tune presets from the benchmark numbers; add results under `docs/benchmarks/`.
-3. Fix bugs and tuning items from the playtest; keep the detection log.
+3. Fix bugs and tuning items from the playtest; keep the detection log. This includes playing the pistol rig (PR #42) and then moving the rifle and the knife to their own rigs (see "Weapon and arms rigs").
 4. Second playtest at least 3 days after the first (acceptance #20).
 5. WP12b: decide the art route (Blender by hand, CC0 packs, or stay with placeholders for now), then build the hero area within the §17.3 budgets.
 6. When every acceptance row is green, tag Milestone 1 and recruit 1 or 2 outside testers.

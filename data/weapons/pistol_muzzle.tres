@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
-[ext_resource type="PackedScene" path="res://content/weapons/pistol/pistol_viewmodel.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://content/weapons/pistol/ref/pistol_ref_viewmodel.tscn" id="2_view"]
 
 [resource]
 script = ExtResource("1_def")
@@ -36,7 +36,7 @@ dry_fire_sound = &"pistol_dry"
 flash_exposure = 1.0
 viewmodel_scene = ExtResource("2_view")
 viewmodel_hip_position = Vector3(0, 0, 0)
-viewmodel_ads_position = Vector3(-0.025015, 0.048275, -0.02)
+viewmodel_ads_position = Vector3(-0.1265, 0.1035, 0.08)
 recoil_kick_back_m = 0.015
 recoil_kick_up_m = 0.003
 recoil_kick_pitch_deg = 4.0

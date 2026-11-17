@@ -111,3 +111,9 @@ path = ["content/weapons/pistol/rig/**", "content/weapons/pistol/pistol_viewmode
 precedence = "override"
 SPDX-FileCopyrightText = ["DJMaesen (Sketchfab)", "TORI106 (Sketchfab)"]
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["content/weapons/pistol/ref/pistol_ref_viewmodel.glb", "content/weapons/pistol/ref/pistol_ref_viewmodel.glb.import"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (Blender tutorial file '4.7 Creating the Reload Animation')"
+SPDX-License-Identifier = "LicenseRef-Reference-rig-unknown"

@@ -1,0 +1,5 @@
+Low-poly first-person arms, pistol and rig from a Blender tutorial file named "4.7_Creating_the_Reload_Animation.blend",
+supplied by the project developer as a reference. The author and the licence terms are NOT known.
+
+It is used only as a test viewmodel (content/weapons/pistol/ref/). Find the author and the terms, then either replace
+this file with the real licence text or a plain SPDX identifier, or replace the model, before any public release.

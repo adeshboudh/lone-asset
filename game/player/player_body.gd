@@ -118,6 +118,11 @@ func attach_guns(weapons: Array[Weapon]) -> void:
 				gun.right_hand = gun.skeleton.find_bone("R_wrist_025")
 			if gun.left_hand < 0:
 				gun.left_hand = gun.skeleton.find_bone("L_wrist_03")
+			# The reference pistol rig (a test model) names them hand_R and hand_L.
+			if gun.right_hand < 0:
+				gun.right_hand = gun.skeleton.find_bone("hand_R")
+			if gun.left_hand < 0:
+				gun.left_hand = gun.skeleton.find_bone("hand_L")
 		gun.animation = gun.node.find_child("AnimationPlayer", true, false) as AnimationPlayer
 		gun.node.visible = false
 		_guns[weapon] = gun

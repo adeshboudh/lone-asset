@@ -1,7 +1,14 @@
 extends GdUnitTestSuite
-## The pistol viewmodel: its own two-handed arms rig (pistol_viewmodel.glb), not the M4 pack's arms.
+## The pistol's own Blender rig (pistol_viewmodel.glb, built by tools/blender/pistol_rig.py), not the M4 pack's arms.
+## The weapon files currently use the reference test model instead (see test_pistol_ref_viewmodel.gd); this suite
+## keeps this rig working so it can be switched back to.
 
 const PISTOL: WeaponDefinition = preload("res://data/weapons/pistol_muzzle.tres")
+const VIEWMODEL: PackedScene = preload("res://content/weapons/pistol/pistol_viewmodel.tscn")
+const ADS_POSITION := Vector3(-0.025015, 0.0353, -0.02)
+# This rig's clips were built for these reload times; the weapon files now use the slower reference model's.
+const RELOAD_TIME := 1.5
+const RELOAD_TIME_EMPTY := 1.9
 const GUN_BONES: Array[StringName] = [&"gun_root", &"gun_slide", &"gun_mag", &"gun_mag_spare", &"gun_trigger",
 		&"gun_hammer", &"gun_muzzle"]
 const ARM_BONES: Array[StringName] = [&"L_arm_01", &"L_wrist_03", &"L_middle4_014", &"R_arm_023", &"R_wrist_025",
@@ -13,7 +20,7 @@ var _player: AnimationPlayer
 
 
 func before_test() -> void:
-	_viewmodel = auto_free(PISTOL.viewmodel_scene.instantiate())
+	_viewmodel = auto_free(VIEWMODEL.instantiate())
 	add_child(_viewmodel)
 	await await_idle_frame()
 	_skeleton = _viewmodel.find_child("Skeleton3D", true, false) as Skeleton3D
@@ -37,8 +44,8 @@ func test_the_clips_the_definition_names_exist_and_idle_loops() -> void:
 			PISTOL.anim_reload_empty]:
 		assert_bool(_player.has_animation(animation)).is_true()
 	assert_int(_player.get_animation(PISTOL.anim_idle).loop_mode).is_equal(Animation.LOOP_LINEAR)
-	assert_float(_player.get_animation(PISTOL.anim_reload).length).is_equal_approx(PISTOL.reload_time, 0.05)
-	assert_float(_player.get_animation(PISTOL.anim_reload_empty).length).is_equal_approx(PISTOL.reload_time_empty, 0.05)
+	assert_float(_player.get_animation(PISTOL.anim_reload).length).is_equal_approx(RELOAD_TIME, 0.05)
+	assert_float(_player.get_animation(PISTOL.anim_reload_empty).length).is_equal_approx(RELOAD_TIME_EMPTY, 0.05)
 
 
 func test_the_muzzle_is_ahead_of_the_camera_and_follows_the_muzzle_bone() -> void:
@@ -72,16 +79,16 @@ func test_the_spare_magazine_is_hidden_until_the_reload_brings_it() -> void:
 	_player.seek(0.7, true)
 	_player.pause()
 	assert_float(_skeleton.get_bone_pose_scale(spare).x).is_greater(0.9)
-	_player.seek(PISTOL.reload_time, true)
+	_player.seek(RELOAD_TIME, true)
 	assert_float(_skeleton.get_bone_pose_scale(spare).x).is_less(0.01)
 
 
 func test_aimed_the_muzzle_is_on_the_crosshair_line() -> void:
 	var camera: Camera3D = auto_free(Camera3D.new())
 	add_child(camera)
-	var viewmodel: Node3D = PISTOL.viewmodel_scene.instantiate()
+	var viewmodel: Node3D = VIEWMODEL.instantiate()
 	camera.add_child(viewmodel)
-	viewmodel.position = PISTOL.viewmodel_ads_position
+	viewmodel.position = ADS_POSITION
 	await await_idle_frame()
 	await await_idle_frame()
 	var muzzle: Vector3 = (viewmodel.get_node("Muzzle") as Node3D).global_position

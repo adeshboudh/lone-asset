@@ -46,6 +46,8 @@ func _apply_materials(model: Node) -> void:
 			var wanted: Material = by_name.get(StringName(mesh.mesh.surface_get_material(surface).resource_name)) as Material
 			if wanted != null:
 				mesh.set_surface_override_material(surface, wanted)
+			if wanted == by_name[&"arms"]:
+				mesh.add_to_group(&"first_person_arms")
 
 
 ## The arms' own material, as the fps arms model imports it.

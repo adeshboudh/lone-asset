@@ -23,7 +23,7 @@ func before_test() -> void:
 func test_the_skeleton_has_the_arm_and_gun_bones_and_no_control_bones() -> void:
 	for bone: StringName in GUN_BONES + ARM_BONES:
 		assert_int(_skeleton.find_bone(bone)).is_greater_equal(0)
-	for bone: StringName in [&"ctl_gun", &"ctl_hand_L", &"ctl_hand_R", &"pole_elbow_L", &"pole_elbow_R"]:
+	for bone: StringName in [&"ctl_gun", &"ctl_mag_hold", &"ctl_hand_L", &"ctl_hand_R", &"pole_elbow_L", &"pole_elbow_R"]:
 		assert_int(_skeleton.find_bone(bone)).is_equal(-1)
 
 
@@ -58,7 +58,8 @@ func test_every_mesh_is_on_the_viewmodel_layer_with_the_textures_on() -> void:
 	for node: Node in _viewmodel.find_children("*", "MeshInstance3D", true, false):
 		var mesh: MeshInstance3D = node as MeshInstance3D
 		assert_int(mesh.layers).is_equal(FpsArms.LAYER)
-		assert_object(mesh.get_surface_override_material(0)).is_not_null()
+		for surface: int in mesh.mesh.get_surface_count():
+			assert_object(mesh.get_surface_override_material(surface)).is_not_null()
 
 
 func test_the_spare_magazine_is_hidden_until_the_reload_brings_it() -> void:

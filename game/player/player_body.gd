@@ -106,13 +106,18 @@ func attach_guns(weapons: Array[Weapon]) -> void:
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 			instance.layers = HIDDEN_LAYER
 			# The first-person arms are replaced by the body's own.
-			if instance.name == &"Hand_Mesh":
+			if instance.name == &"Hand_Mesh" or instance.is_in_group(&"first_person_arms"):
 				instance.visible = false
 		var skeletons: Array[Node] = gun.node.find_children("*", "Skeleton3D", true, false)
 		if not skeletons.is_empty():
 			gun.skeleton = skeletons[0] as Skeleton3D
 			gun.right_hand = gun.skeleton.find_bone("RightHand")
 			gun.left_hand = gun.skeleton.find_bone("LeftHand")
+			# The pistol's own two-handed rig names its wrists differently.
+			if gun.right_hand < 0:
+				gun.right_hand = gun.skeleton.find_bone("R_wrist_025")
+			if gun.left_hand < 0:
+				gun.left_hand = gun.skeleton.find_bone("L_wrist_03")
 		gun.animation = gun.node.find_child("AnimationPlayer", true, false) as AnimationPlayer
 		gun.node.visible = false
 		_guns[weapon] = gun

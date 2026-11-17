@@ -23,7 +23,8 @@ func before_test() -> void:
 
 ## A weapon with its own arms rig (the pistol) animates its arms directly and gets no FpsArms.
 func _has_own_rig(weapon: Weapon) -> bool:
-	return weapon.viewmodel.find_child("PistolRig", true, false) != null
+	var skeleton: Skeleton3D = weapon.viewmodel.find_child("Skeleton3D", true, false) as Skeleton3D
+	return skeleton != null and skeleton.find_bone(&"gun_root") >= 0
 
 
 func _arms(weapon: Weapon) -> FpsArms:

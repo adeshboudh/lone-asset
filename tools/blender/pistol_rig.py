@@ -391,15 +391,14 @@ def make_clips() -> None:
         sys.exit("the file already has clips; clips refuses to overwrite keyed work. Pass --force to regenerate.")
     for act in list(bpy.data.actions):
         bpy.data.actions.remove(act)
-    gun = (lambda loc, rot: (loc, rot))
-    make_action(arm, "Idle", 180, [key(1), key(90, gun=gun((0.0, 0.0, 0.002), (0.4, 0.0, 0.0))), key(180)], loop=True)
-    make_action(arm, "Draw", 27, [key(1, gun=gun((0.0, -0.02, -0.07), (-20.0, 0.0, 0.0))),
-                                  key(17, gun=gun((0.0, 0.01, 0.012), (4.0, 0.0, 0.0))), key(27)])
+    make_action(arm, "Idle", 180, [key(1), key(90, gun=((0.0, 0.0, 0.002), (0.4, 0.0, 0.0))), key(180)], loop=True)
+    make_action(arm, "Draw", 27, [key(1, gun=((0.0, -0.02, -0.07), (-20.0, 0.0, 0.0))),
+                                  key(17, gun=((0.0, 0.01, 0.012), (4.0, 0.0, 0.0))), key(27)])
     make_action(arm, "Fire", 6, [
         key(1),
-        key(2, gun=gun((0.0, -0.018, 0.004), (5.0, 0.0, 0.0)), slide=-0.022, hammer=35.0, trigger=-14.0),
-        key(3, gun=gun((0.0, -0.020, 0.005), (6.0, 0.0, 0.0)), slide=-0.026, hammer=35.0, trigger=-14.0),
-        key(4, gun=gun((0.0, -0.010, 0.002), (3.0, 0.0, 0.0)), slide=-0.012, trigger=-6.0),
+        key(2, gun=((0.0, -0.018, 0.004), (5.0, 0.0, 0.0)), slide=-0.022, hammer=35.0, trigger=-14.0),
+        key(3, gun=((0.0, -0.020, 0.005), (6.0, 0.0, 0.0)), slide=-0.026, hammer=35.0, trigger=-14.0),
+        key(4, gun=((0.0, -0.010, 0.002), (3.0, 0.0, 0.0)), slide=-0.012, trigger=-6.0),
         key(6)])
     make_action(arm, "Reload", 90, reload_keys(False))
     make_action(arm, "Reload_Empty", 114, reload_keys(True))
@@ -466,6 +465,8 @@ def check() -> None:
         fail("a mesh is larger than 2 m (units not converted)")
     if bpy.data.actions:
         check_clips(arm)
+    else:
+        print("no clips: clip checks skipped")
     print("CHECK OK")
 
 
@@ -583,4 +584,8 @@ def verify_glb() -> None:
     print("EXPORT VERIFIED", len(names), "joints", exported)
 
 
-{"build": build, "clips": make_clips, "check": check, "preview": preview, "export": export}[ARGS[0]]()
+MODES = {"build": build, "clips": make_clips, "check": check, "preview": preview, "export": export}
+if not ARGS or ARGS[0] not in MODES:
+    print("usage: blender -b --factory-startup --python pistol_rig.py -- {" + "|".join(MODES) + "}")
+    sys.exit(1)
+MODES[ARGS[0]]()

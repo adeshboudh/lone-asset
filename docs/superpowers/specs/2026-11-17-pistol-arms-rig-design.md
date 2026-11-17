@@ -1,6 +1,6 @@
 # Pistol arms rig (arms and weapon in one rig)
 
-Status: design, awaiting review. Date: 2026-11-17.
+Status: implemented on feat/pistol-arms-rig (see Changes made while planning at the end, which supersede details above). Date: 2026-11-17.
 
 ## Goal
 
@@ -31,7 +31,7 @@ One armature, `PistolRig`:
 
 | Kind | Bones | Exported |
 |---|---|---|
-| Arm deform | the 46 arm bones of `fps_arms.glb`, unchanged | yes |
+| Arm deform | the 47 arm-model deform bones (the 47 joints of `fps_arms.glb` including `_rootJoint`; with the 7 gun bones, 54 joints in the GLB), unchanged | yes |
 | Pistol deform | `gun_root`, `gun_slide`, `gun_mag`, `gun_mag_spare`, `gun_trigger`, `gun_hammer`, `gun_muzzle` (marker) | yes |
 | Control | `ctl_gun`, `ctl_hand_R`, `ctl_hand_L`, `pole_elbow_R`, `pole_elbow_L` | no |
 

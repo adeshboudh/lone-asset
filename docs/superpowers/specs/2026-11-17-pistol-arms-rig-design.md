@@ -110,3 +110,12 @@ Own branch off `dev` and own PR into `dev`. Update `docs/handoff.md`, `docs/acce
 - Original skin weights may deform badly at the wrist or elbow under IK. Weights are fixed in the `.blend` before keying.
 - Imported materials may need a fix in Godot (covered by the material step).
 - The Blender MCP can drop; the script and `preview` mode are the fallback.
+
+## Changes made while planning (2026-11-17)
+
+- The `.blend` lives in `content/weapons/pistol/rig/` (with a `.gdignore`), not in `source/`, so its licence entry can credit both authors and Godot does not try to import it. The `.blend` is 0.6 MB and the GLB 0.9 MB, so storage is not a concern. The GLB has no textures; Godot puts them on by material name.
+- Extra control bone `ctl_mag_hold` (child of `ctl_hand_L`): the spare magazine copies it while the left hand holds the magazine. Both hands have a follow switch (`L_follows_gun`, `R_follows_gun`).
+- `pistol_rig.py` also has the modes `clips` (writes the five actions from key tables; refuses to overwrite without `--force`) and `check` (structure, vertex counts, and that each clip ends on the rest pose, starts on it except Draw, and that the spare magazine does not jump when it leaves the hand). `export` reads the GLB back and verifies it.
+- The scene turns the model half a turn about Y (glTF faces +Z). `Muzzle` is a plain `Node3D`, a direct child of the viewmodel root where `Weapon` looks for it, that follows the `gun_muzzle` bone; a `BoneAttachment3D` cannot sit there.
+- Idle loops through `Animation.loop_mode` set in the script (the importer does not loop it); clips run at 60 fps in the `.blend`; Draw starts with the gun lowered, so only its end is the rest pose.
+- Hip offset becomes zero; the ADS offset comes from the muzzle position. `test_fps_arms.gd` skips weapons that have their own rig.

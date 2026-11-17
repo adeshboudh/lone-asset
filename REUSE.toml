@@ -105,3 +105,9 @@ path = ["content/characters/fps_arms/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "DJMaesen (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["content/weapons/pistol/rig/**", "content/weapons/pistol/pistol_viewmodel.glb", "content/weapons/pistol/pistol_viewmodel.glb.import"]
+precedence = "override"
+SPDX-FileCopyrightText = ["DJMaesen (Sketchfab)", "TORI106 (Sketchfab)"]
+SPDX-License-Identifier = "CC-BY-4.0"

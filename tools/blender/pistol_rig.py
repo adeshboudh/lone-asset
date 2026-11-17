@@ -34,15 +34,15 @@ ARMS_OFFSET = Vector((0.0, -0.303, -0.48))
 POLE_OFFSET = Vector((0.10, 0.25, -0.30))
 MODEL_SCALE = 0.08  # the pistol model is 2.4 units long, a 9mm pistol is about 0.19 m
 MODEL_YAW = math.pi / 2  # turns the model muzzle (-X) to point along -Y
-GUN_REST = Vector((0.015, -0.40, -0.17))  # the grip centre, camera space
+GUN_REST = Vector((-0.025, -0.23, -0.105))  # the grip centre, camera space
 
 # Starting values for the two-handed grip; tuned against the reference image (see the plan, task 2).
 GRIP_POSE = {
-    "R": {"head": Vector((-0.030, -0.370, -0.200)), "turn": (0.0, 0.0, 0.0)},
-    "L": {"head": Vector((0.045, -0.360, -0.220)), "turn": (0.0, 0.0, 0.0)},
+    "R": {"head": Vector((-0.045, -0.170, -0.130)), "turn": (-5.0, -60.0, 0.0)},
+    "L": {"head": Vector((0.005, -0.165, -0.138)), "turn": (-5.0, 60.0, 0.0)},
 }
-GRIP_CURL = {"thumb": (10.0, 10.0, 10.0, 0.0), "point": (60.0, 70.0, 50.0, 0.0), "middle": (65.0, 75.0, 55.0, 0.0),
-             "ring": (70.0, 80.0, 55.0, 0.0), "pink": (75.0, 85.0, 55.0, 0.0)}
+GRIP_CURL = {"thumb": (-10.0, -10.0, -10.0, 0.0), "point": (-60.0, -70.0, -50.0, 0.0), "middle": (-65.0, -75.0, -55.0, 0.0),
+             "ring": (-70.0, -80.0, -55.0, 0.0), "pink": (-75.0, -85.0, -55.0, 0.0)}
 
 GUN_BONES = ("gun_root", "gun_slide", "gun_mag", "gun_mag_spare", "gun_trigger", "gun_hammer", "gun_muzzle")
 CONTROL_BONES = ("ctl_gun", "ctl_hand_L", "ctl_hand_R", "pole_elbow_L", "pole_elbow_R", "ctl_mag_hold")

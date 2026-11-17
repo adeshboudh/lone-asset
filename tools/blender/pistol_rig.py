@@ -399,7 +399,7 @@ def make_clips() -> None:
         key(1),
         key(2, gun=gun((0.0, -0.018, 0.004), (5.0, 0.0, 0.0)), slide=-0.022, hammer=35.0, trigger=-14.0),
         key(3, gun=gun((0.0, -0.020, 0.005), (6.0, 0.0, 0.0)), slide=-0.026, hammer=35.0, trigger=-14.0),
-        key(4, gun=gun((0.0, -0.010, 0.002), (3.0, 0.0, 0.0)), slide=-0.012, trigger=6.0),
+        key(4, gun=gun((0.0, -0.010, 0.002), (3.0, 0.0, 0.0)), slide=-0.012, trigger=-6.0),
         key(6)])
     make_action(arm, "Reload", 90, reload_keys(False))
     make_action(arm, "Reload_Empty", 114, reload_keys(True))

@@ -1,6 +1,7 @@
 """Builds, checks, previews and exports the first-person pistol rig (arms and pistol in one armature).
 
   blender -b --python tools/blender/pistol_rig.py -- build [--force]
+  blender -b --python tools/blender/pistol_rig.py -- clips [--force]
   blender -b --python tools/blender/pistol_rig.py -- check
   blender -b --python tools/blender/pistol_rig.py -- preview OUT.png [--view eye|side|top] [--action NAME] [--frame N]
   blender -b --python tools/blender/pistol_rig.py -- export
@@ -50,6 +51,10 @@ CONTROL_BONES = ("ctl_gun", "ctl_hand_L", "ctl_hand_R", "pole_elbow_L", "pole_el
 EXPECTED_VERTS = {"gun_slide": 804, "gun_hammer": 104, "gun_trigger": 126, "gun_mag": 113}
 
 FPS = 60
+HIDDEN = 0.001  # a bone scale that hides a part (0 would make the skin matrix singular)
+OPEN_CURL = {"thumb": (0.0, 0.0, 0.0, 0.0), "point": (15.0, 15.0, 10.0, 0.0), "middle": (15.0, 15.0, 10.0, 0.0),
+             "ring": (15.0, 15.0, 10.0, 0.0), "pink": (15.0, 15.0, 10.0, 0.0)}
+
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 
 
@@ -264,6 +269,146 @@ def build() -> None:
     print("BUILD OK", BLEND)
 
 
+# ---------------------------------------------------------------- clips
+
+def key(frame: int, **spec):
+    """One key of a clip. spec (all optional; a missing entry is the rest pose, so every key is complete):
+    gun=(loc, rot_deg)  ctl_gun, bone axes X left, Y forward, Z up; rotation about X pitches the muzzle up
+    slide=m             slide travel along Y (negative is back)       hammer=deg  trigger=deg  (about X)
+    mag=(x, y, z)       old magazine offset                           mag_scale=1.0 or HIDDEN
+    spare=(x, y, z)     spare magazine offset                         spare_scale=1.0 or HIDDEN
+    hold=0..1           spare magazine rides the left hand (1) or the gun (0)
+    R=(head, turn_deg) / L=(head, turn_deg)   wrist control as if the gun were at rest (camera space, metres)
+    follow_R / follow_L  0..1   hand control rides the gun (1) or is free (0)
+    curl_R / curl_L      0 open hand .. 1 grip"""
+    return frame, spec
+
+
+def _bone_values(pb, location=None, rotation_deg=None, scale=None) -> None:
+    pb.rotation_mode = "XYZ"
+    pb.location = location if location is not None else (0.0, 0.0, 0.0)
+    pb.rotation_euler = Euler([math.radians(a) for a in (rotation_deg or (0.0, 0.0, 0.0))], "XYZ")
+    pb.scale = (scale, scale, scale) if scale is not None else (1.0, 1.0, 1.0)
+
+
+def pose_key(arm, frame: int, spec: dict) -> None:
+    """Poses every animated channel for one key and keyframes it. The hands are placed with the gun at rest, then the
+    gun moves, so a hand that follows the gun keeps its place on the grip."""
+    bones = arm.pose.bones
+    _bone_values(bones["ctl_gun"])
+    bpy.context.view_layer.update()
+    for side in arms_rig.SIDES:
+        head, turn = spec.get(side, (GRIP_POSE[side]["head"], GRIP_POSE[side]["turn"]))
+        arms_rig.place_bone(arm, f"ctl_hand_{side}", head, turn)
+        t = spec.get(f"curl_{side}", 1.0)
+        curls = {f: tuple(o + (g - o) * t for o, g in zip(OPEN_CURL[f], GRIP_CURL[f])) for f in GRIP_CURL}
+        arms_rig.set_finger_curl(arm, side, curls)
+        arm[f"{side}_follows_gun"] = spec.get(f"follow_{side}", 1.0)
+    gun_loc, gun_rot = spec.get("gun", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)))
+    _bone_values(bones["ctl_gun"], gun_loc, gun_rot)
+    _bone_values(bones["gun_slide"], (0.0, spec.get("slide", 0.0), 0.0))
+    _bone_values(bones["gun_hammer"], None, (spec.get("hammer", 0.0), 0.0, 0.0))
+    _bone_values(bones["gun_trigger"], None, (spec.get("trigger", 0.0), 0.0, 0.0))
+    _bone_values(bones["gun_mag"], spec.get("mag"), None, spec.get("mag_scale", 1.0))
+    _bone_values(bones["gun_mag_spare"], spec.get("spare"), None, spec.get("spare_scale", HIDDEN))
+    hold = bones["gun_mag_spare"].constraints["Held in the left hand"]
+    hold.influence = spec.get("hold", 0.0)
+    bpy.context.view_layer.update()
+    for name in ("ctl_gun", "gun_slide", "gun_hammer", "gun_trigger", "gun_mag", "gun_mag_spare"):
+        bones[name].keyframe_insert("location", frame=frame)
+        bones[name].keyframe_insert("rotation_euler", frame=frame)
+        bones[name].keyframe_insert("scale", frame=frame)
+    for side in arms_rig.SIDES:
+        bones[f"ctl_hand_{side}"].keyframe_insert("location", frame=frame)
+        bones[f"ctl_hand_{side}"].keyframe_insert("rotation_quaternion", frame=frame)
+        arm.keyframe_insert(f'["{side}_follows_gun"]', frame=frame)
+    for pb in bones:
+        m = arms_rig.FINGER.match(pb.name)
+        if m:
+            pb.keyframe_insert("rotation_euler", frame=frame)
+    hold.keyframe_insert("influence", frame=frame)
+
+
+def make_action(arm, name: str, length: int, keys, loop: bool = False):
+    act = bpy.data.actions.new(name)
+    act.use_fake_user = True
+    arm.animation_data_create().action = act
+    for frame, spec in keys:
+        pose_key(arm, frame, spec)
+    act.use_frame_range = True
+    act.frame_start, act.frame_end = 1, length
+    act.use_cyclic = loop
+    return act
+
+
+# Lengths follow data/weapons/pistol_*.tres (reload 1.5 s, empty 1.9 s); the game stretches a clip to those times.
+# First-pass numbers, tuned in the viewport (plan, task 4). The pouch is where the spare magazine starts, low and left.
+# The hand is pitched up 70 degrees so the magazine (6 cm ahead of the wrist, see ctl_mag_hold) sits above the wrist;
+# BELOW_WELL puts it 4 cm under the magazine well.
+POUCH = (Vector((0.10, -0.17, -0.30)), (-70.0, 0.0, 0.0))
+BELOW_WELL = (Vector((-0.019, -0.185, -0.201)), (-70.0, 0.0, 0.0))
+SLIDE_GRIP = (Vector((0.0, -0.20, -0.07)), (0.0, 0.0, 0.0))
+
+
+def reload_keys(empty: bool):
+    keys = [
+        key(1),
+        key(8, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0))),
+        key(14, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0),
+        key(22, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0, L=BELOW_WELL, curl_L=0.2),
+        key(32, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0, L=POUCH, curl_L=0.2,
+            mag=((0.0, 0.0, -0.20)), mag_scale=1.0),
+        key(33, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0, L=POUCH, curl_L=0.6,
+            mag=((0.0, 0.0, -0.20)), mag_scale=HIDDEN, spare_scale=HIDDEN, hold=1.0),
+        key(34, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0, L=POUCH, curl_L=0.6,
+            mag_scale=HIDDEN, spare_scale=1.0, hold=1.0),
+        key(54, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0, L=BELOW_WELL, curl_L=0.6,
+            mag_scale=HIDDEN, spare_scale=1.0, hold=1.0),
+        key(56, gun=((0.006, 0.0, 0.0), (0.0, 8.0, 0.0)), follow_L=0.0, L=BELOW_WELL, curl_L=0.6,
+            mag_scale=HIDDEN, spare=((0.0, 0.0, -0.04)), spare_scale=1.0, hold=0.0),
+        key(62, gun=((0.006, 0.0, 0.003), (0.0, 6.0, 0.0)), follow_L=0.0, L=BELOW_WELL, curl_L=0.6,
+            mag_scale=HIDDEN, spare_scale=1.0, hold=0.0),
+        key(63, gun=((0.006, 0.0, 0.003), (0.0, 6.0, 0.0)), follow_L=0.0, L=BELOW_WELL, curl_L=0.6,
+            mag_scale=1.0, spare_scale=HIDDEN, hold=0.0),
+        key(72, follow_L=1.0, curl_L=1.0),
+    ]
+    if not empty:
+        return keys + [key(90)]
+    return keys[:-1] + [
+        key(72, follow_L=0.0, L=SLIDE_GRIP, curl_L=0.5),
+        key(80, follow_L=0.0, L=(SLIDE_GRIP[0] + Vector((0.0, 0.026, 0.0)), (0.0, 0.0, 0.0)), curl_L=0.5, slide=-0.026),
+        key(84, follow_L=0.0, L=(SLIDE_GRIP[0] + Vector((0.0, 0.026, 0.0)), (0.0, 0.0, 0.0)), curl_L=0.5, slide=-0.026),
+        key(86, follow_L=0.0, L=SLIDE_GRIP, curl_L=0.4, slide=0.0),
+        key(100, follow_L=1.0, curl_L=1.0),
+        key(114),
+    ]
+
+
+def make_clips() -> None:
+    bpy.ops.wm.open_mainfile(filepath=BLEND)
+    arm = bpy.data.objects["PistolRig"]
+    if bpy.data.actions and "--force" not in ARGS:
+        sys.exit("the file already has clips; clips refuses to overwrite keyed work. Pass --force to regenerate.")
+    for act in list(bpy.data.actions):
+        bpy.data.actions.remove(act)
+    gun = (lambda loc, rot: (loc, rot))
+    make_action(arm, "Idle", 180, [key(1), key(90, gun=gun((0.0, 0.0, 0.002), (0.4, 0.0, 0.0))), key(180)], loop=True)
+    make_action(arm, "Draw", 27, [key(1, gun=gun((0.0, -0.02, -0.07), (-20.0, 0.0, 0.0))),
+                                  key(17, gun=gun((0.0, 0.01, 0.012), (4.0, 0.0, 0.0))), key(27)])
+    make_action(arm, "Fire", 6, [
+        key(1),
+        key(2, gun=gun((0.0, -0.018, 0.004), (5.0, 0.0, 0.0)), slide=-0.022, hammer=35.0, trigger=-14.0),
+        key(3, gun=gun((0.0, -0.020, 0.005), (6.0, 0.0, 0.0)), slide=-0.026, hammer=35.0, trigger=-14.0),
+        key(4, gun=gun((0.0, -0.010, 0.002), (3.0, 0.0, 0.0)), slide=-0.012, trigger=6.0),
+        key(6)])
+    make_action(arm, "Reload", 90, reload_keys(False))
+    make_action(arm, "Reload_Empty", 114, reload_keys(True))
+    arm.animation_data.action = bpy.data.actions["Idle"]
+    bpy.context.scene.frame_set(1)
+    save_blend()
+    print("CLIPS OK", [a.name for a in bpy.data.actions])
+
+
 # ---------------------------------------------------------------- check, preview, export
 
 def fail(message: str) -> None:
@@ -319,7 +464,45 @@ def check() -> None:
         fail("images left in the file (textures are applied in Godot)")
     if any(o.type == "MESH" and o.dimensions.length > 2.0 for o in bpy.data.objects):
         fail("a mesh is larger than 2 m (units not converted)")
+    if bpy.data.actions:
+        check_clips(arm)
     print("CHECK OK")
+
+
+CLIPS = ("Idle", "Draw", "Fire", "Reload", "Reload_Empty")
+TRACKED = ("gun_root", "gun_slide", "gun_hammer", "gun_trigger", "gun_mag", "gun_mag_spare", "ctl_hand_L", "ctl_hand_R",
+           "L_middle4_014", "R_middle4_037", "L_thumb4_07", "R_thumb4_029")
+
+
+def snapshot(arm, action, frame: int):
+    arm.animation_data_create().action = action
+    bpy.context.scene.frame_set(frame)
+    bpy.context.view_layer.update()
+    return {n: (arm.matrix_world @ arm.pose.bones[n].head, arm.pose.bones[n].scale[0]) for n in TRACKED}
+
+
+def check_clips(arm) -> None:
+    """Every clip exists, ends on the rest pose (and starts on it, except Draw), and the spare magazine does not jump when it leaves the hand."""
+    for name in CLIPS:
+        if name not in bpy.data.actions:
+            fail(f"clip {name} missing")
+    rest = snapshot(arm, bpy.data.actions["Idle"], 1)
+    for name in CLIPS:
+        act = bpy.data.actions[name]
+        ends = {"end": snapshot(arm, act, int(act.frame_end))}
+        if name != "Draw":  # Draw starts with the gun lowered
+            ends["start"] = snapshot(arm, act, 1)
+        for where, pose in ends.items():
+            for bone in TRACKED:
+                gap = (pose[bone][0] - rest[bone][0]).length
+                if gap > 0.002 or abs(pose[bone][1] - rest[bone][1]) > 0.01:
+                    fail(f"{name}: {bone} is {gap:.4f} m from the rest pose at the {where}")
+    for name in ("Reload", "Reload_Empty"):
+        act = bpy.data.actions[name]
+        before, after = snapshot(arm, act, 54), snapshot(arm, act, 56)
+        jump = (before["gun_mag_spare"][0] - after["gun_mag_spare"][0]).length
+        if jump > 0.05:
+            fail(f"{name}: the spare magazine jumps {jump:.3f} m when it leaves the hand")
 
 
 def preview() -> None:
@@ -400,4 +583,4 @@ def verify_glb() -> None:
     print("EXPORT VERIFIED", len(names), "joints", exported)
 
 
-{"build": build, "check": check, "preview": preview, "export": export}[ARGS[0]]()
+{"build": build, "clips": make_clips, "check": check, "preview": preview, "export": export}[ARGS[0]]()

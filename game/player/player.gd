@@ -145,7 +145,7 @@ func set_scripted_intent(intent: InputIntent) -> void:
 
 
 func _process(delta: float) -> void:
-	var aim_fov: float = lerpf(_base_fov, _weapon.definition.ads_fov, smoothstep(0.0, 1.0, _weapon.aim_blend))
+	var aim_fov: float = lerpf(_base_fov, _weapon.definition.ads_fov, clampf(_weapon.visual_aim, 0.0, 1.0))
 	aim_fov = lerpf(aim_fov, BinocularsRules.fov_for_zoom(_base_fov, _binoculars.zoom), smoothstep(0.0, 1.0, _binoculars.raise_blend))
 	_camera.fov = aim_fov
 	# Same on-screen mouse speed when zoomed in.

@@ -22,3 +22,6 @@
 # Blender backups
 *.blend1
 
+
+# Local agent-skill symlinks (absolute paths to this machine)
+/.claude/skills/

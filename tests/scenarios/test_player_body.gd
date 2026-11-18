@@ -206,10 +206,9 @@ func test_the_pistol_body_copy_follows_its_own_wrists_and_hides_its_arms() -> vo
 	var found: bool = false
 	for node: Node in _player.camera.get_node("BodyGuns").find_children("*", "Skeleton3D", true, false):
 		var skeleton: Skeleton3D = node as Skeleton3D
-		if skeleton.find_bone(&"gun_root") < 0:
+		if skeleton.find_bone(&"R_wrist_025") < 0 and skeleton.find_bone(&"hand_R") < 0:
 			continue
 		found = true
-		assert_int(skeleton.find_bone(&"R_wrist_025")).is_greater_equal(0)
 		var arms: MeshInstance3D = skeleton.get_parent().find_child("arms", true, false) as MeshInstance3D
 		assert_object(arms).is_not_null()
 		assert_bool(arms.visible).is_false()
@@ -218,7 +217,7 @@ func test_the_pistol_body_copy_follows_its_own_wrists_and_hides_its_arms() -> vo
 	var pistol_guns: int = 0
 	for gun: Variant in body._guns.values():
 		var body_gun: PlayerBody.BodyGun = gun as PlayerBody.BodyGun
-		if body_gun.skeleton != null and body_gun.skeleton.find_bone(&"gun_root") >= 0:
+		if body_gun.skeleton != null and (body_gun.skeleton.find_bone(&"R_wrist_025") >= 0 or body_gun.skeleton.find_bone(&"hand_R") >= 0):
 			pistol_guns += 1
 			assert_int(body_gun.right_hand).is_greater_equal(0)
 			assert_int(body_gun.left_hand).is_greater_equal(0)

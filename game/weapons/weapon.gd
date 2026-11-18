@@ -26,6 +26,9 @@ var logic: WeaponLogic
 var spread: WeaponSpread = WeaponSpread.new()
 ## 0 = hip, 1 = fully aimed.
 var aim_blend: float = 0.0
+## The same move as the viewmodel and the camera zoom see it: a damped spring toward aiming or not aiming (see
+## AdsRules), so it is smooth when the button is released half-way. 0 = hip, 1 = aimed; overshoots a little.
+var visual_aim: float = 0.0
 ## Spread right now, for the crosshair (degrees, cone half-angle).
 var current_spread_deg: float = 0.0
 
@@ -65,6 +68,8 @@ var _melee_t: float = -1.0
 var _melee_hit_pending: bool = false
 var _melee_heavy: bool = false
 var _aim_was_held: bool = false
+var _aim_target: float = 0.0
+var _visual_aim_velocity: float = 0.0
 ## This weapon's versions: the scene's definition first, then its alt_variant (if any).
 var _variants: Array[WeaponDefinition] = []
 var _variant_index: int = 0
@@ -110,6 +115,9 @@ func set_sway_input(turn_rate: Vector2, strafe_speed: float, ground_speed: float
 ## Raises the weapon after the player switched to it.
 func equip() -> void:
 	aim_blend = 0.0
+	visual_aim = 0.0
+	_visual_aim_velocity = 0.0
+	_aim_target = 0.0
 	_equip = 1.0
 	_melee_t = -1.0
 	_play_anim(definition.anim_draw, 0.0)
@@ -157,6 +165,7 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 		swapping = _swap_remaining > 0.0
 	var wants_aim: bool = intent.aim and not logic.is_reloading and not swapping
 	aim_blend = move_toward(aim_blend, 1.0 if wants_aim else 0.0, delta / definition.ads_time)
+	_aim_target = 1.0 if wants_aim else 0.0
 	if intent.fire_mode_toggled:
 		logic.toggle_fire_mode()
 	if intent.reload and not swapping:
@@ -226,6 +235,10 @@ func _bullet_start(direction: Vector3, shooter: CollisionObject3D, aim: Transfor
 
 
 func _process(delta: float) -> void:
+	var aim_spring: Array = AdsRules.spring_step(visual_aim, _visual_aim_velocity, _aim_target,
+			AdsRules.spring_omega(definition.ads_time), AdsRules.spring_zeta(definition.ads_settle, _aim_target > 0.5), delta)
+	visual_aim = aim_spring[0]
+	_visual_aim_velocity = aim_spring[1]
 	if _viewmodel == null or not is_visible_in_tree():
 		return
 	_kick = move_toward(_kick, 0.0, KICK_RECOVERY * delta)
@@ -245,13 +258,15 @@ func _process(delta: float) -> void:
 	var bob_rotation_deg: Vector3 = WeaponSwayRules.bob_rotation_deg(definition, _bob_phase, _ground_speed, _grounded, aim_blend)
 	if _viewmodel.has_method(&"set_aim"):
 		_viewmodel.call(&"set_aim", aim_blend, definition.scope_zoom)
+	if _viewmodel.has_method(&"set_ads_steadiness"):
+		_viewmodel.call(&"set_ads_steadiness", clampf(visual_aim, 0.0, 1.0), definition.ads_idle_steady, definition.ads_idle_speed)
 	var rotation_deg: Vector3 = _sway_rotation_deg + bob_rotation_deg
 	var sway_rotation: Vector3 = Vector3(deg_to_rad(rotation_deg.x), deg_to_rad(rotation_deg.y), deg_to_rad(rotation_deg.z))
-	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, AdsRules.visual_blend(aim_blend, definition.ads_settle)) \
-		+ Vector3(0.0, -AdsRules.arc_offset_m(aim_blend, definition.ads_arc_m), 0.0) + _sway_position + bob_position
+	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, visual_aim) \
+		+ Vector3(0.0, -AdsRules.arc_offset_m(clampf(visual_aim, 0.0, 1.0), definition.ads_arc_m), 0.0) + _sway_position + bob_position
 	if _anim != null:
 		# The animations carry the reload; the spring kick and the hip turn go on top, about the grip.
-		var aimed: float = AdsRules.visual_blend(aim_blend, definition.ads_settle)
+		var aimed: float = visual_aim
 		var turn: Vector3 = definition.viewmodel_hip_rotation_deg * (1.0 - aimed) + _kick_rotation
 		_viewmodel.transform = Transform3D(Basis.from_euler(sway_rotation), base + _kick_position) \
 				* ViewmodelRecoilRules.about_pivot(turn, definition.viewmodel_pivot)
@@ -269,6 +284,7 @@ func _process(delta: float) -> void:
 ## makes a slower, longer heavy attack.
 func _melee_update(intent: InputIntent, delta: float, shooter: CollisionObject3D, aim: Transform3D) -> Vector2:
 	aim_blend = move_toward(aim_blend, 0.0, delta / definition.ads_time)
+	_aim_target = 0.0
 	current_spread_deg = 0.0
 	var heavy_pressed: bool = intent.aim and not _aim_was_held
 	_aim_was_held = intent.aim

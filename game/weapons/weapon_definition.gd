@@ -101,6 +101,11 @@ extends Resource
 @export_range(0.0, 0.6) var ads_settle: float = 0.3
 ## Metres the gun dips mid-move, so it swings into the sights instead of sliding. Visual only.
 @export var ads_arc_m: float = 0.02
+## How much of the idle breathing sway the aimed gun loses (0 = none, 1 = perfectly still), reached as the aim
+## settles. Only viewmodels with an idle animation use it (set_ads_steadiness).
+@export_range(0.0, 1.0) var ads_idle_steady: float = 0.0
+## Speed of the idle animation when fully aimed, as a fraction of its normal speed (a held breath is slower).
+@export_range(0.1, 1.0) var ads_idle_speed: float = 1.0
 
 @export_group("Sway (viewmodel lag while turning and strafing)")
 ## Turn rate that gives full sway; faster turns are clamped.

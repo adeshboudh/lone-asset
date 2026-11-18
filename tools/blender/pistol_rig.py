@@ -3,7 +3,7 @@
   blender -b --python tools/blender/pistol_rig.py -- build [--force]
   blender -b --python tools/blender/pistol_rig.py -- clips [--force]
   blender -b --python tools/blender/pistol_rig.py -- check
-  blender -b --python tools/blender/pistol_rig.py -- preview OUT.png [--view eye|side|top] [--action NAME] [--frame N]
+  blender -b --python tools/blender/pistol_rig.py -- preview OUT.png [--view eye|down|side|left|top] [--fov DEG] [--action NAME] [--frame N]
   blender -b --python tools/blender/pistol_rig.py -- export
 
 build creates content/weapons/pistol/rig/pistol_rig.blend (the source of the animation keys) and refuses to
@@ -30,20 +30,26 @@ BLEND = os.path.join(ROOT, "content", "weapons", "pistol", "rig", "pistol_rig.bl
 GLB = os.path.join(ROOT, "content", "weapons", "pistol", "pistol_viewmodel.glb")
 
 # Shoulders end up 0.25 m below the camera and 0.02 m behind it (arms_rig.CM turns the file centimetres into metres).
-ARMS_OFFSET = Vector((0.0, -0.303, -0.48))
+ARMS_OFFSET = Vector((0.0, -0.113, -0.2045))
 # Where the elbow points, from the elbow at rest: outward (mirrored per side), back, down.
-POLE_OFFSET = Vector((0.10, 0.25, -0.30))
-MODEL_SCALE = 0.08  # the pistol model is 2.4 units long, a 9mm pistol is about 0.19 m
+POLE_OFFSET = Vector((0.066, 0.165, -0.20))
+ARMS_SCALE = 0.56  # the arms model's hands are 0.385 m long; 0.56 makes them 0.215 m, the size of the reference rig's hands
+MODEL_SCALE = 0.1  # the pistol model is 2.4 units long, a 9mm pistol is about 0.19 m
 MODEL_YAW = math.pi / 2  # turns the model muzzle (-X) to point along -Y
 GUN_REST = Vector((-0.025, -0.23, -0.105))  # the grip centre, camera space
 
 # Starting values for the two-handed grip; tuned against the reference image (see the plan, task 2).
 GRIP_POSE = {
-    "R": {"head": Vector((-0.045, -0.170, -0.130)), "turn": (-5.0, -60.0, 0.0)},
-    "L": {"head": Vector((0.005, -0.165, -0.138)), "turn": (-5.0, 60.0, 0.0)},
+    "R": {"head": Vector((-0.059, -0.182, -0.150)), "turn": (23.0, -90.0, 0.0)},
+    "L": {"head": Vector((0.022, -0.190, -0.200)), "turn": (23.0, 90.0, 0.0)},
 }
-GRIP_CURL = {"thumb": (-10.0, -10.0, -10.0, 0.0), "point": (-60.0, -70.0, -50.0, 0.0), "middle": (-65.0, -75.0, -55.0, 0.0),
-             "ring": (-70.0, -80.0, -55.0, 0.0), "pink": (-75.0, -85.0, -55.0, 0.0)}
+# Finger bend per segment, degrees, measured on the reference rig's idle pose (one value per hand and finger).
+GRIP_CURLS = {
+    "R": {"thumb": (-10.0, -10.0, -10.0, 0.0), "point": (-25.0, -25.0, -25.0, 0.0), "middle": (-59.0, -59.0, -59.0, 0.0),
+          "ring": (-57.0, -57.0, -57.0, 0.0), "pink": (-52.0, -52.0, -52.0, 0.0)},
+    "L": {"thumb": (-32.0, -8.0, -8.0, 0.0), "point": (-37.0, -37.0, -37.0, 0.0), "middle": (-39.0, -39.0, -39.0, 0.0),
+          "ring": (-43.0, -43.0, -43.0, 0.0), "pink": (-54.0, -54.0, -54.0, 0.0)},
+}
 
 GUN_BONES = ("gun_root", "gun_slide", "gun_mag", "gun_mag_spare", "gun_trigger", "gun_hammer", "gun_muzzle")
 CONTROL_BONES = ("ctl_gun", "ctl_hand_L", "ctl_hand_R", "pole_elbow_L", "pole_elbow_R", "ctl_mag_hold")
@@ -241,7 +247,7 @@ def skin_pistol(arm, objects, members) -> None:
 def pose_grip(arm) -> None:
     for side in arms_rig.SIDES:
         arms_rig.place_bone(arm, f"ctl_hand_{side}", GRIP_POSE[side]["head"], GRIP_POSE[side]["turn"])
-        arms_rig.set_finger_curl(arm, side, GRIP_CURL)
+        arms_rig.set_finger_curl(arm, side, GRIP_CURLS[side])
         print("pole angle", side, arms_rig.choose_pole_angle(arm, side))
 
 
@@ -251,7 +257,7 @@ def build() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     arm, arms_mesh = arms_rig.import_arms(ARMS_GLB)
     arms_rig.strip_textures(arms_mesh, "arms")
-    arms_rig.bake_transform(arm, arms_mesh, Matrix.Translation(ARMS_OFFSET) @ Matrix.Scale(arms_rig.CM, 4))
+    arms_rig.bake_transform(arm, arms_mesh, Matrix.Translation(ARMS_OFFSET) @ Matrix.Scale(arms_rig.CM * ARMS_SCALE, 4))
     arms_rig.straighten_bones(arm)
     arms_rig.add_arm_controls(arm, POLE_OFFSET)
     frame, slide, members = import_pistol()
@@ -301,7 +307,7 @@ def pose_key(arm, frame: int, spec: dict) -> None:
         head, turn = spec.get(side, (GRIP_POSE[side]["head"], GRIP_POSE[side]["turn"]))
         arms_rig.place_bone(arm, f"ctl_hand_{side}", head, turn)
         t = spec.get(f"curl_{side}", 1.0)
-        curls = {f: tuple(o + (g - o) * t for o, g in zip(OPEN_CURL[f], GRIP_CURL[f])) for f in GRIP_CURL}
+        curls = {f: tuple(o + (g - o) * t for o, g in zip(OPEN_CURL[f], GRIP_CURLS[side][f])) for f in OPEN_CURL}
         arms_rig.set_finger_curl(arm, side, curls)
         arm[f"{side}_follows_gun"] = spec.get(f"follow_{side}", 1.0)
     gun_loc, gun_rot = spec.get("gun", ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)))
@@ -442,10 +448,10 @@ def check() -> None:
         if f"{side}_follows_gun" not in arm:
             fail(f"{side}_follows_gun property")
         reach = (arm.pose.bones[wrist].head - arm.pose.bones[upper].head).length
-        if not 0.30 < reach < 0.52:
+        if not 0.20 * ARMS_SCALE / 0.56 < reach < 0.34 * ARMS_SCALE / 0.56:
             fail(f"{side} arm reach {reach:.3f} m is outside what the two bones can span")
         hand = arm.matrix_world @ arm.pose.bones[wrist].head
-        if (hand - GUN_REST).length > 0.12:
+        if (hand - GUN_REST).length > 0.18:  # the reference rig's cupping hand is 0.166 m away
             fail(f"{side} wrist is {(hand - GUN_REST).length:.3f} m from the grip")
     arms_mesh = bpy.data.objects["arms"]
     if any(len(v.groups) == 0 for v in arms_mesh.data.vertices):
@@ -523,12 +529,20 @@ def preview() -> None:
     if view == "eye":
         cam.location, cam.rotation_euler = (0.0, 0.0, 0.0), (math.pi / 2, 0.0, math.pi)
         cam.data.angle = math.radians(75.0)
+    elif view == "down":
+        cam.location, cam.rotation_euler = (0.0, 0.12, 0.10), (math.radians(50.0), 0.0, math.pi)
+        cam.data.angle = math.radians(60.0)
     elif view == "side":
         cam.location, cam.rotation_euler = (1.0, -0.35, -0.12), (math.pi / 2, 0.0, math.pi / 2)
+        cam.data.angle = math.radians(35.0)
+    elif view == "left":
+        cam.location, cam.rotation_euler = (-1.0, -0.35, -0.12), (math.pi / 2, 0.0, -math.pi / 2)
         cam.data.angle = math.radians(35.0)
     else:
         cam.location, cam.rotation_euler = (0.0, -0.35, 0.9), (0.0, 0.0, math.pi)
         cam.data.angle = math.radians(35.0)
+    if option("--fov"):
+        cam.data.angle = math.radians(float(option("--fov")))
     scene.render.engine = "BLENDER_WORKBENCH"
     scene.display.shading.light = "STUDIO"
     scene.display.shading.color_type = "OBJECT"
@@ -585,7 +599,8 @@ def verify_glb() -> None:
 
 
 MODES = {"build": build, "clips": make_clips, "check": check, "preview": preview, "export": export}
-if not ARGS or ARGS[0] not in MODES:
-    print("usage: blender -b --factory-startup --python pistol_rig.py -- {" + "|".join(MODES) + "}")
-    sys.exit(1)
-MODES[ARGS[0]]()
+if __name__ == "__main__":  # other scripts import this file for import_pistol() and the model's part rules
+    if not ARGS or ARGS[0] not in MODES:
+        print("usage: blender -b --factory-startup --python pistol_rig.py -- {" + "|".join(MODES) + "}")
+        sys.exit(1)
+    MODES[ARGS[0]]()

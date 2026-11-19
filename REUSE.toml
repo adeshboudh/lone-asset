@@ -117,3 +117,9 @@ path = ["content/weapons/pistol/ref/pistol_ref_viewmodel.glb", "content/weapons/
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (Blender tutorial file '4.7 Creating the Reload Animation')"
 SPDX-License-Identifier = "LicenseRef-Reference-rig-unknown"
+
+[[annotations]]
+path = ["RIG_UE5_Manny.blend", "gun_rig.fbx", "animation.blend"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown authors (UE5 Manny arms control rig; M4A1 rifle rig), controller shapes by Helindu (Sketchfab, CC-BY-4.0)"
+SPDX-License-Identifier = "LicenseRef-Manny-rig-unknown"

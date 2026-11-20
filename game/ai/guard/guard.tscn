@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://game/ai/guard/guard.gd" id="1_guard"]
 [ext_resource type="Script" path="res://game/damage/health_component.gd" id="2_health"]
@@ -7,56 +7,24 @@
 [ext_resource type="Script" path="res://game/ai/stealth/perception_component.gd" id="5_perception"]
 [ext_resource type="Script" path="res://game/noise/noise_listener.gd" id="6_listener"]
 [ext_resource type="Script" path="res://game/ai/guard/guard_weapon.gd" id="7_weapon"]
-
-[sub_resource type="StandardMaterial3D" id="mat_uniform"]
-albedo_color = Color(0.32, 0.38, 0.22, 1)
-roughness = 0.85
-
-[sub_resource type="StandardMaterial3D" id="mat_skin"]
-albedo_color = Color(0.78, 0.6, 0.48, 1)
-roughness = 0.8
-
-[sub_resource type="StandardMaterial3D" id="mat_nose"]
-albedo_color = Color(0.9, 0.85, 0.2, 1)
-
-[sub_resource type="BoxMesh" id="mesh_nose"]
-material = SubResource("mat_nose")
-size = Vector3(0.08, 0.08, 0.16)
+[ext_resource type="Script" path="res://game/ai/guard/guard_animator.gd" id="8_animator"]
+[ext_resource type="Resource" path="res://data/ai/guard_animation.tres" id="9_animprofile"]
+[ext_resource type="PackedScene" path="res://content/characters/agent_mco/agent_mco.glb" id="10_agent"]
+[ext_resource type="PackedScene" path="res://content/weapons/m4_mco/M4_Rifle_01.fbx" id="11_rifle"]
 
 [sub_resource type="SphereShape3D" id="shape_Head"]
 radius = 0.12
 
-[sub_resource type="SphereMesh" id="mesh_Head"]
-material = SubResource("mat_skin")
-radius = 0.12
-height = 0.24
-
 [sub_resource type="BoxShape3D" id="shape_Torso"]
-size = Vector3(0.46, 0.62, 0.26)
-
-[sub_resource type="BoxMesh" id="mesh_Torso"]
-material = SubResource("mat_uniform")
 size = Vector3(0.46, 0.62, 0.26)
 
 [sub_resource type="BoxShape3D" id="shape_Legs"]
 size = Vector3(0.36, 0.88, 0.22)
 
-[sub_resource type="BoxMesh" id="mesh_Legs"]
-material = SubResource("mat_uniform")
-size = Vector3(0.36, 0.88, 0.22)
-
 [sub_resource type="BoxShape3D" id="shape_ArmL"]
 size = Vector3(0.1, 0.6, 0.12)
 
-[sub_resource type="BoxMesh" id="mesh_ArmL"]
-material = SubResource("mat_uniform")
-size = Vector3(0.1, 0.6, 0.12)
-
 [sub_resource type="BoxShape3D" id="shape_ArmR"]
-size = Vector3(0.1, 0.6, 0.12)
-
-[sub_resource type="BoxMesh" id="mesh_ArmR"]
-material = SubResource("mat_uniform")
 size = Vector3(0.1, 0.6, 0.12)
 
 [node name="Guard" type="CharacterBody3D"]
@@ -95,29 +63,21 @@ height = 1.8
 [node name="Model" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="HeadMesh" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
-mesh = SubResource("mesh_Head")
+[node name="Agent" parent="Model" instance=ExtResource("10_agent")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 
-[node name="TorsoMesh" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.19, 0)
-mesh = SubResource("mesh_Torso")
+[node name="RightHandWeapon" type="BoneAttachment3D" parent="Model"]
+bone_name = "hand_r_wep"
+use_external_skeleton = true
+external_skeleton = NodePath("../Agent/Armature/Skeleton3D")
 
-[node name="LegsMesh" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.44, 0)
-mesh = SubResource("mesh_Legs")
+[node name="Rifle" parent="Model/RightHandWeapon" instance=ExtResource("11_rifle")]
 
-[node name="ArmLMesh" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 1.18, 0)
-mesh = SubResource("mesh_ArmL")
-
-[node name="ArmRMesh" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1.18, 0)
-mesh = SubResource("mesh_ArmR")
-
-[node name="Nose" type="MeshInstance3D" parent="Model"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, -0.16)
-mesh = SubResource("mesh_nose")
+[node name="GuardAnimator" type="Node" parent="." node_paths=PackedStringArray("guard", "player")]
+script = ExtResource("8_animator")
+profile = ExtResource("9_animprofile")
+guard = NodePath("..")
+player = NodePath("../Model/Agent/AnimationPlayer")
 
 [node name="Head" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)

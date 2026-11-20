@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="GuardAnimationProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/ai/guard/guard_animation_profile.gd" id="1_prof"]
+
+[resource]
+script = ExtResource("1_prof")

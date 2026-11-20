@@ -1,0 +1,19 @@
+SPDX-FileCopyrightText: 2026 Lone Asset contributors
+SPDX-License-Identifier: CC-BY-4.0
+
+MoCap Online Standard License (Motus Digital, LLC), summarised, not the full text. Read the current text at
+https://mocaponline.com/pages/standard-license and https://mocaponline.com/pages/legal before relying on this.
+
+As read on 2026-11-20:
+- Use in a project with fewer than 1 million end users and below 1 million USD gross revenue; above either a
+  Commercial License is required. Not for work for hire for another entity.
+- Distribution of the assets is binary-only inside the finished project. Raw animation or model files may not be
+  redistributed, resold or published as standalone files or packs. The project must make the assets hard to extract.
+- Any use in an AI application needs prior written permission from MoCap Online (mocap@motusdigital.com).
+- Proprietary notices attached to the files must be kept. No credit line is required.
+- The terms can be changed, and the licence ended, by Motus Digital at any time.
+- The MotusMan character is covered. The M4 rifle and 1911 pistol models are not mentioned on those pages.
+
+The files come from the free "MCO Demo Pack v2". Publishing them in a public repository is against the binary-only
+term above; the project developer chose to do it anyway on 2026-11-20. Resolve with Motus Digital or remove the files
+before any release.

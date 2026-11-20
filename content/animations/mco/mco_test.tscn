@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/animations/mco/MotusMan_v55.fbx" id="1_coqis"]
+[ext_resource type="PackedScene" path="res://content/weapons/m4_mco/M4_Rifle_01.fbx" id="2_edc5x"]
+[ext_resource type="AnimationLibrary" path="res://content/animations/mco/mco_clips.res" id="3_v35io"]
+
+[node name="McoTest" type="Node3D" unique_id=479826969]
+
+[node name="Model" type="Node3D" parent="." unique_id=831879684 instance=ExtResource("1_coqis")]
+
+[node name="RightHandWeapon" type="BoneAttachment3D" parent="." unique_id=757049820]
+bone_name = "hand_r_wep"
+use_external_skeleton = true
+external_skeleton = NodePath("../Model/Skeleton3D")
+
+[node name="M4" type="Node3D" parent="RightHandWeapon" unique_id=282517024 instance=ExtResource("2_edc5x")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=643687582]
+root_node = NodePath("../Model")
+libraries/ = ExtResource("3_v35io")

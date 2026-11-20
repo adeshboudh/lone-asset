@@ -123,3 +123,15 @@ path = ["RIG_UE5_Manny.blend", "gun_rig.fbx", "animation.blend"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown authors (UE5 Manny arms control rig; M4A1 rifle rig), controller shapes by Helindu (Sketchfab, CC-BY-4.0)"
 SPDX-License-Identifier = "LicenseRef-Manny-rig-unknown"
+
+[[annotations]]
+path = ["content/animations/mco/**", "content/weapons/m4_mco/**", "content/weapons/pistol_mco/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Motus Digital, LLC (MoCap Online)"
+SPDX-License-Identifier = "LicenseRef-MoCapOnline-Standard"
+
+[[annotations]]
+path = ["content/characters/agent_mco/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "buh (Sketchfab, mesh and textures); Motus Digital, LLC (MoCap Online, skeleton and clips)"
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-MoCapOnline-Standard"

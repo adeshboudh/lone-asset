@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/characters/agent_mco/agent_mco.glb" id="1_paal6"]
+[ext_resource type="PackedScene" path="res://content/weapons/m4_mco/M4_Rifle_01.fbx" id="2_olh1p"]
+
+[node name="AgentMcoTest" type="Node3D" unique_id=1690886022]
+
+[node name="Model" type="Node3D" parent="." unique_id=1350871554 instance=ExtResource("1_paal6")]
+
+[node name="RightHandWeapon" type="BoneAttachment3D" parent="." unique_id=357520737]
+bone_name = "hand_r_wep"
+use_external_skeleton = true
+external_skeleton = NodePath("../Model/Armature/Skeleton3D")
+
+[node name="M4" type="Node3D" parent="RightHandWeapon" unique_id=282517024 instance=ExtResource("2_olh1p")]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://game/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://data/player/player_movement.tres" id="2_settings"]
@@ -10,7 +10,6 @@
 [ext_resource type="Resource" path="res://data/weapons/rifle_muzzle.tres" id="8_rifle"]
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="8_def"]
 [ext_resource type="Resource" path="res://data/weapons/pistol_suppressed.tres" id="8_pistol"]
-[ext_resource type="Resource" path="res://data/weapons/knife.tres" id="8_knife"]
 [ext_resource type="Script" path="res://game/damage/health_component.gd" id="9_health"]
 [ext_resource type="PackedScene" path="res://game/ui/hud/hud.tscn" id="10_hud"]
 [ext_resource type="Script" path="res://game/noise/noise_emitter_component.gd" id="11_noise"]
@@ -27,7 +26,7 @@ collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_player")
 settings = ExtResource("2_settings")
-extra_weapons = Array[ExtResource("8_def")]([ExtResource("8_pistol"), ExtResource("8_knife")])
+extra_weapons = Array[ExtResource("8_def")]([ExtResource("8_pistol")])
 
 [node name="CollisionShape" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Weapon slots (number keys), per-weapon ammo, and the knife.
+## Weapon slots (number keys) and per-weapon ammo. The knife is out of the loadout until its arms rig is replaced.
 
 const PLAYER_SCENE: PackedScene = preload("res://game/player/player.tscn")
 const DUMMY: PackedScene = preload("res://game/targets/target_dummy.tscn")
@@ -36,14 +36,12 @@ func test_starts_with_the_rifle_unsuppressed() -> void:
 func test_number_keys_pick_the_weapon() -> void:
 	await _press_slot(2)
 	assert_str(String(_player.weapon.definition.id)).is_equal("pistol_suppressed")
-	await _press_slot(3)
-	assert_str(String(_player.weapon.definition.id)).is_equal("knife")
 	await _press_slot(1)
 	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
 
 
 func test_missing_slot_changes_nothing() -> void:
-	await _press_slot(4)
+	await _press_slot(3)
 	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
 
 
@@ -89,34 +87,8 @@ func test_save_keeps_every_weapon_and_the_slot() -> void:
 	assert_int(_player.weapon.logic.magazine).is_equal(5)
 
 
-func test_knife_from_behind_kills() -> void:
-	await _press_slot(3)
-	# The dummy looks along -Z, away from the player: the player is behind it.
-	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -1.2), 0.0)
-	await _ticks(2)
-	await _stab()
-	assert_bool(HealthComponent.of(dummy).is_dead).is_true()
-
-
-func test_knife_from_the_front_only_wounds() -> void:
-	await _press_slot(3)
-	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -1.2), PI)
-	await _ticks(2)
-	await _stab()
-	var health: HealthComponent = HealthComponent.of(dummy)
-	assert_float(health.health).is_equal_approx(health.max_health - _player.weapon.definition.melee_damage, 0.01)
-
-
-func test_knife_out_of_reach_misses() -> void:
-	await _press_slot(3)
-	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -6.0), 0.0)
-	await _ticks(2)
-	await _stab()
-	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
-
-
 func test_every_animation_a_weapon_names_exists_in_its_viewmodel() -> void:
-	for slot: int in [1, 2, 3]:
+	for slot: int in [1, 2]:
 		await _press_slot(slot)
 		var definition: WeaponDefinition = _player.weapon.definition
 		var animations: AnimationPlayer = _player.weapon._anim
@@ -125,42 +97,6 @@ func test_every_animation_a_weapon_names_exists_in_its_viewmodel() -> void:
 				definition.anim_reload_empty, definition.anim_fire_alt]:
 			if clip != &"":
 				assert_bool(animations.has_animation(clip)).override_failure_message("%s missing %s in %s" % [definition.id, clip, animations.get_animation_list()]).is_true()
-
-
-func test_heavy_attack_does_more_damage_from_the_front() -> void:
-	await _press_slot(3)
-	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -1.2), PI)
-	await _ticks(2)
-	await _heavy_stab()
-	assert_float(HealthComponent.of(dummy).health).is_equal_approx(100.0 - _player.weapon.definition.melee_heavy_damage, 0.01)
-
-
-func test_heavy_attack_reaches_further_than_the_quick_one() -> void:
-	await _press_slot(3)
-	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -2.3), PI)
-	await _ticks(2)
-	await _stab()
-	assert_float(HealthComponent.of(dummy).health).is_equal(100.0)
-	await _heavy_stab()
-	assert_float(HealthComponent.of(dummy).health).is_less(100.0)
-
-
-func test_heavy_attack_from_behind_kills() -> void:
-	await _press_slot(3)
-	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -1.2), 0.0)
-	await _ticks(2)
-	await _heavy_stab()
-	assert_bool(HealthComponent.of(dummy).is_dead).is_true()
-
-
-func test_knife_is_heard_only_up_close() -> void:
-	await _press_slot(3)
-	var close: Array[NoiseEvent] = _sensor(Vector3(2.0, 0.0, 0.0))
-	var far: Array[NoiseEvent] = _sensor(Vector3(6.0, 0.0, 0.0))
-	await _ticks(1)
-	await _stab()
-	assert_int(close.size()).is_equal(1)
-	assert_int(far.size()).is_equal(0)
 
 
 func test_rifle_shot_leaves_the_muzzle_but_hits_where_the_camera_aims() -> void:
@@ -221,12 +157,6 @@ func test_pistol_has_a_muzzle_brake_variant_too() -> void:
 	assert_str(String(_player.weapon.definition.fire_sound)).is_equal("pistol_shot_loud")
 
 
-func test_knife_has_no_attachment() -> void:
-	await _press_slot(3)
-	await _press_attachment()
-	assert_str(String(_player.weapon.definition.id)).is_equal("knife")
-
-
 func test_fitted_variant_is_saved_and_restored() -> void:
 	await _press_attachment()
 	var saved: Dictionary = _player.save_state()
@@ -249,20 +179,6 @@ func _press_slot(slot: int) -> void:
 	await _ticks(2)
 	_intent.weapon_slot = 0
 	await _ticks(2)
-
-
-func _stab() -> void:
-	_intent.fire_pressed = true
-	await _ticks(2)
-	_intent.fire_pressed = false
-	await _ticks(30)
-
-
-func _heavy_stab() -> void:
-	_intent.aim = true
-	await _ticks(2)
-	_intent.aim = false
-	await _ticks(60)
 
 
 func _dummy(position: Vector3, yaw: float) -> TargetDummy:

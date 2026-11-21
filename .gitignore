@@ -25,3 +25,7 @@
 
 # Local agent-skill symlinks (absolute paths to this machine)
 /.claude/skills/
+
+# Source models and packs kept out of git and out of Godot (see assets_src/.gdignore)
+/assets_src/
+__pycache__/

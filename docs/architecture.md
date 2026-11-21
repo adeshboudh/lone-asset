@@ -99,6 +99,7 @@ tools/ci         CI scripts (tests, export, budgets)
 
 ## Where things are decided
 
+- Folder structure and asset intake: `docs/folder-structure.md`
 - Overview, vision, platform decision: `docs/design/overview.md`
 - Detailed M1 design, work packages, acceptance criteria: `docs/design/m1-technical-design.md`
 - Acceptance status: `docs/acceptance/m1-acceptance.md`

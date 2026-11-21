@@ -21,7 +21,7 @@ func before_test() -> void:
 		await get_tree().physics_frame
 
 
-## A weapon with its own arms rig (the pistol, the rifle) animates its arms directly and gets no FpsArms.
+## A weapon with its own arms rig (the rifle) animates its arms directly and gets no FpsArms.
 func _has_own_rig(weapon: Weapon) -> bool:
 	for node: Node in weapon.viewmodel.find_children("*", "Skeleton3D", true, false):
 		if (node as Skeleton3D).find_bone(&"gun_root") >= 0 or (node as Skeleton3D).find_bone(&"Wrist_R") >= 0:

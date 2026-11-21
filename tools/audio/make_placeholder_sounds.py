@@ -266,7 +266,6 @@ def main() -> None:
     for _ in range(3):
         shot_suppressed(rng)
     add_recorded("rifle_shot_suppressed")
-    add_recorded("pistol_shot_suppressed")
     for surface in ("concrete", "metal", "grass"):
         add(f"footstep_{surface}", [footstep(rng, surface) for _ in range(3)], muffled=True)
     add("landing", [landing(rng)], muffled=True)
@@ -274,11 +273,8 @@ def main() -> None:
     reload(rng, True)
     add_recorded("rifle_reload", muffled=False)
     add_recorded("rifle_reload_empty", muffled=False)
-    add_recorded("pistol_reload", muffled=False)
-    add_recorded("pistol_reload_empty", muffled=False)
     click(rng, 0.9)  # recordings now (convert_recorded_shots.py); the draw keeps the random stream
     add_recorded("rifle_dry", muffled=False)
-    add_recorded("pistol_dry", muffled=False)
     add("impact_world", [impact_world(rng) for _ in range(3)], muffled=True)
     add("impact_body", [impact_body(rng) for _ in range(2)], muffled=True)
     add("hit_marker", [hit_marker()])
@@ -289,7 +285,6 @@ def main() -> None:
     for _ in range(3):
         shot_loud(rng)
     add_recorded("rifle_shot_loud")
-    add_recorded("pistol_shot_loud")
     # Added in WP 9, after the sounds above, for the same reason.
     add("door_open", [door_open(rng)], muffled=True)
     add("door_close", [door_close(rng)], muffled=True)

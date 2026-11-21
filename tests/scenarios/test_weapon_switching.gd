@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Weapon slots (number keys) and per-weapon ammo. The knife is out of the loadout until its arms rig is replaced.
+## The weapon loadout (the rifle only for now: the pistol and the knife are out until their rigs are replaced) and the rifle's attachment swap.
 
 const PLAYER_SCENE: PackedScene = preload("res://game/player/player.tscn")
 const DUMMY: PackedScene = preload("res://game/targets/target_dummy.tscn")
@@ -28,67 +28,33 @@ func before_test() -> void:
 	await _ticks(10)
 
 
-func test_starts_with_the_rifle_unsuppressed() -> void:
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
-	assert_bool(_player.weapon.definition.suppressed).is_false()
-
-
-func test_number_keys_pick_the_weapon() -> void:
-	await _press_slot(2)
-	assert_str(String(_player.weapon.definition.id)).is_equal("pistol_suppressed")
-	await _press_slot(1)
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
-
-
-func test_missing_slot_changes_nothing() -> void:
-	await _press_slot(3)
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
-
-
-func test_only_the_weapon_in_hand_is_shown() -> void:
-	await _press_slot(2)
+func test_the_rifle_is_the_only_weapon_and_other_slots_change_nothing() -> void:
+	for slot: int in [2, 3, 4]:
+		await _press_slot(slot)
+		assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
 	var shown: Array[String] = []
 	for node: Node in _player.camera.get_children():
 		var weapon: Weapon = node as Weapon
 		if weapon != null and weapon.visible:
 			shown.append(String(weapon.definition.id))
-	assert_array(shown).is_equal(["pistol_suppressed"])
+	assert_array(shown).is_equal(["rifle_muzzle"])
 
 
-func test_cannot_switch_while_reloading() -> void:
-	_player.weapon.logic.magazine = 3
-	_intent.reload = true
-	await _ticks(2)
-	_intent.reload = false
-	assert_bool(_player.weapon.logic.is_reloading).is_true()
-	await _press_slot(2)
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
-
-
-func test_each_weapon_keeps_its_own_ammo() -> void:
-	_player.weapon.logic.magazine = 5
-	await _press_slot(2)
-	assert_int(_player.weapon.logic.magazine).is_equal(15)
-	await _press_slot(1)
-	assert_int(_player.weapon.logic.magazine).is_equal(5)
-
-
-func test_save_keeps_every_weapon_and_the_slot() -> void:
-	_player.weapon.logic.magazine = 5
-	await _press_slot(2)
+func test_save_keeps_the_rifle_ammo() -> void:
 	_player.weapon.logic.magazine = 9
 	var data: Dictionary = _player.save_state()
-	await _press_slot(1)
 	_player.weapon.logic.magazine = 30
 	_player.load_state(data)
-	assert_str(String(_player.weapon.definition.id)).is_equal("pistol_suppressed")
 	assert_int(_player.weapon.logic.magazine).is_equal(9)
-	await _press_slot(1)
-	assert_int(_player.weapon.logic.magazine).is_equal(5)
+
+
+func test_starts_with_the_rifle_unsuppressed() -> void:
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
+	assert_bool(_player.weapon.definition.suppressed).is_false()
 
 
 func test_every_animation_a_weapon_names_exists_in_its_viewmodel() -> void:
-	for slot: int in [1, 2]:
+	for slot: int in [1]:
 		await _press_slot(slot)
 		var definition: WeaponDefinition = _player.weapon.definition
 		var animations: AnimationPlayer = _player.weapon._anim
@@ -148,13 +114,6 @@ func test_cannot_fire_while_the_attachment_is_being_swapped() -> void:
 	await _ticks(2)
 	_intent.fire_pressed = false
 	assert_int(rifle.logic.magazine).is_equal(before)
-
-
-func test_pistol_has_a_muzzle_brake_variant_too() -> void:
-	await _press_slot(2)
-	await _press_attachment()
-	assert_str(String(_player.weapon.definition.id)).is_equal("pistol_muzzle")
-	assert_str(String(_player.weapon.definition.fire_sound)).is_equal("pistol_shot_loud")
 
 
 func test_fitted_variant_is_saved_and_restored() -> void:

@@ -104,7 +104,7 @@ func test_dry_fire_click_when_out_of_ammo() -> void:
 	_fire_once()
 	await _ticks(3)
 	assert_array(_ids("rifle_dry")).has_size(1)
-	assert_array(_ids("m4_shot_suppressed")).is_empty()
+	assert_array(_ids("m4a1_fire_suppressed")).is_empty()
 
 
 func test_bullet_impact_makes_a_positional_sound() -> void:

@@ -121,3 +121,31 @@ func test_the_vertical_foregrip_is_left_off_and_the_left_hand_has_a_hold_on_the_
 	assert_object(hold).is_not_null()
 	# It rides the gun (Main bone), so it follows the gun through every animation.
 	assert_str(String(hold.get_parent().name)).is_equal("M4A1CustomBody")
+
+
+func test_reload_empty_is_the_retargeted_clip_and_moves_the_magazine_out_and_back() -> void:
+	await await_idle_frame()
+	var player: AnimationPlayer = _viewmodel.get("animation_player") as AnimationPlayer
+	var clip: Animation = player.get_animation(RIFLE.anim_reload_empty)
+	assert_str(clip.resource_path).contains("reload_empty.tres")
+	assert_float(clip.length).is_between(RIFLE.reload_time_empty - 0.2, RIFLE.reload_time_empty + 0.1)
+	var magazines: Array[Node] = _viewmodel.find_children("m4a1_custom_magazine*", "MeshInstance3D", true, false)
+	var mag: Node3D = magazines[0] as Node3D
+	player.play(RIFLE.anim_reload_empty)
+	player.seek(0.0, true)
+	player.pause()
+	await await_idle_frame()
+	var start: Vector3 = mag.global_position
+	player.seek(1.0, true)
+	await await_idle_frame()
+	assert_float(mag.global_position.distance_to(start)).is_greater(0.15)
+	player.seek(clip.length, true)
+	await await_idle_frame()
+	assert_float(mag.global_position.distance_to(start)).is_less(0.03)
+
+
+func test_tactical_reload_is_the_retargeted_clip() -> void:
+	var player: AnimationPlayer = _viewmodel.get("animation_player") as AnimationPlayer
+	var clip: Animation = player.get_animation(RIFLE.anim_reload)
+	assert_str(clip.resource_path).contains("reload_tactical.tres")
+	assert_float(clip.length).is_between(RIFLE.reload_time - 0.2, RIFLE.reload_time + 0.1)

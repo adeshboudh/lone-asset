@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_def")
+tracer_enabled = false
 id = &"knife"
 display_name = "Combat knife"
 suppressed = true

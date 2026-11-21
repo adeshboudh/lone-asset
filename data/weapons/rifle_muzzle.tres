@@ -7,6 +7,7 @@
 
 [resource]
 script = ExtResource("1_def")
+tracer_enabled = false
 id = &"rifle_muzzle"
 alt_variant = ExtResource("3_alt")
 display_name = "M4A1, muzzle brake"

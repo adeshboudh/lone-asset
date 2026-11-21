@@ -112,6 +112,7 @@ func test_impact_mark_on_csg_geometry_stays_out_of_the_csg_node() -> void:
 
 func test_tracer_appears_after_start_distance_and_ends_with_the_bullet() -> void:
 	var weapon: WeaponDefinition = RIFLE.duplicate()
+	weapon.tracer_enabled = true
 	weapon.tracer_start_m = 3.0
 	_ballistics.fire(Vector3(0.0, 100.0, 0.0), Vector3.FORWARD, weapon, null)
 	assert_int(_ballistics.tracer_count).is_equal(0)
@@ -124,6 +125,7 @@ func test_tracer_appears_after_start_distance_and_ends_with_the_bullet() -> void
 
 func test_tracer_every_nth_shot() -> void:
 	var weapon: WeaponDefinition = RIFLE.duplicate()
+	weapon.tracer_enabled = true
 	weapon.tracer_every_n = 3
 	weapon.tracer_start_m = 0.0
 	for i: int in 6:

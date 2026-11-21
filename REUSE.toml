@@ -100,3 +100,9 @@ path = ["content/weapons/m4a1_ms/m4a1_ms_viewmodel.glb*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (arms and rifle model supplied by the developer; origin and terms unknown)"
 SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/effects/muzzle_flash/TX_Muzzle_Flash.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (texture supplied by the developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"

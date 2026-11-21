@@ -9,6 +9,9 @@ signal fired(origin: Vector3, direction: Vector3)
 const KICK_DISTANCE: float = 0.035
 const KICK_RECOVERY: float = 14.0
 const FLASH_TIME_S: float = 0.05
+const FLASH_TEXTURE: Texture2D = preload("res://content/effects/muzzle_flash/TX_Muzzle_Flash.png")
+## Width of the flash sprite in metres.
+const FLASH_SPRITE_SIZE_M: float = 0.22
 ## World and characters, same as the bullets.
 const MUZZLE_RAY_MASK: int = 3
 ## Raising a weapon after a switch.
@@ -44,6 +47,7 @@ var animation_player: AnimationPlayer:
 	get:
 		return _anim
 var _flash: OmniLight3D
+var _flash_sprite: Sprite3D
 var _muzzle: Node3D
 var _kick: float = 0.0
 ## The gun's spring kick (ViewmodelRecoilRules): position (m) and rotation (deg) with their velocities.
@@ -279,6 +283,7 @@ func _process(delta: float) -> void:
 		_viewmodel.rotation = Vector3(-reload_dip * 2.0 - raise * 0.7 + 0.25 * swing, 0.6 * swing, 0.0) + sway_rotation
 	_flash_remaining -= delta
 	_flash.visible = _flash_remaining > 0.0
+	_flash_sprite.visible = _flash.visible
 
 
 ## One blade swing: the strike lands part-way through. The fire button swings quickly, the aim button
@@ -353,6 +358,17 @@ func _build_viewmodel() -> void:
 	var muzzle: Node3D = _viewmodel.get_node_or_null(^"Muzzle") as Node3D
 	_muzzle = muzzle if muzzle != null else _viewmodel
 	_muzzle.add_child(_flash)
+	_flash_sprite = Sprite3D.new()
+	_flash_sprite.texture = FLASH_TEXTURE
+	_flash_sprite.pixel_size = FLASH_SPRITE_SIZE_M / FLASH_TEXTURE.get_width()
+	_flash_sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_flash_sprite.shaded = false
+	_flash_sprite.transparent = true
+	_flash_sprite.no_depth_test = false
+	_flash_sprite.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_flash_sprite.scale = Vector3.ONE * (0.4 if definition.suppressed else 1.0)
+	_flash_sprite.visible = false
+	_muzzle.add_child(_flash_sprite)
 	_anim = _viewmodel.get_node_or_null(^"AnimationPlayer") as AnimationPlayer
 	if _anim == null:
 		_anim = _viewmodel.find_child("AnimationPlayer", true, false) as AnimationPlayer

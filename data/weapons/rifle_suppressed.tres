@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("1_def")
+tracer_enabled = false
 id = &"rifle_suppressed"
 display_name = "M4A1"
 fire_sound = &"m4a1_fire_suppressed"

@@ -136,7 +136,7 @@ Checklist for each new weapon rig, in order: split the model into parts (named f
 
 ## Rifle viewmodel (2026-11-22)
 
-The developer tried their own arms and rifle on one rig (`m4a1_ms`) and removed it again: the rifle part is being rebuilt. The rifle files use the M4A1 Custom viewmodel with the retargeted clips again (`content/weapons/m4a1_custom/reload_*.tres`, `tools/anim/`). `animation.blend` was removed on purpose; `gun_rig.fbx` is in `tools/blender/helpers/` and `RIG_UE5_Manny.blend` stays in the repo root: helper assets for making animations, not part of the game.
+The developer tried their own arms and rifle on one rig (`m4a1_ms`) and removed it again: the rifle part is being rebuilt. The rifle files use the M4A1 Custom viewmodel with the retargeted clips again (`content/weapons/m4a1_custom/reload_*.tres`, `tools/anim/`). `animation.blend` was removed on purpose; `gun_rig.fbx` and `RIG_UE5_Manny.blend` are in `tools/blender/helpers/`: helper assets for making animations, not part of the game.
 
 Rifle sounds and default (2026-11-22): the rifle now starts unsuppressed. `player.tscn` loads `rifle_muzzle.tres` (loud, `fire_sound` `m4a1_fire_semi`, new `fire_sound_auto` `m4a1_fire_auto` while in full-auto) and T swaps to `rifle_suppressed.tres` (`m4a1_fire_suppressed`); the link is `rifle_muzzle.alt_variant`. Old saves keep the variant index, so a save made with the suppressor fitted loads with the brake. The developer's other new sounds (`M4A1_Magazine_Attach_Empty/Tactical`, `M4A1_Magazine_Check`, `M4A1_Magazine_Detach`, `M4A1_Tail_Outdoor`) are in `tools/audio/source/m4a1/` (with the original untrimmed reload and fire recordings), unused, for later.
 

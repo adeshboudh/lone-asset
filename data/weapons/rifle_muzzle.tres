@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
 [ext_resource type="PackedScene" path="res://content/weapons/m4a1_custom/m4a1_custom_viewmodel.tscn" id="2_view"]
 
+[ext_resource type="Resource" path="res://data/weapons/rifle_suppressed.tres" id="3_alt"]
+
 [resource]
 script = ExtResource("1_def")
 id = &"rifle_muzzle"
+alt_variant = ExtResource("3_alt")
 display_name = "M4A1 Custom, muzzle brake"
 muzzle_velocity = 520.0
 gravity_scale = 1.5
@@ -19,7 +22,8 @@ recoil_yaw_deg = 0.2
 suppressed = false
 noise_radius_m = 80.0
 flash_exposure = 1.0
-fire_sound = &"m4_shot_raw"
+fire_sound = &"m4a1_fire_semi"
+fire_sound_auto = &"m4a1_fire_auto"
 viewmodel_scene = ExtResource("2_view")
 scope_zoom = 3.0
 viewmodel_hip_position = Vector3(0.07, -0.03, -0.04)
@@ -38,3 +42,5 @@ anim_draw = &"Draw"
 anim_fire = &"Fire"
 anim_reload = &"Reload"
 anim_reload_empty = &"Reload_Empty"
+reload_time = 3.1
+reload_time_empty = 3.95

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=68 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=74 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/pistol_shot_suppressed.wav" id="4_pistol_shot_suppressed"]
@@ -67,6 +67,12 @@
 [ext_resource type="AudioStream" path="res://content/audio/sfx/m4_shot_suppressed_4_muffled.wav" id="69_m4_shot_suppressed_4_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/ui_hover.wav" id="70_ui_hover"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/ui_start.wav" id="71_ui_start"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4a1_fire_semi.wav" id="72_m4a1_fire_semi"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4a1_fire_semi_muffled.wav" id="73_m4a1_fire_semi_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4a1_fire_auto.wav" id="74_m4a1_fire_auto"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4a1_fire_auto_muffled.wav" id="75_m4a1_fire_auto_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4a1_fire_suppressed.wav" id="76_m4a1_fire_suppressed"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/m4a1_fire_suppressed_muffled.wav" id="77_m4a1_fire_suppressed_muffled"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -107,6 +113,12 @@ sounds = {
 &"m4_shot_raw_muffled": [ExtResource("59_m4_shot_raw_1_muffled"), ExtResource("60_m4_shot_raw_2_muffled"), ExtResource("61_m4_shot_raw_3_muffled")],
 &"m4_shot_suppressed": [ExtResource("62_m4_shot_suppressed_1"), ExtResource("63_m4_shot_suppressed_2"), ExtResource("64_m4_shot_suppressed_3"), ExtResource("65_m4_shot_suppressed_4")],
 &"m4_shot_suppressed_muffled": [ExtResource("66_m4_shot_suppressed_1_muffled"), ExtResource("67_m4_shot_suppressed_2_muffled"), ExtResource("68_m4_shot_suppressed_3_muffled"), ExtResource("69_m4_shot_suppressed_4_muffled")],
+&"m4a1_fire_semi": [ExtResource("72_m4a1_fire_semi")],
+&"m4a1_fire_semi_muffled": [ExtResource("73_m4a1_fire_semi_muffled")],
+&"m4a1_fire_auto": [ExtResource("74_m4a1_fire_auto")],
+&"m4a1_fire_auto_muffled": [ExtResource("75_m4a1_fire_auto_muffled")],
+&"m4a1_fire_suppressed": [ExtResource("76_m4a1_fire_suppressed")],
+&"m4a1_fire_suppressed_muffled": [ExtResource("77_m4a1_fire_suppressed_muffled")],
 &"ui_hover": [ExtResource("70_ui_hover")],
 &"ui_start": [ExtResource("71_ui_start")]
 }

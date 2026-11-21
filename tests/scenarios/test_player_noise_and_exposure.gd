@@ -75,6 +75,7 @@ func test_landing_from_a_jump_is_heard() -> void:
 
 
 func test_suppressed_shot_carries_18m() -> void:
+	_player.weapon.set_variant(1)  # the rifle starts unsuppressed
 	var inside: Array = _sensor(Vector3(17.0, 0.0, 0.0))
 	var outside: Array = _sensor(Vector3(19.0, 0.0, 0.0))
 	await _ticks(1)

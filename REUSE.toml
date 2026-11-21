@@ -130,3 +130,9 @@ precedence = "override"
 SPDX-FileCopyrightText = "2026 Lone Asset contributors (rifle reload sounds and animations made by the project developer)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+
+[[annotations]]
+path = ["content/weapons/m4a1_ms/m4a1_ms_viewmodel.glb*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (arms and rifle model supplied by the developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"

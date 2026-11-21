@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://content/weapons/m4a1_ms/m4a1_ms_viewmodel.gd" id="1"]
+
+[node name="M4A1MsViewmodel" type="Node3D"]
+script = ExtResource("1")

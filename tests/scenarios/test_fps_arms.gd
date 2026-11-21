@@ -3,10 +3,23 @@ extends GdUnitTestSuite
 
 const PLAYER_SCENE: PackedScene = preload("res://game/player/player.tscn")
 
+const RIFLE_ON_PACK_RIG: PackedScene = preload("res://content/weapons/m4a1_custom/m4a1_custom_viewmodel.tscn")
+
 var _player: Player
+var _rifle: WeaponDefinition = load("res://data/weapons/rifle_muzzle.tres")
+var _rifle_scene: PackedScene
+
+
+func after_test() -> void:
+	_rifle.viewmodel_scene = _rifle_scene
 
 
 func before_test() -> void:
+	# The rifle files use the developer's own rig, which has its own arms; these tests are about the arms that
+	# follow the M4 pack rig (the knife still uses it, the M4A1 Custom is the fallback rifle), so put that
+	# rifle model on the rifle for the test and back afterwards.
+	_rifle_scene = _rifle.viewmodel_scene
+	_rifle.viewmodel_scene = RIFLE_ON_PACK_RIG
 	var floor_body: StaticBody3D = auto_free(StaticBody3D.new())
 	var shape: CollisionShape3D = CollisionShape3D.new()
 	var box: BoxShape3D = BoxShape3D.new()
@@ -21,10 +34,10 @@ func before_test() -> void:
 		await get_tree().physics_frame
 
 
-## A weapon with its own arms rig (the pistol) animates its arms directly and gets no FpsArms.
+## A weapon with its own arms rig (the pistol, the rifle) animates its arms directly and gets no FpsArms.
 func _has_own_rig(weapon: Weapon) -> bool:
 	for node: Node in weapon.viewmodel.find_children("*", "Skeleton3D", true, false):
-		if (node as Skeleton3D).find_bone(&"gun_root") >= 0:
+		if (node as Skeleton3D).find_bone(&"gun_root") >= 0 or (node as Skeleton3D).find_bone(&"Wrist_R") >= 0:
 			return true
 	return false
 

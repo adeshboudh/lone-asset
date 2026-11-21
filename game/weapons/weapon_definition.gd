@@ -140,6 +140,8 @@ extends Resource
 
 @export_group("Audio (sound ids in the sound bank)")
 @export var fire_sound: StringName = &"m4_shot_suppressed"
+## Played instead of fire_sound while the weapon is in full-auto (empty = fire_sound in every mode).
+@export var fire_sound_auto: StringName = &""
 @export var dry_fire_sound: StringName = &"rifle_dry"
 @export var reload_sound: StringName = &"rifle_reload"
 @export var reload_empty_sound: StringName = &"rifle_reload_empty"

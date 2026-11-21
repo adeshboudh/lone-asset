@@ -77,3 +77,12 @@ func test_sounds_are_imported_uncompressed() -> void:
 		assert_int(config.get_value("params", "compress/mode", -1)).override_failure_message("%s is compressed" % file).is_equal(0)
 		checked += 1
 	assert_int(checked).is_greater(30)
+
+
+func test_rifle_fire_sounds_exist_with_muffled_copies_and_the_auto_sound_is_only_on_the_unsuppressed_rifle() -> void:
+	var unsuppressed: WeaponDefinition = load("res://data/weapons/rifle_muzzle.tres")
+	for id: StringName in [unsuppressed.fire_sound, unsuppressed.fire_sound_auto, RIFLE.fire_sound]:
+		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
+		assert_bool(BANK.has_sound(StringName(String(id) + "_muffled"))).override_failure_message("missing muffled '%s'" % id).is_true()
+	assert_str(String(unsuppressed.fire_sound)).is_not_equal(String(unsuppressed.fire_sound_auto))
+	assert_str(String(RIFLE.fire_sound_auto)).is_empty()

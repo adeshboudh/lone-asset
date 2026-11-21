@@ -28,8 +28,9 @@ func before_test() -> void:
 	await _ticks(10)
 
 
-func test_starts_with_the_rifle() -> void:
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
+func test_starts_with_the_rifle_unsuppressed() -> void:
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
+	assert_bool(_player.weapon.definition.suppressed).is_false()
 
 
 func test_number_keys_pick_the_weapon() -> void:
@@ -38,12 +39,12 @@ func test_number_keys_pick_the_weapon() -> void:
 	await _press_slot(3)
 	assert_str(String(_player.weapon.definition.id)).is_equal("knife")
 	await _press_slot(1)
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
 
 
 func test_missing_slot_changes_nothing() -> void:
 	await _press_slot(4)
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
 
 
 func test_only_the_weapon_in_hand_is_shown() -> void:
@@ -63,7 +64,7 @@ func test_cannot_switch_while_reloading() -> void:
 	_intent.reload = false
 	assert_bool(_player.weapon.logic.is_reloading).is_true()
 	await _press_slot(2)
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
 
 
 func test_each_weapon_keeps_its_own_ammo() -> void:
@@ -178,24 +179,24 @@ func test_rifle_shot_leaves_the_muzzle_but_hits_where_the_camera_aims() -> void:
 	assert_float(HealthComponent.of(dummy).health).is_less(100.0)
 
 
-func test_attachment_key_swaps_suppressor_for_muzzle_brake_and_keeps_ammo() -> void:
+func test_attachment_key_swaps_muzzle_brake_for_suppressor_and_keeps_ammo() -> void:
 	var rifle: Weapon = _player.weapon
 	rifle.logic.magazine = 17
 	await _press_attachment()
-	assert_str(String(rifle.definition.id)).is_equal("rifle_muzzle")
+	assert_str(String(rifle.definition.id)).is_equal("rifle_suppressed")
 	assert_int(rifle.logic.magazine).is_equal(17)
-	assert_bool(rifle.definition.suppressed).is_false()
+	assert_bool(rifle.definition.suppressed).is_true()
 	await _ticks(70)
 	await _press_attachment()
-	assert_str(String(rifle.definition.id)).is_equal("rifle_suppressed")
+	assert_str(String(rifle.definition.id)).is_equal("rifle_muzzle")
 	assert_int(rifle.logic.magazine).is_equal(17)
 
 
 func test_muzzle_brake_is_more_accurate_and_louder_than_the_suppressor() -> void:
 	var rifle: Weapon = _player.weapon
-	var suppressed: WeaponDefinition = rifle.definition
-	await _press_attachment()
 	var brake: WeaponDefinition = rifle.definition
+	await _press_attachment()
+	var suppressed: WeaponDefinition = rifle.definition
 	assert_float(brake.spread_hip_deg).is_less(suppressed.spread_hip_deg)
 	assert_float(brake.spread_ads_deg).is_less(suppressed.spread_ads_deg)
 	assert_float(brake.noise_radius_m).is_greater(suppressed.noise_radius_m)
@@ -231,9 +232,9 @@ func test_fitted_variant_is_saved_and_restored() -> void:
 	var saved: Dictionary = _player.save_state()
 	await _ticks(70)
 	await _press_attachment()
-	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
-	_player.load_state(saved)
 	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_muzzle")
+	_player.load_state(saved)
+	assert_str(String(_player.weapon.definition.id)).is_equal("rifle_suppressed")
 
 
 func _press_attachment() -> void:

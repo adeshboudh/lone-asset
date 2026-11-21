@@ -1,0 +1,9 @@
+SPDX-FileCopyrightText: 2026 Lone Asset contributors
+SPDX-License-Identifier: CC-BY-4.0
+
+A Blender control rig of the UE5 mannequin arms ("RIG_UE5_Manny.blend") and an M4A1 rifle with a small bone rig
+("gun_rig.fbx"), both supplied by the project developer. The authors and the licence terms of these two files are NOT
+known. The controller shapes inside the rig are credited separately (Helindu, CC-BY-4.0, see content/LICENSES.md).
+
+They are used only as animation sources. Find the authors and the terms, then either replace this file with the real
+licence text or a plain SPDX identifier, or replace the models, before any public release.

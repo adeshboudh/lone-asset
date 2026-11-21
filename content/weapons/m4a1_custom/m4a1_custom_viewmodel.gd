@@ -16,6 +16,10 @@ const GUN_YAW: float = PI * 0.5
 const BODY_PARTS: Array[StringName] = [&"m4a1_custom_body", &"m4a1_custom_iron_sights",
 		&"m4a1_custom_optic", &"m4a1_custom_optic_lens", &"m4a1_custom_suppressor", &"m4a1_custom_muzzle_brake"]
 const MAGAZINE_PART: StringName = &"m4a1_custom_magazine"
+## Reloads retargeted from hand-made clips (tools/anim/build_reload_empty.gd); each replaces the pack's clip of the
+## same name.
+const RELOAD_EMPTY := "res://content/weapons/m4a1_custom/reload_empty.tres"
+const RELOAD_TACTICAL := "res://content/weapons/m4a1_custom/reload_tactical.tres"
 const LENS_SHADER := "res://content/weapons/m4a1_custom/scope_lens.gdshader"
 ## Layer the viewmodel is drawn on, so the scope camera can leave the gun itself out of its picture.
 const VIEWMODEL_LAYER: int = 1 << 18
@@ -54,6 +58,11 @@ func _ready() -> void:
 	var rig: Node3D = (load("res://content/weapons/m4/source/M4.fbx") as PackedScene).instantiate()
 	add_child(rig)
 	animation_player = rig.get_node("AnimationPlayer") as AnimationPlayer
+	var library: AnimationLibrary = animation_player.get_animation_library(&"")
+	library.remove_animation(&"Reload_Empty")
+	library.add_animation(&"Reload_Empty", load(RELOAD_EMPTY) as Animation)
+	library.remove_animation(&"Reload")
+	library.add_animation(&"Reload", load(RELOAD_TACTICAL) as Animation)
 	animation_player.get_animation(&"Idle").loop_mode = Animation.LOOP_LINEAR
 	animation_player.play(&"Idle")
 	animation_player.seek(0.0, true)

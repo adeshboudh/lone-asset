@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 Read `docs/architecture.md` (rules and layers) and `docs/handoff.md` (status and next steps) before changing anything.
 
-- Desktop only (Windows, Linux). Godot 4.7.2, typed GDScript. Any asset the developer likes may be used, under any licence or none (CC0/CC BY not required); record each one in `content/LICENSES.md` (author, source, terms as known) and `REUSE.toml` so `reuse lint` passes. Never use another game's name, or assets ripped from its files. Fan-made 3D art inspired by another game, with changes, is allowed; the asset keeps no game name in the game, UI or marketing.
+- Desktop only (Windows, Linux). Godot 4.7.2, typed GDScript. Any asset the developer likes may be used, under any licence or none (CC0/CC BY not required); record each one in `content/LICENSES.md` (author, source, terms as known) and `REUSE.toml` so `reuse lint` passes. Never use another game's name in the game, UI or marketing. Fan-made 3D art inspired by another game, with changes, is allowed; the asset keeps no game name in the game, UI or marketing.
 - Branch from `dev` and open PRs into `dev`; `main` is the release line and only receives merges from `dev`.
 - Group related small changes (tuning, sounds, docs, minor fixes) on one branch with one PR, one commit per change, and run the tests once before pushing. Give a larger feature or refactor its own branch and PR. Wait for the developer to play the build and approve before merging.
 - Put tunable numbers in `data/**/*.tres`. Put logic in pure `*_rules.gd` classes with unit tests; scenario tests for scene behaviour.

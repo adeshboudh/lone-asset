@@ -190,7 +190,8 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 		var direction: Vector3 = WeaponSpread.random_direction(-aim.basis.z, current_spread_deg, _rng)
 		var start: Array = _bullet_start(direction, shooter, aim)
 		_ballistics.fire(start[0], start[1], definition, shooter)
-		Audio.play_2d(definition.fire_sound, &"Weapons", 0.0, _rng.randf_range(0.96, 1.04))
+		var shot_sound: StringName = definition.fire_sound_auto if logic.fire_mode == &"auto" and definition.fire_sound_auto != &"" else definition.fire_sound
+		Audio.play_2d(shot_sound, &"Weapons", 0.0, _rng.randf_range(0.96, 1.04))
 		spread.on_shot(definition)
 		current_spread_deg = spread.current_deg(definition, aiming, moving, crouched)
 		var recoil_scale: float = lerpf(1.0, definition.recoil_ads_mult, aim_blend)

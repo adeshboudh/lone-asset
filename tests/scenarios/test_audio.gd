@@ -78,7 +78,7 @@ func test_landing_sound_after_a_jump() -> void:
 func test_firing_plays_the_shot_on_the_weapons_bus() -> void:
 	_fire_once()
 	await _ticks(3)
-	var shots: Array = _ids("m4_shot_suppressed")
+	var shots: Array = _ids("m4a1_fire_semi")  # the rifle starts unsuppressed, in semi
 	assert_array(shots).has_size(1)
 	assert_str(shots[0]["bus"]).is_equal("Weapons")
 

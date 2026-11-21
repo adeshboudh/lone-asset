@@ -1,0 +1,7 @@
+SPDX-FileCopyrightText: 2026 Lone Asset contributors
+SPDX-License-Identifier: CC-BY-4.0
+
+First-person arms, an M4A1 rifle and their rig (content/weapons/m4a1_ms/m4a1_ms_viewmodel.glb), supplied by the project
+developer inside two animation exports. The files appear to come from another game's item files; the author and the
+licence terms are NOT known. Used for now while the rifle part is rebuilt. Find the origin and terms, then replace this
+file with the real licence text or replace the model before any public release.

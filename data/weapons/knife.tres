@@ -1,7 +1,6 @@
-[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
-[ext_resource type="PackedScene" path="res://content/weapons/knife/knife_viewmodel.tscn" id="2_view"]
 
 [resource]
 script = ExtResource("1_def")
@@ -10,7 +9,6 @@ display_name = "Combat knife"
 suppressed = true
 noise_radius_m = 3.0
 flash_exposure = 0.0
-viewmodel_scene = ExtResource("2_view")
 viewmodel_hip_position = Vector3(-0.01, 0.07, -0.16)
 viewmodel_ads_position = Vector3(-0.01, 0.07, -0.16)
 melee = true

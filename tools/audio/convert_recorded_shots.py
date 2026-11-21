@@ -17,16 +17,10 @@ from make_placeholder_sounds import MUFFLE_CUTOFF_HZ, OUT, SR, fft_filter, norma
 SOURCE = Path(__file__).resolve().parent / "source"
 KEEP_S = 1.2
 FADE_S = 0.3
-SHOTS = {
-    "pistol_shot_suppressed": "pistol_shot_suppressed_s1.wav",
-    "pistol_shot_loud": "pistol_shot_loud_s1.wav",
-}
+SHOTS: dict[str, str] = {}  # the pistol and the old M4 shots were removed 2026-11-22; the rifle fire sounds are supplied directly
 # One gun's recording holding several single shots: each shot becomes a variant (id_1, id_2, ...).
 # Add a gun by adding its recordings here and its sound ids in sound_bank.tres.
-SLICED_SHOTS = {
-    "m4_shot_raw": "m4_raw.mp3",
-    "m4_shot_suppressed": "m4_suppressed.mp3",
-}
+SLICED_SHOTS: dict[str, str] = {}
 SHOT_LENGTH_S = 0.7
 SHOT_LEAD_S = 0.03
 # Menu sounds: (source, kept seconds, peak level). Hover is quieter than the rest.
@@ -44,20 +38,12 @@ def decode(path: Path) -> np.ndarray:
 
 
 MAG = "1235545.audio-GUNMech-SMorph-LockxLoad-TLM170_-AR-15_Steel_Mag_PIstol_Clip_Manipulation_05.mp3"
-SLIDE = "213017-Pistol-Luger-9mm-Foley-SlideAction-1.mp3"
-# Reload sounds are placed so the clips' events land on the viewmodel animations' key moments, and padded to
-# the reload time. Magazine clip events: out 0.02 s, in 0.93 s, seated 1.15 s. Slide clip: snap at 0.66 s.
-# (id, reload time, [(clip, start in the reload s)])
-RELOADS = [
-    ("rifle_reload", 2.2, [(MAG, 0.35)]),  # M4 magazine out at 0.55 s, in at 1.21 s
-    ("rifle_reload_empty", 2.8, [(MAG, 0.57), (SLIDE, 1.26)]),  # magazine in at 1.50 s, bolt release at 1.92 s
-    ("pistol_reload", 1.5, [(MAG, 0.0)]),  # hand dips at 0.25 to 0.8 s and rises at 1.15 s
-    ("pistol_reload_empty", 1.9, [(MAG, 0.0), (SLIDE, 0.84)]),  # slide snap at 1.5 s
-]
+# The pistol and rifle reload sounds are gone (the rifle's are supplied by the developer, trimmed to its clips).
+RELOADS: list[tuple[str, float, list[tuple[str, float]]]] = []
 
 
 def reloads() -> None:
-    clips = {file: decode(SOURCE / file) for file in (MAG, SLIDE)}
+    clips = {file: decode(SOURCE / file) for file in {f for _, _, parts in RELOADS for f, _ in parts}}
     for sound_id, length_s, parts in RELOADS:
         track = np.zeros(int(length_s * SR))
         for file, start_s in parts:
@@ -72,13 +58,11 @@ def reloads() -> None:
 
 
 CHARGING = "205940-EFX_INT_AR-15_M4_Charging_Handle_with_Trigger_04-B.mp3"
-MAKAROV = "1232860.audio-GUNMech-SMorph-LockLoad-CO-100k_-Makarov_9mm_Single_Action_Pistol_Dry_Fire_03.mp3"
 # The charging-handle recording holds several clicks (about 1.03, 2.15, 3.29, 3.47, 3.65, 6.03, 7.72, 7.88 and
 # 8.14 s). This one is the dry-fire trigger click; change it if it is the wrong sound.
 M4_TRIGGER_AT_S = 6.03
 DRY = {
     "rifle_dry": (CHARGING, M4_TRIGGER_AT_S - 0.01, 0.16),
-    "pistol_dry": (MAKAROV, 0.0, 0.15),
 }
 
 

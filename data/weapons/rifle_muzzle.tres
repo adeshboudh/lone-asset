@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
-[ext_resource type="PackedScene" path="res://content/weapons/m4a1_custom/m4a1_custom_viewmodel.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://content/weapons/m4a1_ms/m4a1_ms_viewmodel.tscn" id="2_view"]
 
 [ext_resource type="Resource" path="res://data/weapons/rifle_suppressed.tres" id="3_alt"]
 
@@ -9,7 +9,7 @@
 script = ExtResource("1_def")
 id = &"rifle_muzzle"
 alt_variant = ExtResource("3_alt")
-display_name = "M4A1 Custom, muzzle brake"
+display_name = "M4A1, muzzle brake"
 muzzle_velocity = 520.0
 gravity_scale = 1.5
 penetration_power = 100.0
@@ -25,9 +25,10 @@ flash_exposure = 1.0
 fire_sound = &"m4a1_fire_semi"
 fire_sound_auto = &"m4a1_fire_auto"
 viewmodel_scene = ExtResource("2_view")
-scope_zoom = 3.0
-viewmodel_hip_position = Vector3(0.07, -0.03, -0.04)
-viewmodel_ads_position = Vector3(-0.0711, -0.0108, 0.065)
+scope_zoom = 1.0
+viewmodel_hip_position = Vector3(0.09, -0.11, -0.03)
+viewmodel_ads_position = Vector3(0.0, -0.066, -0.1)
+viewmodel_pivot = Vector3(0.127, -0.217, 0.07)
 recoil_kick_back_m = 0.018
 recoil_kick_up_m = 0.003
 recoil_kick_pitch_deg = 2.0
@@ -36,10 +37,10 @@ recoil_kick_roll_deg = 1.6
 recoil_kick_ads_mult = 0.45
 recoil_spring_hz = 4.5
 recoil_spring_damping = 0.42
-viewmodel_hip_rotation_deg = Vector3(0.3, 0.4, 2)
+viewmodel_hip_rotation_deg = Vector3(0, 0.3, 0)
 anim_idle = &"Idle"
-anim_draw = &"Draw"
-anim_fire = &"Fire"
+anim_draw = &""
+anim_fire = &""
 anim_reload = &"Reload"
 anim_reload_empty = &"Reload_Empty"
 reload_time = 3.1

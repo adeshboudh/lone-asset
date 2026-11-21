@@ -139,7 +139,7 @@ extends Resource
 @export_range(0.0, 1.0) var flash_exposure: float = 1.0
 
 @export_group("Audio (sound ids in the sound bank)")
-@export var fire_sound: StringName = &"m4_shot_suppressed"
+@export var fire_sound: StringName = &"m4a1_fire_semi"
 ## Played instead of fire_sound while the weapon is in full-auto (empty = fire_sound in every mode).
 @export var fire_sound_auto: StringName = &""
 @export var dry_fire_sound: StringName = &"rifle_dry"

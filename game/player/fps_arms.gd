@@ -9,7 +9,7 @@ extends Node3D
 const LAYER: int = 1 << 18
 ## A rig arm scaled below this is collapsed on purpose (one-handed weapons hide the left arm).
 const COLLAPSED_SCALE: float = 0.01
-## A weapon's own left-hand hold (a "LeftHandHold" node on the gun, see m4a1_custom_viewmodel.gd) applies fully
+## A weapon's own left-hand hold (a "LeftHandHold" node on the gun, see the rifle viewmodel, if it has one) applies fully
 ## while the rig's left hand is within HOLD_NEAR_M of where it rests at Idle, and lets go by HOLD_FAR_M.
 const HOLD_NEAR_M: float = 0.04
 const HOLD_FAR_M: float = 0.12

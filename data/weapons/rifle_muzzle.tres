@@ -9,7 +9,7 @@
 script = ExtResource("1_def")
 id = &"rifle_muzzle"
 alt_variant = ExtResource("3_alt")
-display_name = "M4A1 Custom, muzzle brake"
+display_name = "M4A1, muzzle brake"
 muzzle_velocity = 520.0
 gravity_scale = 1.5
 penetration_power = 100.0

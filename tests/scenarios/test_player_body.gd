@@ -189,7 +189,7 @@ func test_hands_follow_the_gun_into_the_aim() -> void:
 
 
 func test_every_part_of_every_body_gun_is_off_the_camera_layers_and_casts_a_shadow() -> void:
-	# Parts added in code (the M4A1 Custom's) have no scene owner: they must still be hidden, or a second copy of
+	# Parts added in code (a viewmodel's) have no scene owner: they must still be hidden, or a second copy of
 	# the gun is drawn over the real viewmodel and the two flicker against each other.
 	var checked: int = 0
 	for node: Node in _player.camera.get_node("BodyGuns").find_children("*", "GeometryInstance3D", true, false):

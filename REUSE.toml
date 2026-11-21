@@ -64,7 +64,7 @@ SPDX-FileCopyrightText = "Michael Karel (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = ["tools/audio/source/*.mp3", "content/audio/sfx/rifle_reload*.wav*", "content/audio/sfx/pistol_reload*.wav*", "content/audio/sfx/rifle_dry*.wav*", "content/audio/sfx/pistol_dry*.wav*"]
+path = ["tools/audio/source/*.mp3", "content/audio/sfx/pistol_reload*.wav*", "content/audio/sfx/rifle_dry*.wav*", "content/audio/sfx/pistol_dry*.wav*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (recorded sounds, original page not found)"
 SPDX-License-Identifier = "CC0-1.0"
@@ -119,7 +119,7 @@ SPDX-FileCopyrightText = "Unknown author (Blender tutorial file '4.7 Creating th
 SPDX-License-Identifier = "LicenseRef-Reference-rig-unknown"
 
 [[annotations]]
-path = ["RIG_UE5_Manny.blend", "gun_rig.fbx", "animation.blend"]
+path = ["RIG_UE5_Manny.blend", "tools/blender/helpers/gun_rig.fbx"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown authors (UE5 Manny arms control rig; M4A1 rifle rig), controller shapes by Helindu (Sketchfab, CC-BY-4.0)"
 SPDX-License-Identifier = "LicenseRef-Manny-rig-unknown"
@@ -135,3 +135,10 @@ path = ["content/characters/agent_mco/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "buh (Sketchfab, mesh and textures); Motus Digital, LLC (MoCap Online, skeleton and clips)"
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-MoCapOnline-Standard"
+
+[[annotations]]
+path = ["content/audio/sfx/rifle_reload*.wav*", "content/audio/sfx/m4a1_fire_*.wav*", "tools/audio/source/m4a1/*.wav", "content/weapons/m4a1_custom/reload_*_motion.json", "content/weapons/m4a1_custom/reload_empty.tres", "content/weapons/m4a1_custom/reload_tactical.tres"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Lone Asset contributors (rifle reload sounds and animations made by the project developer)"
+SPDX-License-Identifier = "CC-BY-4.0"
+

@@ -66,16 +66,20 @@ func test_bus_layout_has_all_buses_routed_correctly() -> void:
 
 
 func test_sounds_are_imported_uncompressed() -> void:
-	# Uncompressed PCM: the placeholders are tiny and need no decoding.
-	var dir: DirAccess = DirAccess.open("res://content/audio/sfx")
+	# Uncompressed PCM: the placeholders are tiny and need no decoding. Sounds live in content/audio/sfx and in
+	# one folder per weapon under content/audio/weapons/.
+	var folders: Array[String] = ["res://content/audio/sfx"]
+	for weapon: String in DirAccess.get_directories_at("res://content/audio/weapons"):
+		folders.append("res://content/audio/weapons/" + weapon)
 	var checked: int = 0
-	for file: String in dir.get_files():
-		if not file.ends_with(".wav.import"):
-			continue
-		var config: ConfigFile = ConfigFile.new()
-		assert_int(config.load("res://content/audio/sfx/" + file)).is_equal(OK)
-		assert_int(config.get_value("params", "compress/mode", -1)).override_failure_message("%s is compressed" % file).is_equal(0)
-		checked += 1
+	for folder: String in folders:
+		for file: String in DirAccess.get_files_at(folder):
+			if not file.ends_with(".wav.import"):
+				continue
+			var config: ConfigFile = ConfigFile.new()
+			assert_int(config.load(folder + "/" + file)).is_equal(OK)
+			assert_int(config.get_value("params", "compress/mode", -1)).override_failure_message("%s is compressed" % file).is_equal(0)
+			checked += 1
 	assert_int(checked).is_greater(30)
 
 

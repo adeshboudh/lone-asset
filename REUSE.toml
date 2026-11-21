@@ -46,7 +46,7 @@ SPDX-FileCopyrightText = "Michael Karel (Sketchfab)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
-path = ["tools/audio/source/*.mp3", "content/audio/sfx/rifle_dry*.wav*"]
+path = ["tools/audio/source/*.mp3", "content/audio/weapons/m4a1/dry.wav*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (recorded sounds, original page not found)"
 SPDX-License-Identifier = "CC0-1.0"
@@ -89,7 +89,7 @@ SPDX-FileCopyrightText = "Unknown authors (UE5 Manny arms control rig; M4A1 rifl
 SPDX-License-Identifier = "LicenseRef-Manny-rig-unknown"
 
 [[annotations]]
-path = ["content/audio/sfx/rifle_reload*.wav*", "content/audio/sfx/m4a1_fire_*.wav*", "tools/audio/source/m4a1/*.wav"]
+path = ["content/audio/weapons/m4a1/fire_*.wav*", "content/audio/weapons/m4a1/reload_*.wav*", "content/audio/weapons/m4a1/magazine_*.wav*", "content/audio/weapons/m4a1/tail_outdoor.wav*", "tools/audio/source/m4a1/*.wav"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Lone Asset contributors (rifle reload sounds and animations made by the project developer)"
 SPDX-License-Identifier = "CC-BY-4.0"

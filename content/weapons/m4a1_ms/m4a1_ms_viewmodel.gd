@@ -12,7 +12,10 @@ const FACING := Basis(Vector3.UP, PI)
 ## so the materials are built here. The arms are not in this atlas and keep a plain colour.
 const GUN_ALBEDO: Texture2D = preload("res://content/weapons/m4a1_ms/textures/m4a1_albedo.png")
 const GUN_NORMAL: Texture2D = preload("res://content/weapons/m4a1_ms/textures/m4a1_normal.png")
-const ARMS_COLOR := Color(0.34, 0.36, 0.32)
+## The arms have two surfaces in the GLB (MT_Arms_Sleeves and MT_Arms_Gloves) and no texture, so each gets its own
+## plain material: olive cloth sleeves and dark leather gloves.
+const SLEEVE_COLOR := Color(0.25, 0.28, 0.20)
+const GLOVE_COLOR := Color(0.07, 0.07, 0.08)
 ## Muzzle in the viewmodel's frame (metres, the rifle's bore axis, forward is -z).
 const MUZZLE := Vector3(0.0, 0.0, -0.6)
 
@@ -32,16 +35,25 @@ func _ready() -> void:
 	gun_material.normal_texture = GUN_NORMAL
 	gun_material.metallic = 0.5
 	gun_material.roughness = 0.6
-	var arms_material := StandardMaterial3D.new()
-	arms_material.albedo_color = ARMS_COLOR
-	arms_material.roughness = 0.8
+	var sleeve_material := StandardMaterial3D.new()
+	sleeve_material.albedo_color = SLEEVE_COLOR
+	sleeve_material.roughness = 0.95
+	var glove_material := StandardMaterial3D.new()
+	glove_material.albedo_color = GLOVE_COLOR
+	glove_material.roughness = 0.55
 	for node: Node in model.find_children("*", "GeometryInstance3D", true, false):
 		var mesh: GeometryInstance3D = node as GeometryInstance3D
 		mesh.layers = VIEWMODEL_LAYER
 		var is_arms: bool = mesh.name.begins_with("MS_Arms")
 		if is_arms:
 			mesh.add_to_group(&"first_person_arms")
-		mesh.material_override = arms_material if is_arms else gun_material
+		if not is_arms:
+			mesh.material_override = gun_material
+			continue
+		var arms_mesh: MeshInstance3D = mesh as MeshInstance3D
+		for surface: int in arms_mesh.mesh.get_surface_count():
+			var is_glove: bool = String(arms_mesh.mesh.surface_get_material(surface).resource_name).contains("Gloves")
+			arms_mesh.set_surface_override_material(surface, glove_material if is_glove else sleeve_material)
 	var muzzle := Node3D.new()
 	muzzle.name = "Muzzle"
 	add_child(muzzle)

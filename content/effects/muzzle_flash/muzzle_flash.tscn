@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://content/effects/muzzle_flash/TX_Muzzle_Flash.png" id="1_tex"]
+
+[sub_resource type="StandardMaterial3D" id="Material_flash"]
+transparency = 1
+shading_mode = 0
+blend_mode = 1
+albedo_color = Color(1, 1, 1, 0.8)
+albedo_texture = ExtResource("1_tex")
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="Quad_flash"]
+material = SubResource("Material_flash")
+size = Vector2(0.2, 0.2)
+
+[sub_resource type="ParticleProcessMaterial" id="Process_flash"]
+angle_min = -180.0
+angle_max = 180.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.7
+scale_max = 1.2
+
+[node name="MuzzleFlash" type="GPUParticles3D"]
+cast_shadow = 0
+emitting = false
+amount = 2
+lifetime = 0.06
+one_shot = true
+explosiveness = 1.0
+local_coords = true
+process_material = SubResource("Process_flash")
+draw_pass_1 = SubResource("Quad_flash")

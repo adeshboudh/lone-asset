@@ -20,3 +20,12 @@ signal interaction_completed(interactable_id: StringName, actor: Node)
 
 ## A mission objective that asks for a checkpoint was completed (WP 12 saves on it).
 signal checkpoint_requested(objective_id: StringName)
+
+## A reload could not start. reason: &"no_magazine" (no spare magazine fits or holds more rounds) or &"full".
+signal reload_blocked(reason: StringName)
+
+## The magazine in a weapon changed (a reload finished). weapon_id: the weapon definition's id.
+signal magazine_changed(weapon_id: StringName)
+
+## A short message for the HUD toast (a pickup taken, the pouches full).
+signal toast_requested(text: String)

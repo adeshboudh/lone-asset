@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="StartingLoadout" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://game/inventory/starting_loadout.gd" id="1_s"]
+[ext_resource type="Script" path="res://game/inventory/starting_magazine.gd" id="2_sm"]
+[ext_resource type="Resource" path="res://data/magazines/stanag_30.tres" id="3_stanag"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_556.tres" id="4_fmj556"]
+[ext_resource type="Resource" path="res://data/magazines/glock_17rd.tres" id="5_glock"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_9.tres" id="6_fmj9"]
+
+[sub_resource type="Resource" id="SM_1"]
+script = ExtResource("2_sm")
+type = ExtResource("3_stanag")
+ammo = ExtResource("4_fmj556")
+rounds = 30
+[sub_resource type="Resource" id="SM_2"]
+script = ExtResource("2_sm")
+type = ExtResource("3_stanag")
+ammo = ExtResource("4_fmj556")
+rounds = 30
+[sub_resource type="Resource" id="SM_3"]
+script = ExtResource("2_sm")
+type = ExtResource("3_stanag")
+ammo = ExtResource("4_fmj556")
+rounds = 30
+[sub_resource type="Resource" id="SM_4"]
+script = ExtResource("2_sm")
+type = ExtResource("3_stanag")
+ammo = ExtResource("4_fmj556")
+rounds = 0
+[sub_resource type="Resource" id="SM_5"]
+script = ExtResource("2_sm")
+type = ExtResource("5_glock")
+ammo = ExtResource("6_fmj9")
+rounds = 17
+[sub_resource type="Resource" id="SM_6"]
+script = ExtResource("2_sm")
+type = ExtResource("5_glock")
+ammo = ExtResource("6_fmj9")
+rounds = 17
+[sub_resource type="Resource" id="SM_7"]
+script = ExtResource("2_sm")
+type = ExtResource("5_glock")
+ammo = ExtResource("6_fmj9")
+rounds = 17
+
+[resource]
+script = ExtResource("1_s")
+pouch_count = 8
+magazines = Array[ExtResource("2_sm")]([SubResource("SM_1"), SubResource("SM_2"), SubResource("SM_3"), SubResource("SM_4"), SubResource("SM_5"), SubResource("SM_6"), SubResource("SM_7")])
+loose_ammo = {
+"fmj_556": 30,
+"fmj_9": 17
+}

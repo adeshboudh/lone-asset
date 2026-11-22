@@ -17,10 +17,19 @@ extends Resource
 @export var fire_rate_rpm: float = 750.0
 ## Cycled with the fire-mode key. Supported: &"semi", &"auto".
 @export var fire_modes: Array[StringName] = [&"semi", &"auto"]
-@export var magazine_size: int = 30
-@export var reserve_ammo: int = 90
 @export var reload_time: float = 2.2
 @export var reload_time_empty: float = 2.8
+
+@export_group("Ammunition")
+## Caliber the chamber takes (checked against the rounds once more calibers exist).
+@export var chambering: StringName = &"556x45"
+## Magazine families this weapon takes (MagazineType.family).
+@export var magazine_families: Array[StringName] = [&"stanag"]
+## The magazine and ammo a weapon starts with, and the ones guards reload.
+@export var default_magazine: MagazineType = preload("res://data/magazines/stanag_30.tres")
+@export var default_ammo: AmmoType = preload("res://data/ammo/fmj_556.tres")
+## Inventory picture.
+@export var icon: Texture2D
 
 @export_group("Ballistics")
 ## Metres per second.
@@ -145,6 +154,13 @@ extends Resource
 @export var dry_fire_sound: StringName = &"rifle_dry"
 @export var reload_sound: StringName = &"rifle_reload"
 @export var reload_empty_sound: StringName = &"rifle_reload_empty"
+
+@export_group("Muzzle effects")
+## Size of the muzzle flash sprite and smoke puff (1 = rifle size); the suppressed version is smaller still.
+@export var muzzle_flash_scale: float = 1.0
+@export var muzzle_smoke_scale: float = 1.0
+## Brightness of the flash light at the muzzle (the suppressed version uses a quarter of it).
+@export var muzzle_light_energy: float = 2.5
 
 @export_group("Presentation")
 ## First-person model. Must contain a Node3D named "Muzzle".

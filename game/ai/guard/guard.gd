@@ -3,6 +3,7 @@ extends CharacterBody3D
 ## An enemy guard (design §7.1). The root owns movement and navigation; the brain decides what to do.
 
 ## A navigation target farther than this (horizontally) from the mesh counts as unreachable.
+const AMMO_PICKUP: PackedScene = preload("res://game/inventory/ammo_pickup.tscn")
 const OFF_MESH_DISTANCE_M: float = 1.0
 ## A waypoint closer than this (horizontally) counts as reached.
 const WAYPOINT_REACHED_M: float = 0.3
@@ -316,8 +317,24 @@ func on_death() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	_perception.on_guard_died()
+	_drop_loot()
 	var tween: Tween = create_tween()
 	tween.tween_property(_model, "rotation:x", -PI * 0.5, 0.4).set_ease(Tween.EASE_IN)
+
+
+## Leaves the guard's spare magazine on the floor (a pickup the player can take).
+func _drop_loot() -> void:
+	if profile.drop_magazine == null or profile.drop_ammo == null or profile.drop_magazine_rounds <= 0:
+		return
+	var pickup: AmmoPickup = AMMO_PICKUP.instantiate() as AmmoPickup
+	pickup.pickup_id = StringName("drop_" + String(guard_id))
+	pickup.kind = AmmoPickup.Kind.MAGAZINE
+	pickup.magazine_type = profile.drop_magazine
+	pickup.ammo = profile.drop_ammo
+	pickup.count = profile.drop_magazine_rounds
+	pickup.top_level = true
+	pickup.transform = Transform3D(Basis(), global_position + Vector3(0.45, 0.05, 0.2))
+	get_parent().add_child.call_deferred(pickup)
 
 
 # --- Internals ---------------------------------------------------------------------------------------

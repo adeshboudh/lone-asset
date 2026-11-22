@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
 [ext_resource type="PackedScene" path="res://content/weapons/m4a1_ms/m4a1_ms_viewmodel.tscn" id="2_view"]
+[ext_resource type="Texture2D" path="res://content/weapons/m4a1_ms/Files/Icon_M4A1.png" id="9_icon"]
 
 [resource]
 script = ExtResource("1_def")
@@ -9,6 +10,7 @@ tracer_enabled = false
 id = &"rifle_suppressed"
 display_name = "M4A1"
 fire_rate_rpm = 600.0
+icon = ExtResource("9_icon")
 fire_sound = &"m4a1_fire_suppressed"
 muzzle_velocity = 520.0
 gravity_scale = 1.5

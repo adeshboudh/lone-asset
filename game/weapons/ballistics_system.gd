@@ -88,13 +88,14 @@ func _ready() -> void:
 
 
 ## shooter is excluded from the bullet's collisions.
-func fire(origin: Vector3, direction: Vector3, weapon: WeaponDefinition, shooter: CollisionObject3D) -> void:
+## `profile` is what the fired round changes about the shot (ShotProfile); null is a plain round.
+func fire(origin: Vector3, direction: Vector3, weapon: WeaponDefinition, shooter: CollisionObject3D, profile: ShotProfile = null) -> void:
 	var projectile: Projectile = _pool.pop_back() if not _pool.is_empty() else Projectile.new()
 	projectile.position = origin
-	projectile.velocity = direction.normalized() * weapon.muzzle_velocity
+	projectile.velocity = direction.normalized() * weapon.muzzle_velocity * (profile.velocity_mult if profile != null else 1.0)
 	projectile.travelled = 0.0
 	projectile.age = 0.0
-	projectile.damage = weapon.damage
+	projectile.damage = weapon.damage * (profile.damage_mult if profile != null else 1.0)
 	projectile.max_range = weapon.max_range
 	projectile.steps = maxi(weapon.projectile_steps_per_tick, 1)
 	projectile.gravity_scale = weapon.gravity_scale
@@ -105,13 +106,13 @@ func fire(origin: Vector3, direction: Vector3, weapon: WeaponDefinition, shooter
 	var key: int = shooter.get_instance_id() if shooter != null else 0
 	var shot_index: int = _shot_counts.get(key, 0)
 	_shot_counts[key] = shot_index + 1
-	projectile.tracer = weapon.tracer_enabled and TracerRules.shows_tracer(shot_index, weapon.tracer_every_n)
+	projectile.tracer = (weapon.tracer_enabled and TracerRules.shows_tracer(shot_index, weapon.tracer_every_n)) or (profile != null and profile.tracer)
 	projectile.tracer_color = Color(weapon.tracer_color.r * weapon.tracer_glow, weapon.tracer_color.g * weapon.tracer_glow,
 		weapon.tracer_color.b * weapon.tracer_glow, weapon.tracer_color.a)
 	projectile.tracer_length = weapon.tracer_length_m
 	projectile.tracer_width = weapon.tracer_width_m
 	projectile.tracer_start = weapon.tracer_start_m
-	projectile.power = weapon.penetration_power
+	projectile.power = weapon.penetration_power * (profile.penetration_mult if profile != null else 1.0)
 	projectile.ricochets = 0
 	projectile.impacts = 0
 	projectile.trail_from = 0.0

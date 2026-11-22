@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="InventoryCatalog" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://game/inventory/inventory_catalog.gd" id="1_s"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_556.tres" id="2_a"]
+[ext_resource type="Resource" path="res://data/ammo/ap_556.tres" id="3_a"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_9.tres" id="4_a"]
+[ext_resource type="Resource" path="res://data/ammo/subsonic_9.tres" id="5_a"]
+[ext_resource type="Resource" path="res://data/magazines/stanag_30.tres" id="6_m"]
+[ext_resource type="Resource" path="res://data/magazines/glock_17rd.tres" id="7_m"]
+[ext_resource type="Resource" path="res://data/magazines/glock_33rd.tres" id="8_m"]
+
+[ext_resource type="Script" path="res://game/inventory/ammo_type.gd" id="9_t"]
+[ext_resource type="Script" path="res://game/inventory/magazine_type.gd" id="10_t"]
+
+[resource]
+script = ExtResource("1_s")
+ammo = Array[ExtResource("9_t")]([ExtResource("2_a"), ExtResource("3_a"), ExtResource("4_a"), ExtResource("5_a")])
+magazines = Array[ExtResource("10_t")]([ExtResource("6_m"), ExtResource("7_m"), ExtResource("8_m")])

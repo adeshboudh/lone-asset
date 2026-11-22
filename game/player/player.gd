@@ -4,6 +4,8 @@ extends CharacterBody3D
 ## the components hold the behaviour.
 
 @export var settings: PlayerMovementSettings
+const STARTING_LOADOUT: StartingLoadout = preload("res://data/inventory/starting_loadout.tres")
+
 ## Weapons carried besides the one in the scene (slot 1): slots 2, 3... in order.
 @export var extra_weapons: Array[WeaponDefinition] = []
 
@@ -37,6 +39,11 @@ var binoculars: Binoculars:
 var interactor: Interactor:
 	get:
 		return _interactor
+## Every weapon carried, in slot order.
+var loadout: Array[Weapon]:
+	get:
+		return _weapons
+var inventory_screen: InventoryScreen
 var is_crouched: bool:
 	get:
 		return _stance.is_crouched
@@ -51,6 +58,11 @@ var _pose: BodyPoseState = BodyPoseState.new()
 ## Every weapon carried, in slot order, and the index of the one in hand.
 var _weapons: Array[Weapon] = []
 var _slot: int = 0
+## Magazine pouches and loose ammo, shared by every weapon.
+var inventory: AmmoInventory
+## Slot being switched to while the weapon in hand is put away, or -1.
+var _pending_slot: int = -1
+var _inventory_key_down: bool = false
 var _weapon: Weapon
 
 @onready var _input: PlayerInput = %PlayerInput
@@ -88,6 +100,9 @@ func _ready() -> void:
 	_health.died.connect(_on_died)
 	_interactor.setup(self)
 	_hud.setup(self)
+	inventory_screen = InventoryScreen.new()
+	add_child(inventory_screen)
+	inventory_screen.setup(self)
 
 
 ## Where guards look when checking whether they can see the player (design §8.1): head, chest and
@@ -107,10 +122,13 @@ func save_state() -> Dictionary:
 		"yaw": snappedf(rotation.y, 0.001),
 		"stance": "crouch" if _stance.is_crouched else "stand",
 		"health": _health.health,
-		"weapon": {"id": String(_weapon.definition.id), "mag": _weapon.logic.magazine, "reserve": _weapon.logic.reserve},
 		"slot": _slot,
+		"inventory": inventory.to_dict(),
 		"loadout": _weapons.map(func(w: Weapon) -> Dictionary:
-			return {"id": String(w.base_id), "mag": w.logic.magazine, "reserve": w.logic.reserve, "variant": w.variant_index}),
+			var state: Dictionary = w.logic.to_dict()
+			state["id"] = String(w.base_id)
+			state["variant"] = w.variant_index
+			return state),
 	}
 
 
@@ -125,17 +143,28 @@ func load_state(data: Dictionary) -> void:
 	_head.position.y = _stance.eye_height
 	_health.health = float(data.get("health", _health.max_health))
 	var saved_loadout: Array = data.get("loadout", [])
+	var catalog: InventoryCatalog = InventoryCatalog.default()
+	var legacy: bool = not data.has("inventory")
+	if legacy:
+		# Schema 1 counted rounds (mag, reserve): the reserve becomes spare magazines and loose ammo.
+		_set_inventory(AmmoInventory.new(STARTING_LOADOUT.pouch_count))
+	else:
+		_set_inventory(AmmoInventory.from_dict(data["inventory"], catalog))
 	for saved: Dictionary in saved_loadout:
 		for held: Weapon in _weapons:
-			if String(held.base_id) == String(saved.get("id", "")):
-				held.set_variant(int(saved.get("variant", 0)))
-				held.logic.magazine = int(saved.get("mag", held.logic.magazine))
-				held.logic.reserve = int(saved.get("reserve", held.logic.reserve))
+			if String(held.base_id) != String(saved.get("id", "")):
+				continue
+			held.set_variant(int(saved.get("variant", 0)))
+			if legacy:
+				held.logic.set_round_count(int(saved.get("mag", held.logic.magazine)))
+				inventory.stock_reserve(held.definition, int(saved.get("reserve", 0)))
+			else:
+				held.logic.load_dict(saved, catalog)
 	if saved_loadout.is_empty():
-		# older saves: just the weapon in hand
+		# schema 1 saves from before the loadout: just the weapon in hand
 		var saved_weapon: Dictionary = data.get("weapon", {})
-		_weapon.logic.magazine = int(saved_weapon.get("mag", _weapon.logic.magazine))
-		_weapon.logic.reserve = int(saved_weapon.get("reserve", _weapon.logic.reserve))
+		_weapon.logic.set_round_count(int(saved_weapon.get("mag", _weapon.logic.magazine)))
+		inventory.stock_reserve(_weapon.definition, int(saved_weapon.get("reserve", 0)))
 	_select_slot(clampi(int(data.get("slot", 0)), 0, _weapons.size() - 1), true)
 
 
@@ -179,12 +208,18 @@ func _physics_process(delta: float) -> void:
 	_noise.physics_update(self, is_on_floor(), horizontal_speed, _stance.is_crouched, _movement.is_sprinting, delta)
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
 	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
-	_binoculars.physics_update(self, intent, delta)
-	_switch_weapon(intent.weapon_slot)
+	# Only the tick the key goes down counts (a scripted intent may hold it for several ticks).
+	if intent.inventory_toggled and not _inventory_key_down and not _binoculars.is_active:
+		inventory_screen.toggle()
+	_inventory_key_down = intent.inventory_toggled
+	# The inventory is open in real time: the player can still move, but the hands are busy.
+	var busy: InputIntent = _idle_intent if inventory_screen.is_open else intent
+	_binoculars.physics_update(self, busy, delta)
+	_switch_weapon(busy.weapon_slot)
 	for held: Weapon in _weapons:
 		held.visible = held == _weapon and not _binoculars.is_active
 	# Raised binoculars take both hands: the weapon sees no input.
-	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active else intent
+	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active or _pending_slot >= 0 or inventory_screen.is_open else intent
 	var kick: Vector2 = _weapon.physics_update(weapon_intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
 	_interactor.physics_update(_camera, intent, delta)
 	_recoil_pitch += kick.x
@@ -201,6 +236,7 @@ func _build_loadout() -> void:
 		_primary_weapon.get_parent().add_child(extra)
 		_weapons.append(extra)
 	_body.attach_guns(_weapons)
+	_set_inventory(STARTING_LOADOUT.build())
 	for held: Weapon in _weapons:
 		held.fired.connect(_on_weapon_fired.bind(held))
 	_weapon = _primary_weapon
@@ -209,13 +245,30 @@ func _build_loadout() -> void:
 		held.visible = held == _weapon
 
 
+## A switch first puts the weapon in hand away (Weapon.begin_holster), then raises the new one.
+func _set_inventory(pouches: AmmoInventory) -> void:
+	inventory = pouches
+	for held: Weapon in _weapons:
+		held.attach_inventory(pouches)
+
+
 func _switch_weapon(requested: int) -> void:
+	if _pending_slot >= 0:
+		if _weapon.is_holstered():
+			var next: int = _pending_slot
+			_pending_slot = -1
+			_select_slot(next, false)
+		return
 	var slot: int = LoadoutRules.slot_after(requested, _slot, _weapons.size(), _weapon.can_holster() and not _binoculars.is_active)
 	if slot != _slot:
-		_select_slot(slot, false)
+		_pending_slot = slot
+		_weapon.begin_holster()
 
 
 func _select_slot(slot: int, silent: bool) -> void:
+	_pending_slot = -1
+	for held: Weapon in _weapons:
+		held.clear_holster()
 	_slot = slot
 	_weapon = _weapons[slot]
 	for held: Weapon in _weapons:
@@ -225,7 +278,7 @@ func _select_slot(slot: int, silent: bool) -> void:
 
 
 func _on_weapon_fired(_origin: Vector3, _direction: Vector3, source: Weapon) -> void:
-	_noise.emit_shot(self, source.definition)
+	_noise.emit_shot(self, source.definition, source.last_shot_profile.noise_mult)
 	_exposure.flash(source.definition.flash_exposure)
 
 

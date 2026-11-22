@@ -35,9 +35,10 @@ func on_landed(body: CharacterBody3D, fall_height: float) -> void:
 		NoiseSystem.emit_noise(NoiseEvent.LANDING, body.global_position, NoiseSystem.profiles.landing_m, body)
 
 
-func emit_shot(body: CharacterBody3D, weapon: WeaponDefinition) -> void:
+## noise_mult: the fired round's effect on the radius (ShotProfile.noise_mult).
+func emit_shot(body: CharacterBody3D, weapon: WeaponDefinition, noise_mult: float = 1.0) -> void:
 	var type: StringName = NoiseEvent.SHOT_SUPPRESSED if weapon.suppressed else NoiseEvent.SHOT
-	NoiseSystem.emit_noise(type, body.global_position, weapon.noise_radius_m, body)
+	NoiseSystem.emit_noise(type, body.global_position, weapon.noise_radius_m * noise_mult, body)
 
 
 ## The "surface" metadata of the floor under the body, or &"" for the default surface.

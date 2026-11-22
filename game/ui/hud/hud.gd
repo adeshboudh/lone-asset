@@ -47,9 +47,21 @@ func setup(player: Player) -> void:
 	_indicators.draw.connect(_draw_indicators)
 	EventBus.damage_applied.connect(_on_damage_applied)
 	Mission.changed.connect(_refresh_objectives)
+	EventBus.reload_blocked.connect(_on_reload_blocked)
+	EventBus.toast_requested.connect(_on_toast_requested)
 	Mission.objective_completed.connect(_on_objective_completed)
 	_toast_label.modulate.a = 0.0
 	_refresh_objectives()
+
+
+func _on_toast_requested(text: String) -> void:
+	_toast_label.text = text
+	_toast_remaining = 1.5
+
+
+func _on_reload_blocked(_reason: StringName) -> void:
+	_toast_label.text = "NO MAGAZINE"
+	_toast_remaining = 1.2
 
 
 func _process(delta: float) -> void:
@@ -61,7 +73,7 @@ func _process(delta: float) -> void:
 		_ammo_label.text = weapon.definition.display_name.to_upper()
 	else:
 		var status: String = "RELOADING" if logic.is_reloading else String(logic.fire_mode).to_upper()
-		_ammo_label.text = "%d / %d   %s   %s" % [logic.magazine, logic.reserve, status, weapon.definition.display_name]
+		_ammo_label.text = "%d / %d   %s   %s" % [logic.magazine, _player.inventory.spare_magazines_for(weapon.definition), status, weapon.definition.display_name]
 	_health_label.text = "%d" % ceili(_player.health.health)
 	_exposure_bar.value = _player.exposure.exposure
 	_stance_label.text = _stance_text()

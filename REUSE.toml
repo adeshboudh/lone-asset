@@ -108,7 +108,7 @@ SPDX-FileCopyrightText = "Unknown author (texture supplied by the developer; ori
 SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
 
 [[annotations]]
-path = ["content/weapons/m4a1_ms/textures/*"]
+path = ["content/weapons/m4a1_ms/textures/*", "content/weapons/common/textures/*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (rifle textures supplied by the developer; origin and terms unknown)"
 SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
@@ -117,4 +117,16 @@ SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
 path = ["content/effects/muzzle_smoke/TX_Smoke.png"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (texture supplied by the developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/weapons/glock_17/Files/**", "content/weapons/m4a1_ms/Files/**", "content/audio/weapons/glock_17/Files/**", "content/audio/weapons/m4a1/Files/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown authors (item, model, texture and sound files supplied by the developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/audio/weapons/glock_17/fire_muffled.wav*", "content/audio/weapons/glock_17/fire_suppressed_muffled.wav*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown authors (derived from the developer-supplied Glock 17 recordings; origin and terms unknown)"
 SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"

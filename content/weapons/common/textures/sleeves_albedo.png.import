@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1m0uk4a0f6to"
-path="res://.godot/imported/sleeves_normal.png-6f195cc38d72d43325846e022e32cf70.ctex"
+uid="uid://k04pkyun778a"
+path="res://.godot/imported/sleeves_albedo.png-f132962262525857744615ec209e3938.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://content/weapons/m4a1_ms/textures/sleeves_normal.png"
-dest_files=["res://.godot/imported/sleeves_normal.png-6f195cc38d72d43325846e022e32cf70.ctex"]
+source_file="res://content/weapons/common/textures/sleeves_albedo.png"
+dest_files=["res://.godot/imported/sleeves_albedo.png-f132962262525857744615ec209e3938.ctex"]
 
 [params]
 

@@ -2,7 +2,8 @@ class_name SaveRules
 extends RefCounted
 ## Pure rules for checkpoint files (design §16): the schema version, validation and migration.
 
-const SCHEMA_VERSION: int = 1
+## 2: weapons hold a magazine and a chambered round, the player has an inventory (pouches, loose ammo).
+const SCHEMA_VERSION: int = 2
 
 
 ## "" if the data can be loaded, otherwise a reason to show the player.
@@ -20,7 +21,8 @@ static func problem_with(data: Dictionary) -> String:
 	return ""
 
 
-## Brings older saves up to the current schema. Version 1 is the first, so there is nothing to do yet.
+## Brings older saves up to the current schema. Version 1 saves keep their `mag` and `reserve` numbers; Player.load_state
+## turns them into magazines and loose ammo (a save with no `inventory` key is a version 1 save).
 static func migrate(data: Dictionary) -> Dictionary:
 	var migrated: Dictionary = data.duplicate(true)
 	migrated["schema_version"] = SCHEMA_VERSION

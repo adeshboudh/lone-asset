@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dvdacowtl5uv"
-path="res://.godot/imported/gloves_albedo.png-1094f2b3f57fe88ce5cb49af68c38e1f.ctex"
+path="res://.godot/imported/gloves_albedo.png-6044d4e38340d41a7f92c46a96d7ddf3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://content/weapons/m4a1_ms/textures/gloves_albedo.png"
-dest_files=["res://.godot/imported/gloves_albedo.png-1094f2b3f57fe88ce5cb49af68c38e1f.ctex"]
+source_file="res://content/weapons/common/textures/gloves_albedo.png"
+dest_files=["res://.godot/imported/gloves_albedo.png-6044d4e38340d41a7f92c46a96d7ddf3.ctex"]
 
 [params]
 

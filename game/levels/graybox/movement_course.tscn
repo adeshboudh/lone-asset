@@ -29,6 +29,13 @@
 [ext_resource type="PackedScene" path="res://content/environment/pieces/wall_corner.tscn" id="hp_wall_corner"]
 [ext_resource type="PackedScene" path="res://content/environment/pieces/wall_door_4m.tscn" id="hp_wall_door_4m"]
 [ext_resource type="Material" path="res://content/environment/materials/m_wall_plaster_world.tres" id="hp_wall_mat"]
+[ext_resource type="PackedScene" path="res://game/inventory/ammo_pickup.tscn" id="pk_scene"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_556.tres" id="pk_fmj556"]
+[ext_resource type="Resource" path="res://data/ammo/ap_556.tres" id="pk_ap556"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_9.tres" id="pk_fmj9"]
+[ext_resource type="Resource" path="res://data/ammo/subsonic_9.tres" id="pk_sub9"]
+[ext_resource type="Resource" path="res://data/magazines/stanag_30.tres" id="pk_stanag"]
+[ext_resource type="Resource" path="res://data/magazines/glock_17rd.tres" id="pk_glock"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -555,3 +562,33 @@ surface_material_override/0 = SubResource("mat_extraction")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
 billboard = 1
 text = "EXTRACTION"
+
+[node name="Pickups" type="Node3D" parent="."]
+
+[node name="LooseRifleAmmo" parent="Pickups" instance=ExtResource("pk_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, 11)
+pickup_id = &"pickup_loose_556"
+ammo = ExtResource("pk_fmj556")
+count = 30
+
+[node name="LoosePistolAmmo" parent="Pickups" instance=ExtResource("pk_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, 11)
+pickup_id = &"pickup_loose_9"
+ammo = ExtResource("pk_fmj9")
+count = 34
+
+[node name="ArmourPiercingMagazine" parent="Pickups" instance=ExtResource("pk_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 0, 11)
+pickup_id = &"pickup_mag_ap"
+kind = 1
+ammo = ExtResource("pk_ap556")
+count = 30
+magazine_type = ExtResource("pk_stanag")
+
+[node name="SubsonicMagazine" parent="Pickups" instance=ExtResource("pk_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0, 11)
+pickup_id = &"pickup_mag_subsonic"
+kind = 1
+ammo = ExtResource("pk_sub9")
+count = 17
+magazine_type = ExtResource("pk_glock")

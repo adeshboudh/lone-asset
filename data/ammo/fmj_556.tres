@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AmmoType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/inventory/ammo_type.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"fmj_556"
+display_name = "5.56x45 FMJ"
+caliber = &"556x45"
+damage_mult = 1.0
+penetration_mult = 1.0
+velocity_mult = 1.0
+noise_mult = 1.0
+tracer = false

@@ -85,13 +85,13 @@ func test_firing_plays_the_shot_on_the_weapons_bus() -> void:
 
 func test_reload_sound_depends_on_empty_magazine() -> void:
 	_intent.reload = true
-	_player.weapon.logic.magazine = 10
+	_player.weapon.logic.set_round_count(10)
 	await _ticks(2)
 	_intent.reload = false
 	assert_array(_ids("rifle_reload")).has_size(1)
 	await _ticks(200)
 	_played.clear()
-	_player.weapon.logic.magazine = 0
+	_player.weapon.logic.set_round_count(0)
 	_intent.reload = true
 	await _ticks(2)
 	_intent.reload = false
@@ -99,8 +99,8 @@ func test_reload_sound_depends_on_empty_magazine() -> void:
 
 
 func test_dry_fire_click_when_out_of_ammo() -> void:
-	_player.weapon.logic.magazine = 0
-	_player.weapon.logic.reserve = 0
+	_player.weapon.logic.set_round_count(0)
+	_player.inventory.pouches.clear()
 	_fire_once()
 	await _ticks(3)
 	assert_array(_ids("rifle_dry")).has_size(1)

@@ -9,13 +9,15 @@ const VIEWMODEL_LAYER: int = 1 << 18
 ## The model faces +Z after import; the view looks along -Z.
 const FACING := Basis(Vector3.UP, PI)
 ## The rifle's texture atlas (albedo downscaled to 2048 px, normal map unchanged). The GLB carries no textures,
-## so the materials are built here. The arms are not in this atlas and keep a plain colour.
+## so the materials are built here.
 const GUN_ALBEDO: Texture2D = preload("res://content/weapons/m4a1_ms/textures/m4a1_albedo.png")
 const GUN_NORMAL: Texture2D = preload("res://content/weapons/m4a1_ms/textures/m4a1_normal.png")
-## The arms have two surfaces in the GLB (MT_Arms_Sleeves and MT_Arms_Gloves) and no texture, so each gets its own
-## plain material: olive cloth sleeves and dark leather gloves.
-const SLEEVE_COLOR := Color(0.25, 0.28, 0.20)
-const GLOVE_COLOR := Color(0.07, 0.07, 0.08)
+## The arms have two surfaces in the GLB (MT_Arms_Sleeves and MT_Arms_Gloves): camouflage jacket sleeves and leather
+## gloves, each with an albedo and a normal map.
+const SLEEVE_ALBEDO: Texture2D = preload("res://content/weapons/m4a1_ms/textures/sleeves_albedo.png")
+const SLEEVE_NORMAL: Texture2D = preload("res://content/weapons/m4a1_ms/textures/sleeves_normal.png")
+const GLOVE_ALBEDO: Texture2D = preload("res://content/weapons/m4a1_ms/textures/gloves_albedo.png")
+const GLOVE_NORMAL: Texture2D = preload("res://content/weapons/m4a1_ms/textures/gloves_normal.png")
 ## Muzzle in the viewmodel's frame (metres, the rifle's bore axis, forward is -z).
 const MUZZLE := Vector3(0.0, 0.0, -0.6)
 
@@ -35,12 +37,8 @@ func _ready() -> void:
 	gun_material.normal_texture = GUN_NORMAL
 	gun_material.metallic = 0.5
 	gun_material.roughness = 0.6
-	var sleeve_material := StandardMaterial3D.new()
-	sleeve_material.albedo_color = SLEEVE_COLOR
-	sleeve_material.roughness = 0.95
-	var glove_material := StandardMaterial3D.new()
-	glove_material.albedo_color = GLOVE_COLOR
-	glove_material.roughness = 0.55
+	var sleeve_material := _cloth_material(SLEEVE_ALBEDO, SLEEVE_NORMAL, 1.0)
+	var glove_material := _cloth_material(GLOVE_ALBEDO, GLOVE_NORMAL, 0.85)
 	for node: Node in model.find_children("*", "GeometryInstance3D", true, false):
 		var mesh: GeometryInstance3D = node as GeometryInstance3D
 		mesh.layers = VIEWMODEL_LAYER
@@ -58,3 +56,14 @@ func _ready() -> void:
 	muzzle.name = "Muzzle"
 	add_child(muzzle)
 	muzzle.position = MUZZLE
+
+
+## A matte, non-metallic material with an albedo and a normal map (arms; the bright sky shows any shine).
+func _cloth_material(albedo: Texture2D, normal: Texture2D, roughness: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = albedo
+	material.normal_enabled = true
+	material.normal_texture = normal
+	material.roughness = roughness
+	material.metallic_specular = 0.15
+	return material

@@ -21,10 +21,11 @@ func _hold(logic: WeaponLogic, seconds: float, tick_rate: int) -> int:
 
 
 func test_auto_fire_rate_is_exact_at_any_tick_rate() -> void:
-	# 750 rpm = one round every 0.08 s: rounds at 0.00, 0.08 … 0.96 → 13 in one second.
+	# 600 rpm = one round every 0.1 s: rounds at 0.0, 0.1 … 0.9 → 10 in 0.95 s (a whole second would end exactly
+	# on the 11th round, which a tick rate may or may not catch).
 	for tick_rate: int in [30, 60, 144]:
-		assert_int(_hold(_logic(&"auto"), 1.0, tick_rate)) \
-			.override_failure_message("at %d ticks/s" % tick_rate).is_equal(13)
+		assert_int(_hold(_logic(&"auto"), 0.95, tick_rate)) \
+			.override_failure_message("at %d ticks/s" % tick_rate).is_equal(10)
 
 
 func test_semi_fires_once_per_press() -> void:
@@ -35,7 +36,7 @@ func test_semi_fires_once_per_press() -> void:
 func test_semi_respects_fire_rate() -> void:
 	var logic: WeaponLogic = _logic(&"semi")
 	assert_int(logic.update(1.0 / 60.0, true, true)).is_equal(1)
-	# Pressed again 1/60 s later: faster than 750 rpm allows.
+	# Pressed again 1/60 s later: faster than 600 rpm allows.
 	assert_int(logic.update(1.0 / 60.0, true, true)).is_equal(0)
 
 
@@ -47,8 +48,8 @@ func test_empty_magazine_stops_firing() -> void:
 
 func test_reload_moves_rounds_from_reserve() -> void:
 	var logic: WeaponLogic = _logic(&"auto")
-	var fired: int = _hold(logic, 0.4, 60)
-	assert_int(fired).is_equal(5)  # rounds at 0.00, 0.08, 0.16, 0.24, 0.32 s
+	var fired: int = _hold(logic, 0.45, 60)
+	assert_int(fired).is_equal(5)  # rounds at 0.0, 0.1, 0.2, 0.3, 0.4 s
 	assert_bool(logic.start_reload()).is_true()
 	for i: int in roundi(RIFLE.reload_time * 60.0) + 1:
 		logic.update(1.0 / 60.0, false, false)

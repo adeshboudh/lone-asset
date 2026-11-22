@@ -1,8 +1,11 @@
-[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
 [ext_resource type="PackedScene" path="res://content/weapons/glock_17/glock_17_viewmodel.tscn" id="2_view"]
 [ext_resource type="Resource" path="res://data/weapons/glock_17_suppressed.tres" id="3_alt"]
+[ext_resource type="Resource" path="res://data/magazines/glock_17rd.tres" id="9_mag"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_9.tres" id="10_ammo"]
+[ext_resource type="Texture2D" path="res://content/weapons/glock_17/Files/Icon_Glock_17.png" id="11_icon"]
 
 [resource]
 script = ExtResource("1_def")
@@ -24,8 +27,11 @@ tracer_enabled = false
 damage = 30.0
 fire_rate_rpm = 450.0
 fire_modes = Array[StringName]([&"semi"])
-magazine_size = 17
-reserve_ammo = 68
+chambering = &"9x19"
+magazine_families = Array[StringName]([&"glock_9mm"])
+default_magazine = ExtResource("9_mag")
+default_ammo = ExtResource("10_ammo")
+icon = ExtResource("11_icon")
 reload_time = 3.45
 reload_time_empty = 4.5
 muzzle_velocity = 300.0

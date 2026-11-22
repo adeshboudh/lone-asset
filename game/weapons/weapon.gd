@@ -52,6 +52,8 @@ var _flash_particles: GPUParticles3D
 var _flash_quad_size: Vector2
 ## The voice playing the reload sound and its stream (the pool reuses voices, so the stream is checked before a stop).
 var _reload_voice: AudioStreamPlayer
+## What the last round fired changed about the shot (read by the holder for the noise).
+var last_shot_profile: ShotProfile = ShotProfile.new()
 var _reload_stream: AudioStream
 var _smoke_quad_size: Vector2
 var _smoke_particles: GPUParticles3D
@@ -71,6 +73,7 @@ var _bob_phase: float = 0.0
 var _sway_position: Vector3 = Vector3.ZERO
 var _sway_rotation_deg: Vector3 = Vector3.ZERO
 var _flash_remaining: float = 0.0
+var _reload_started_here: bool = false
 var _was_reloading: bool = false
 ## 1 right after the weapon is raised, falling to 0.
 var _draw_elapsed_s: float = DRAW_DONE_S
@@ -113,6 +116,11 @@ func _ready() -> void:
 	if _ballistics == null:
 		Log.warn(&"weapon", "No BallisticsSystem in the level; %s cannot fire" % definition.id)
 	_build_viewmodel()
+
+
+## The holder's pouches: reloads take magazines from them and return the old one.
+func attach_inventory(pouches: AmmoInventory) -> void:
+	logic.inventory = pouches
 
 
 ## Called by the holder every frame: turn rate in rad/s (x yaw right-positive, y pitch up-positive)
@@ -208,11 +216,11 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	_aim_target = 1.0 if wants_aim else 0.0
 	if intent.fire_mode_toggled:
 		logic.toggle_fire_mode()
-	if intent.reload and not swapping:
-		logic.start_reload()
+	if intent.reload and not swapping and not logic.start_reload() and logic.reload_block == &"no_magazine":
+		_report_no_magazine()
 
-	if intent.fire_pressed and logic.magazine == 0 and logic.reserve == 0 and not logic.is_reloading:
-		Audio.play_2d(definition.dry_fire_sound, &"Weapons")
+	if intent.fire_pressed and logic.chambered == &"" and not logic.is_reloading and not logic.can_reload():
+		_report_no_magazine()
 
 	spread.update(definition, delta)
 	var aiming: bool = aim_blend > 0.5
@@ -223,14 +231,15 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	if logic.is_reloading and not _was_reloading:
 		_reload_voice = Audio.play_2d(definition.reload_empty_sound if logic.magazine == 0 else definition.reload_sound, &"Weapons")
 		_reload_stream = _reload_voice.stream if _reload_voice != null else null
-		var empty: bool = logic.magazine == 0
+		var empty: bool = logic.reload_is_empty
 		_play_anim(definition.anim_reload_empty if empty else definition.anim_reload,
 				definition.reload_time_empty if empty else definition.reload_time)
 	_was_reloading = logic.is_reloading
 	for i: int in shots:
+		last_shot_profile = _profile_for(logic.fired_ammo[i])
 		var direction: Vector3 = WeaponSpread.random_direction(-aim.basis.z, current_spread_deg, _rng)
 		var start: Array = _bullet_start(direction, shooter, aim)
-		_ballistics.fire(start[0], start[1], definition, shooter)
+		_ballistics.fire(start[0], start[1], definition, shooter, last_shot_profile)
 		var shot_sound: StringName = definition.fire_sound_auto if logic.fire_mode == &"auto" and definition.fire_sound_auto != &"" else definition.fire_sound
 		Audio.play_2d(shot_sound, &"Weapons", 0.0, _rng.randf_range(0.96, 1.04))
 		spread.on_shot(definition)
@@ -440,3 +449,13 @@ func _resize_quad(particles: GPUParticles3D, base_size: Vector2, factor: float) 
 	var quad: QuadMesh = particles.draw_pass_1.duplicate() as QuadMesh
 	quad.size = base_size * factor
 	particles.draw_pass_1 = quad
+
+
+## The click of a gun with nothing in it and nothing to reload it with.
+func _report_no_magazine() -> void:
+	Audio.play_2d(definition.dry_fire_sound, &"Weapons")
+	EventBus.reload_blocked.emit(&"no_magazine")
+
+
+func _profile_for(ammo_id: StringName) -> ShotProfile:
+	return ShotProfile.from_ammo(InventoryCatalog.default().find_ammo(ammo_id))

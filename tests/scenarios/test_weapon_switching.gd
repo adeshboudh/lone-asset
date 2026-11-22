@@ -56,8 +56,8 @@ func test_the_weapon_is_lowered_before_the_switch_and_cannot_fire_meanwhile() ->
 
 func test_switching_during_a_reload_cancels_it_and_loads_no_ammo() -> void:
 	var rifle: Weapon = _player.weapon
-	rifle.logic.magazine = 10
-	var reserve: int = rifle.logic.reserve
+	rifle.logic.set_round_count(10)
+	var spare: Array = _player.inventory.pouches.map(func(m: Magazine) -> int: return m.count())
 	_intent.reload = true
 	await _ticks(2)
 	_intent.reload = false
@@ -66,7 +66,7 @@ func test_switching_during_a_reload_cancels_it_and_loads_no_ammo() -> void:
 	assert_str(String(_player.weapon.definition.id)).is_equal("glock_17")
 	assert_bool(rifle.logic.is_reloading).is_false()
 	assert_int(rifle.logic.magazine).is_equal(10)
-	assert_int(rifle.logic.reserve).is_equal(reserve)
+	assert_array(_player.inventory.pouches.map(func(m: Magazine) -> int: return m.count())).is_equal(spare)
 	await _ticks(300)
 	assert_int(rifle.logic.magazine).is_equal(10)
 
@@ -90,12 +90,12 @@ func test_only_the_weapon_in_hand_is_shown() -> void:
 
 func test_the_glock_has_its_own_ammo_and_it_is_saved() -> void:
 	await _press_slot(2)
-	assert_int(_player.weapon.logic.magazine).is_equal(17)
-	_player.weapon.logic.magazine = 5
+	assert_int(_player.weapon.logic.magazine).is_equal(18)
+	_player.weapon.logic.set_round_count(5)
 	var data: Dictionary = _player.save_state()
 	await _ticks(60)
 	await _press_slot(1)
-	assert_int(_player.weapon.logic.magazine).is_equal(30)
+	assert_int(_player.weapon.logic.magazine).is_equal(31)
 	_player.load_state(data)
 	assert_str(String(_player.weapon.definition.id)).is_equal("glock_17")
 	assert_int(_player.weapon.logic.magazine).is_equal(5)
@@ -105,7 +105,7 @@ func test_glock_attachment_key_swaps_to_the_suppressed_variant() -> void:
 	await _press_slot(2)
 	await _ticks(60)
 	var glock: Weapon = _player.weapon
-	glock.logic.magazine = 11
+	glock.logic.set_round_count(11)
 	await _press_attachment()
 	assert_str(String(glock.definition.id)).is_equal("glock_17_suppressed")
 	assert_int(glock.logic.magazine).is_equal(11)
@@ -113,9 +113,9 @@ func test_glock_attachment_key_swaps_to_the_suppressed_variant() -> void:
 
 
 func test_save_keeps_the_rifle_ammo() -> void:
-	_player.weapon.logic.magazine = 9
+	_player.weapon.logic.set_round_count(9)
 	var data: Dictionary = _player.save_state()
-	_player.weapon.logic.magazine = 30
+	_player.weapon.logic.set_round_count(31)
 	_player.load_state(data)
 	assert_int(_player.weapon.logic.magazine).is_equal(9)
 
@@ -156,7 +156,7 @@ func test_rifle_shot_leaves_the_muzzle_but_hits_where_the_camera_aims() -> void:
 
 func test_attachment_key_swaps_muzzle_brake_for_suppressor_and_keeps_ammo() -> void:
 	var rifle: Weapon = _player.weapon
-	rifle.logic.magazine = 17
+	rifle.logic.set_round_count(17)
 	await _press_attachment()
 	assert_str(String(rifle.definition.id)).is_equal("rifle_suppressed")
 	assert_int(rifle.logic.magazine).is_equal(17)

@@ -17,10 +17,19 @@ extends Resource
 @export var fire_rate_rpm: float = 750.0
 ## Cycled with the fire-mode key. Supported: &"semi", &"auto".
 @export var fire_modes: Array[StringName] = [&"semi", &"auto"]
-@export var magazine_size: int = 30
-@export var reserve_ammo: int = 90
 @export var reload_time: float = 2.2
 @export var reload_time_empty: float = 2.8
+
+@export_group("Ammunition")
+## Caliber the chamber takes (checked against the rounds once more calibers exist).
+@export var chambering: StringName = &"556x45"
+## Magazine families this weapon takes (MagazineType.family).
+@export var magazine_families: Array[StringName] = [&"stanag"]
+## The magazine and ammo a weapon starts with, and the ones guards reload.
+@export var default_magazine: MagazineType = preload("res://data/magazines/stanag_30.tres")
+@export var default_ammo: AmmoType = preload("res://data/ammo/fmj_556.tres")
+## Inventory picture.
+@export var icon: Texture2D
 
 @export_group("Ballistics")
 ## Metres per second.

@@ -4,6 +4,8 @@ extends CharacterBody3D
 ## the components hold the behaviour.
 
 @export var settings: PlayerMovementSettings
+const STARTING_LOADOUT: StartingLoadout = preload("res://data/inventory/starting_loadout.tres")
+
 ## Weapons carried besides the one in the scene (slot 1): slots 2, 3... in order.
 @export var extra_weapons: Array[WeaponDefinition] = []
 
@@ -51,6 +53,8 @@ var _pose: BodyPoseState = BodyPoseState.new()
 ## Every weapon carried, in slot order, and the index of the one in hand.
 var _weapons: Array[Weapon] = []
 var _slot: int = 0
+## Magazine pouches and loose ammo, shared by every weapon.
+var inventory: AmmoInventory
 ## Slot being switched to while the weapon in hand is put away, or -1.
 var _pending_slot: int = -1
 var _weapon: Weapon
@@ -109,10 +113,13 @@ func save_state() -> Dictionary:
 		"yaw": snappedf(rotation.y, 0.001),
 		"stance": "crouch" if _stance.is_crouched else "stand",
 		"health": _health.health,
-		"weapon": {"id": String(_weapon.definition.id), "mag": _weapon.logic.magazine, "reserve": _weapon.logic.reserve},
 		"slot": _slot,
+		"inventory": inventory.to_dict(),
 		"loadout": _weapons.map(func(w: Weapon) -> Dictionary:
-			return {"id": String(w.base_id), "mag": w.logic.magazine, "reserve": w.logic.reserve, "variant": w.variant_index}),
+			var state: Dictionary = w.logic.to_dict()
+			state["id"] = String(w.base_id)
+			state["variant"] = w.variant_index
+			return state),
 	}
 
 
@@ -127,17 +134,28 @@ func load_state(data: Dictionary) -> void:
 	_head.position.y = _stance.eye_height
 	_health.health = float(data.get("health", _health.max_health))
 	var saved_loadout: Array = data.get("loadout", [])
+	var catalog: InventoryCatalog = InventoryCatalog.default()
+	var legacy: bool = not data.has("inventory")
+	if legacy:
+		# Schema 1 counted rounds (mag, reserve): the reserve becomes spare magazines and loose ammo.
+		_set_inventory(AmmoInventory.new(STARTING_LOADOUT.pouch_count))
+	else:
+		_set_inventory(AmmoInventory.from_dict(data["inventory"], catalog))
 	for saved: Dictionary in saved_loadout:
 		for held: Weapon in _weapons:
-			if String(held.base_id) == String(saved.get("id", "")):
-				held.set_variant(int(saved.get("variant", 0)))
-				held.logic.magazine = int(saved.get("mag", held.logic.magazine))
-				held.logic.reserve = int(saved.get("reserve", held.logic.reserve))
+			if String(held.base_id) != String(saved.get("id", "")):
+				continue
+			held.set_variant(int(saved.get("variant", 0)))
+			if legacy:
+				held.logic.set_round_count(int(saved.get("mag", held.logic.magazine)))
+				inventory.stock_reserve(held.definition, int(saved.get("reserve", 0)))
+			else:
+				held.logic.load_dict(saved, catalog)
 	if saved_loadout.is_empty():
-		# older saves: just the weapon in hand
+		# schema 1 saves from before the loadout: just the weapon in hand
 		var saved_weapon: Dictionary = data.get("weapon", {})
-		_weapon.logic.magazine = int(saved_weapon.get("mag", _weapon.logic.magazine))
-		_weapon.logic.reserve = int(saved_weapon.get("reserve", _weapon.logic.reserve))
+		_weapon.logic.set_round_count(int(saved_weapon.get("mag", _weapon.logic.magazine)))
+		inventory.stock_reserve(_weapon.definition, int(saved_weapon.get("reserve", 0)))
 	_select_slot(clampi(int(data.get("slot", 0)), 0, _weapons.size() - 1), true)
 
 
@@ -203,6 +221,7 @@ func _build_loadout() -> void:
 		_primary_weapon.get_parent().add_child(extra)
 		_weapons.append(extra)
 	_body.attach_guns(_weapons)
+	_set_inventory(STARTING_LOADOUT.build())
 	for held: Weapon in _weapons:
 		held.fired.connect(_on_weapon_fired.bind(held))
 	_weapon = _primary_weapon
@@ -212,6 +231,12 @@ func _build_loadout() -> void:
 
 
 ## A switch first puts the weapon in hand away (Weapon.begin_holster), then raises the new one.
+func _set_inventory(pouches: AmmoInventory) -> void:
+	inventory = pouches
+	for held: Weapon in _weapons:
+		held.attach_inventory(pouches)
+
+
 func _switch_weapon(requested: int) -> void:
 	if _pending_slot >= 0:
 		if _weapon.is_holstered():
@@ -238,7 +263,7 @@ func _select_slot(slot: int, silent: bool) -> void:
 
 
 func _on_weapon_fired(_origin: Vector3, _direction: Vector3, source: Weapon) -> void:
-	_noise.emit_shot(self, source.definition)
+	_noise.emit_shot(self, source.definition, source.last_shot_profile.noise_mult)
 	_exposure.flash(source.definition.flash_exposure)
 
 

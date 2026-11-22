@@ -42,8 +42,9 @@ func test_a_checkpoint_restores_the_player_guards_and_world() -> void:
 	first.get_node("Guards/GuardB").load_state({"position": [-14.0, 0.0, -16.0], "yaw": 0.0, "alive": false})
 	(first.get_node("Compound/DoorSouth/Interactable") as Interactable).complete(player)
 	player.health.health = 55.0
-	player.weapon.logic.magazine = 7
-	player.weapon.logic.reserve = 33
+	player.weapon.logic.set_round_count(7)
+	player.inventory.pouches.remove_at(0)
+	player.inventory.add_loose(&"fmj_556", 33)
 	Mission.guards_eliminated = 1
 	_teleport(player, Vector3(-22.5, 0.1, -24.5), 1.0)
 	await _ticks(5)
@@ -60,7 +61,8 @@ func test_a_checkpoint_restores_the_player_guards_and_world() -> void:
 	assert_float(restored.rotation.y).is_equal_approx(1.0, 0.01)
 	assert_float(restored.health.health).is_equal(55.0)
 	assert_int(restored.weapon.logic.magazine).is_equal(7)
-	assert_int(restored.weapon.logic.reserve).is_equal(33)
+	assert_int(restored.inventory.pouches.size()).is_equal(6)
+	assert_int(restored.inventory.loose_count(&"fmj_556")).is_equal(63)
 	assert_bool((second.get_node("Guards/GuardB") as Guard).is_dead).is_true()
 	assert_bool((second.get_node("Guards/GuardA") as Guard).is_dead).is_false()
 	assert_bool((second.get_node("Compound/DoorSouth") as Door).is_open).is_true()

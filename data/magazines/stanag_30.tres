@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MagazineType" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/inventory/magazine_type.gd" id="1_s"]
+[ext_resource type="Texture2D" path="res://content/weapons/m4a1_ms/Files/Icon_M4A1_Magazine.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"stanag_30"
+display_name = "STANAG 30-round"
+icon = ExtResource("2_icon")
+family = &"stanag"
+accepted_calibers = Array[StringName]([&"556x45"])
+capacity = 30

@@ -49,8 +49,7 @@ func _build() -> void:
 	cover.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	cover.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# The dark theme: the picture is dimmed and cooled a little.
-	cover.modulate = Color(0.78, 0.84, 0.88)
+	# The night picture is already dark: shown as it is.
 	add_child(cover)
 	add_child(_shade())
 	var margin: MarginContainer = MarginContainer.new()

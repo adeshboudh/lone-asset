@@ -1,10 +1,13 @@
-[gd_resource type="Resource" script_class="AmmoType" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="AmmoType" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://game/inventory/ammo_type.gd" id="1_s"]
+
+[ext_resource type="Texture2D" path="res://content/weapons/common/ammo_icons/fmj_9.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_s")
 id = &"fmj_9"
+icon = ExtResource("2_icon")
 display_name = "9x19 FMJ"
 caliber = &"9x19"
 damage_mult = 1.0

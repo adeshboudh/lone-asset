@@ -159,9 +159,7 @@ func _refresh() -> void:
 		var count: int = inventory.loose_count(ammo.id)
 		if count > 0:
 			any_loose = true
-			var label: Label = Label.new()
-			label.text = "%s   x %d" % [ammo.display_name, count]
-			_loose_list.add_child(label)
+			_loose_list.add_child(_loose_row(ammo, count))
 	if not any_loose:
 		var none: Label = Label.new()
 		none.text = "none"
@@ -174,6 +172,23 @@ func _refresh() -> void:
 		gun.text = _gun_text(weapon)
 		_gun_list.add_child(gun)
 	_refresh_actions()
+
+
+func _loose_row(ammo: AmmoType, count: int) -> HBoxContainer:
+	var row: HBoxContainer = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	if ammo.icon != null:
+		var picture: TextureRect = TextureRect.new()
+		picture.texture = ammo.icon
+		picture.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		row.add_child(picture)
+	var label: Label = Label.new()
+	label.text = "%s   x %d" % [ammo.display_name, count]
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(label)
+	return row
 
 
 func _pouch_row(index: int, inventory: AmmoInventory) -> Button:

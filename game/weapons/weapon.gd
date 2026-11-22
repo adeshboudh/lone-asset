@@ -9,6 +9,8 @@ signal fired(origin: Vector3, direction: Vector3)
 const KICK_DISTANCE: float = 0.035
 const KICK_RECOVERY: float = 14.0
 const FLASH_TIME_S: float = 0.05
+const MUZZLE_FLASH: PackedScene = preload("res://content/effects/muzzle_flash/muzzle_flash.tscn")
+const MUZZLE_SMOKE: PackedScene = preload("res://content/effects/muzzle_smoke/muzzle_smoke.tscn")
 ## World and characters, same as the bullets.
 const MUZZLE_RAY_MASK: int = 3
 ## Raising a weapon after a switch.
@@ -44,6 +46,8 @@ var animation_player: AnimationPlayer:
 	get:
 		return _anim
 var _flash: OmniLight3D
+var _flash_particles: GPUParticles3D
+var _smoke_particles: GPUParticles3D
 var _muzzle: Node3D
 var _kick: float = 0.0
 ## The gun's spring kick (ViewmodelRecoilRules): position (m) and rotation (deg) with their velocities.
@@ -202,6 +206,8 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 		kick_viewmodel(_rng.randf_range(-1.0, 1.0), _rng.randf_range(-1.0, 1.0))
 		_play_anim(definition.anim_fire, 0.0)
 		_flash_remaining = FLASH_TIME_S
+		_flash_particles.restart()
+		_smoke_particles.restart()
 		fired.emit(aim.origin, direction)
 	return kick
 
@@ -353,6 +359,11 @@ func _build_viewmodel() -> void:
 	var muzzle: Node3D = _viewmodel.get_node_or_null(^"Muzzle") as Node3D
 	_muzzle = muzzle if muzzle != null else _viewmodel
 	_muzzle.add_child(_flash)
+	_flash_particles = MUZZLE_FLASH.instantiate() as GPUParticles3D
+	_flash_particles.scale = Vector3.ONE * (0.4 if definition.suppressed else 1.0)
+	_muzzle.add_child(_flash_particles)
+	_smoke_particles = MUZZLE_SMOKE.instantiate() as GPUParticles3D
+	_muzzle.add_child(_smoke_particles)
 	_anim = _viewmodel.get_node_or_null(^"AnimationPlayer") as AnimationPlayer
 	if _anim == null:
 		_anim = _viewmodel.find_child("AnimationPlayer", true, false) as AnimationPlayer

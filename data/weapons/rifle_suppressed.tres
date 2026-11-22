@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("1_def")
+tracer_enabled = false
 id = &"rifle_suppressed"
 display_name = "M4A1"
 fire_sound = &"m4a1_fire_suppressed"
@@ -18,7 +19,7 @@ recoil_pitch_deg = 0.7
 flash_exposure = 0.3
 viewmodel_scene = ExtResource("2_view")
 scope_zoom = 1.0
-viewmodel_hip_position = Vector3(0.09, -0.11, -0.03)
+viewmodel_hip_position = Vector3(0.09, -0.11, -0.19)
 viewmodel_ads_position = Vector3(0.0, -0.066, -0.1)
 viewmodel_pivot = Vector3(0.127, -0.217, 0.07)
 recoil_kick_back_m = 0.022

@@ -11,6 +11,7 @@ tracer_enabled = false
 id = &"rifle_muzzle"
 alt_variant = ExtResource("3_alt")
 display_name = "M4A1, muzzle brake"
+fire_rate_rpm = 600.0
 muzzle_velocity = 520.0
 gravity_scale = 1.5
 penetration_power = 100.0

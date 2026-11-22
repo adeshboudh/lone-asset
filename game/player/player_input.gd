@@ -20,6 +20,7 @@ var _attachment_pressed: bool = false
 var _interact_pressed: bool = false
 var _binoculars_pressed: bool = false
 var _zoom_step: int = 0
+var _inventory_pressed: bool = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -53,6 +54,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_interact_pressed = true
 	elif event.is_action_pressed(&"binoculars"):
 		_binoculars_pressed = true
+	elif event.is_action_pressed(&"inventory"):
+		_inventory_pressed = true
 	elif event.is_action_pressed(&"zoom_in"):
 		_zoom_step += 1
 	elif event.is_action_pressed(&"zoom_out"):
@@ -86,6 +89,8 @@ func read_intent() -> InputIntent:
 	_intent.interact_pressed = _interact_pressed
 	_intent.binoculars_toggled = _binoculars_pressed
 	_intent.zoom_step = _zoom_step
+	_intent.inventory_toggled = _inventory_pressed
+	_inventory_pressed = false
 	_crouch_pressed = false
 	_jump_pressed = false
 	_fire_pressed = false

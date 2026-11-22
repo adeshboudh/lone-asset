@@ -28,6 +28,8 @@ var interact_pressed: bool = false
 ## Binoculars key went down this tick, and mouse wheel steps (+1 in, -1 out) since the last tick.
 var binoculars_toggled: bool = false
 var zoom_step: int = 0
+## Inventory key went down this tick.
+var inventory_toggled: bool = false
 
 
 func clear() -> void:
@@ -47,3 +49,4 @@ func clear() -> void:
 	interact_pressed = false
 	binoculars_toggled = false
 	zoom_step = 0
+	inventory_toggled = false

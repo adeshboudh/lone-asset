@@ -39,6 +39,11 @@ var binoculars: Binoculars:
 var interactor: Interactor:
 	get:
 		return _interactor
+## Every weapon carried, in slot order.
+var loadout: Array[Weapon]:
+	get:
+		return _weapons
+var inventory_screen: InventoryScreen
 var is_crouched: bool:
 	get:
 		return _stance.is_crouched
@@ -57,6 +62,7 @@ var _slot: int = 0
 var inventory: AmmoInventory
 ## Slot being switched to while the weapon in hand is put away, or -1.
 var _pending_slot: int = -1
+var _inventory_key_down: bool = false
 var _weapon: Weapon
 
 @onready var _input: PlayerInput = %PlayerInput
@@ -94,6 +100,9 @@ func _ready() -> void:
 	_health.died.connect(_on_died)
 	_interactor.setup(self)
 	_hud.setup(self)
+	inventory_screen = InventoryScreen.new()
+	add_child(inventory_screen)
+	inventory_screen.setup(self)
 
 
 ## Where guards look when checking whether they can see the player (design §8.1): head, chest and
@@ -199,12 +208,18 @@ func _physics_process(delta: float) -> void:
 	_noise.physics_update(self, is_on_floor(), horizontal_speed, _stance.is_crouched, _movement.is_sprinting, delta)
 	_lean.physics_update(self, intent, settings, _movement.is_sprinting, _head.global_position, delta)
 	var moving: float = clampf(horizontal_speed / settings.walk_speed, 0.0, 1.0)
-	_binoculars.physics_update(self, intent, delta)
-	_switch_weapon(intent.weapon_slot)
+	# Only the tick the key goes down counts (a scripted intent may hold it for several ticks).
+	if intent.inventory_toggled and not _inventory_key_down and not _binoculars.is_active:
+		inventory_screen.toggle()
+	_inventory_key_down = intent.inventory_toggled
+	# The inventory is open in real time: the player can still move, but the hands are busy.
+	var busy: InputIntent = _idle_intent if inventory_screen.is_open else intent
+	_binoculars.physics_update(self, busy, delta)
+	_switch_weapon(busy.weapon_slot)
 	for held: Weapon in _weapons:
 		held.visible = held == _weapon and not _binoculars.is_active
 	# Raised binoculars take both hands: the weapon sees no input.
-	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active or _pending_slot >= 0 else intent
+	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active or _pending_slot >= 0 or inventory_screen.is_open else intent
 	var kick: Vector2 = _weapon.physics_update(weapon_intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
 	_interactor.physics_update(_camera, intent, delta)
 	_recoil_pitch += kick.x

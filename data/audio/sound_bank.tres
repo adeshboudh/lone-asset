@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=59 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=60 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_1.wav" id="6_footstep_concrete_1"]
@@ -58,6 +58,7 @@
 [ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/Files/Glock_17_Reload_Empty.wav" id="93_glock_reload_empty"]
 [ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/fire_muffled.wav" id="94_glock_fire_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/fire_suppressed_muffled.wav" id="95_glock_fire_suppressed_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/sfx/round_load.wav" id="96_round_load"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -87,6 +88,7 @@ sounds = {
 &"terminal_loop": [ExtResource("51_terminal_loop")],
 &"terminal_done": [ExtResource("52_terminal_done")],
 &"objective_complete": [ExtResource("53_objective_complete")],
+&"round_load": [ExtResource("96_round_load")],
 &"glock_fire": [ExtResource("90_glock_fire")],
 &"glock_fire_muffled": [ExtResource("94_glock_fire_muffled")],
 &"glock_fire_suppressed_muffled": [ExtResource("95_glock_fire_suppressed_muffled")],

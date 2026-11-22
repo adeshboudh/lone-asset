@@ -1,6 +1,6 @@
 # Magazines, ammo types and inventory: design
 
-Date: 2026-11-22. Status: draft, awaiting the developer's approval. This is a post-Milestone-1 feature (`docs/architecture.md` lists inventory as out of scope for M1); the first pull request updates that document.
+Date: 2026-11-22. Status: approved; pull request 1 (data, rules and magazine-based reload) is implemented on `feat/glock-17`. This is a post-Milestone-1 feature (`docs/architecture.md` lists inventory as out of scope for M1); the first pull request updates that document.
 
 ## Intent
 
@@ -26,7 +26,8 @@ All new types live in a new layer `game/inventory/` (rules and runtime classes) 
 |---|---|---|
 | `AmmoType` | Resource | `id`, `display_name`, `icon`, `caliber` (id), `damage_mult`, `penetration_mult`, `velocity_mult`, `noise_mult`, `tracer` |
 | `MagazineType` | Resource | `id`, `display_name`, `icon`, `family` (id, for example `stanag`, `glock_9mm`), `accepted_calibers`, `capacity` |
-| `WeaponDefinition` (existing) | Resource | adds `chambering` (caliber id), `magazine_families` (ids it accepts), `default_magazine` (type used when none is given), `icon` |
+| `WeaponDefinition` (existing) | Resource | adds `chambering` (caliber id), `magazine_families` (ids it accepts), `default_magazine` and `default_ammo` (what a new gun and a guard's reload use), `icon`; `magazine_size` and `reserve_ammo` are gone |
+| `InventoryCatalog` | Resource | every ammo and magazine type, found by id when loading a save (`data/inventory/catalog.tres`) |
 | `Magazine` | runtime, saved | `type`, `rounds: Array[StringName]` (ammo ids, the last element is the top round) |
 | `AmmoInventory` | runtime, saved | `pouches: Array[Magazine]` (fixed slot count), `loose: Dictionary` (ammo id to count) |
 | `StartingLoadout` | Resource | pouch count, magazines to start with (type, ammo, rounds), loose ammo |
@@ -47,7 +48,7 @@ Two separate checks, kept apart on purpose:
 - `can_load(magazine, ammo) -> bool`: load fit, and the magazine is empty or already holds this ammo id (one type per magazine).
 - `load_round(magazine, ammo) -> bool`, `unload_round(magazine) -> StringName` (returns the removed ammo id, or an empty id).
 - `fullness(magazine) -> float` and `fullness_label(magazine) -> String` ("full", "mostly full", "about half", "nearly empty", "empty"), used by the magazine check.
-- `best_magazine(pouches, weapon, current_ammo) -> int`: the pouch index to reload from. Order: compatible and not empty; prefer the ammo id of the round already in the gun; then the fullest; then the lowest index. Returns -1 when none.
+- `best_magazine(pouches, weapon, current_ammo, rounds_in_gun_magazine) -> int`: the pouch index to reload from. A candidate fits the weapon and holds more rounds than the magazine in the gun (a reload never swaps for a emptier one). Order: the ammo id of the round already in the gun; then the fullest; then the lowest index. Returns -1 when none.
 
 ### Weapon state and the chamber
 
@@ -61,7 +62,7 @@ Firing consumes `chambered`; the next round from `inserted` is chambered at once
 ### Reload flow
 
 1. R (or a trigger pull on a dry gun) asks `best_magazine`. With no result, play the dry click and show "no magazine"; nothing else happens.
-2. **Tactical reload** (a round is chambered): play `anim_reload` / `reload_sound`, duration `reload_time`. The chambered round stays; the old magazine goes into the pouch slot the new one left; the new magazine becomes `inserted`. Capacity in the gun is therefore magazine capacity plus one.
+2. **Tactical reload** (a round is chambered): play `anim_reload` / `reload_sound`, duration `reload_time`. The chambered round stays; the old magazine goes into the pouch slot the new one left; the new magazine becomes `inserted`. Capacity in the gun is therefore magazine capacity plus one; a new gun starts the same way (a full magazine and a chambered round, 31 for the M4A1).
 3. **Empty reload** (nothing chambered): play `anim_reload_empty` / `reload_empty_sound`, duration `reload_time_empty`, which already includes the slide release. At the end the next round is chambered from the new magazine.
 4. The swap is committed at the end of the animation, as `_finish_reload` is today. Switching weapons mid-reload cancels it (already implemented, `WeaponLogic.cancel_reload`): nothing moves and the old magazine stays in the gun. Two clips matter for later polish: the clips `Magazine_Detach` and `Magazine_Attach_*` can split a reload into two timed steps; the first version uses the existing single clips.
 
@@ -82,7 +83,7 @@ A sound plays per round (a new short `round_load` click; the supplied recordings
 
 ## HUD
 
-Today the HUD shows `magazine / reserve`. In the first version it shows the rounds in the inserted magazine plus the chambered round, and the number of spare magazines that hold rounds (not the total rounds). A later option, "Magazine check only", hides the number and shows `fullness_label` after the player presses a check key (plays `Magazine_Check`); this is listed under "Later" so the first pull request does not depend on it.
+Today the HUD shows `magazine / reserve`. In the first version it shows the rounds in the gun (magazine plus chambered round) and the number of spare magazines that hold rounds and fit the weapon in hand (not the total rounds). It still reads the weapon each frame; a "NO MAGAZINE" toast comes from `reload_blocked`. A later option, "Magazine check only", hides the number and shows `fullness_label` after the player presses a check key (plays `Magazine_Check`); this is listed under "Later" so the first pull request does not depend on it.
 
 ## Guards
 
@@ -94,7 +95,7 @@ The checkpoint schema moves from version 1 to 2 (`docs/architecture.md`: bump an
 
 ## Events
 
-New `EventBus` signals (no cross-system node references): `magazine_changed(weapon_id)`, `inventory_changed`, `reload_blocked(reason)`. The HUD and the inventory screen listen; they do not poll the weapon.
+`EventBus` signals (no cross-system node references): `reload_blocked(reason)` (the HUD toast) and `magazine_changed(weapon_id)` are in pull request 1; `inventory_changed` comes with the inventory screen in pull request 2.
 
 ## Testing
 
@@ -116,8 +117,12 @@ Mixed rounds in a magazine (the ordered round list already allows it), magazine 
 
 ## Open questions
 
-- Pouch count (suggested 6) and starting loadout contents.
+- Pouch count: the first version uses 8 (`data/inventory/starting_loadout.tres`: three full STANAG magazines, one empty, three full Glock magazines, 30 loose 5.56 and 17 loose 9x19).
 - Fill and unload times per round (suggested 0.3 s and 0.15 s).
 - The inventory key and whether the inventory should also close on damage.
 - Ammo type numbers (damage, penetration, noise multipliers) and which ammo the guards drop.
 - Ammo icons: `Items/Ammo/` was not copied from the developer's pack; placeholders until they are.
+
+## Implementation notes (pull request 1)
+
+The ammo numbers in `data/ammo/` are first guesses: armour-piercing 5.56 is 0.9 damage, 2.0 penetration, 1.05 velocity; subsonic 9x19 is 0.9 damage, 0.8 penetration, 0.7 velocity and half the noise radius. The 33-round Glock magazine uses the 17-round magazine's icon. Schema version 1 saves keep their `mag` and `reserve` numbers; `Player.load_state` turns a save without an `inventory` key into magazines (a reserve becomes full spare magazines of the weapon's default type while pouches are free, then loose ammo).

@@ -19,6 +19,7 @@ var is_taken: bool = false
 
 @onready var _interactable: Interactable = %Interactable
 @onready var _box: MeshInstance3D = %Box
+@onready var _icon: Sprite3D = %Icon
 @onready var _label: Label3D = %Label
 
 
@@ -33,6 +34,13 @@ func _ready() -> void:
 	_box.material_override = material
 	if kind == Kind.MAGAZINE:
 		_box.scale = Vector3(0.5, 1.4, 1.0)
+	# The ammo or magazine picture when there is one; the box is the fallback.
+	var picture: Texture2D = ammo.icon if kind == Kind.LOOSE_AMMO and ammo != null else (magazine_type.icon if magazine_type != null else null)
+	if picture != null:
+		_icon.texture = picture
+		_icon.pixel_size = 0.24 / float(maxi(picture.get_width(), picture.get_height()))
+		_icon.visible = true
+		_box.visible = false
 
 
 ## "5.56x45 FMJ x30" or "STANAG 30-round (20, 5.56x45 FMJ)".

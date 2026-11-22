@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://game/ui/pause/pause_menu.gd" id="1_pause"]
+[ext_resource type="Script" path="res://game/ui/theme/glass_panel.gd" id="2_glass"]
+[ext_resource type="Script" path="res://game/ui/theme/glass_button.gd" id="3_button"]
 
 [node name="PauseMenu" type="CanvasLayer"]
 layer = 10
@@ -12,7 +14,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.6)
+color = Color(0, 0, 0, 0.35)
 
 [node name="Center" type="CenterContainer" parent="."]
 anchors_preset = 15
@@ -21,32 +23,43 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Box" type="VBoxContainer" parent="Center"]
-custom_minimum_size = Vector2(280, 0)
-theme_override_constants/separation = 12
+[node name="Glass" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(360, 0)
+script = ExtResource("2_glass")
 
-[node name="Title" type="Label" parent="Center/Box"]
-theme_override_font_sizes/font_size = 32
-text = "Paused"
-horizontal_alignment = 1
+[node name="Box" type="VBoxContainer" parent="Center/Glass"]
+theme_override_constants/separation = 10
 
-[node name="ResumeButton" type="Button" parent="Center/Box"]
+[node name="Title" type="Label" parent="Center/Glass/Box"]
+theme_type_variation = &"TitleLabel"
+text = "PAUSED"
+
+[node name="ResumeButton" type="Button" parent="Center/Glass/Box"]
 unique_name_in_owner = true
-text = "Resume"
+script = ExtResource("3_button")
+title = "Resume"
+subtitle = "Back to the game"
+highlighted = true
 
-[node name="SettingsButton" type="Button" parent="Center/Box"]
+[node name="SettingsButton" type="Button" parent="Center/Glass/Box"]
 unique_name_in_owner = true
-text = "Settings"
+script = ExtResource("3_button")
+title = "Settings"
+subtitle = "Graphics, audio and controls"
 
-[node name="RestartButton" type="Button" parent="Center/Box"]
+[node name="RestartButton" type="Button" parent="Center/Glass/Box"]
 unique_name_in_owner = true
-text = "Restart from checkpoint"
+script = ExtResource("3_button")
+title = "Restart from checkpoint"
+subtitle = "Reload the last saved checkpoint"
 
-[node name="QuitButton" type="Button" parent="Center/Box"]
+[node name="QuitButton" type="Button" parent="Center/Glass/Box"]
 unique_name_in_owner = true
-text = "Quit to title"
+script = ExtResource("3_button")
+title = "Quit to title"
+subtitle = "Leave the mission"
 
-[node name="CaptureHint" type="Label" parent="Center/Box"]
+[node name="CaptureHint" type="Label" parent="Center/Glass/Box"]
 unique_name_in_owner = true
 visible = false
 text = "The mouse could not be captured.

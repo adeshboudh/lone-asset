@@ -119,10 +119,24 @@ func test_the_pause_action_closes_it_first() -> void:
 	assert_bool(_screen.is_open).is_false()
 
 
+func test_the_pause_menu_and_death_screen_draw_above_it() -> void:
+	assert_int(_screen.layer).is_less(_scene_layer(preload("res://game/ui/pause/pause_menu.tscn")))
+	assert_int(_screen.layer).is_less(_scene_layer(preload("res://game/ui/death/death_screen.tscn")))
+
+
 func test_a_death_closes_it() -> void:
 	await _press_inventory()
 	EventBus.player_died.emit()
 	assert_bool(_screen.is_open).is_false()
+
+
+## The root's `layer` as saved in the scene (no instance needed).
+func _scene_layer(scene: PackedScene) -> int:
+	var state: SceneState = scene.get_state()
+	for i: int in state.get_node_property_count(0):
+		if state.get_node_property_name(0, i) == &"layer":
+			return int(state.get_node_property_value(0, i))
+	return 1
 
 
 func _press_inventory() -> void:

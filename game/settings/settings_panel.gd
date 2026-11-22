@@ -15,23 +15,28 @@ func _ready() -> void:
 	layer = 12
 	visible = false
 	var dim: ColorRect = ColorRect.new()
-	dim.color = Color(0.0, 0.0, 0.0, 0.85)
+	dim.color = Color(0.0, 0.0, 0.0, 0.4)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 	var center: CenterContainer = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
+	# A frosted-glass window over whatever is behind (the title cover, the paused game).
+	var window: GlassPanel = GlassPanel.new()
+	window.custom_minimum_size = Vector2(560.0, 0.0)
+	center.add_child(window)
 	_rows = VBoxContainer.new()
-	_rows.custom_minimum_size = Vector2(460.0, 0.0)
 	_rows.add_theme_constant_override(&"separation", 10)
-	center.add_child(_rows)
+	window.add_child(_rows)
 	var title: Label = Label.new()
-	title.text = "Settings"
-	title.add_theme_font_size_override(&"font_size", 32)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.text = "SETTINGS"
+	title.theme_type_variation = &"TitleLabel"
+	title.add_theme_font_size_override(&"font_size", 34)
 	_rows.add_child(title)
 	_tabs = TabContainer.new()
 	_tabs.custom_minimum_size = Vector2(0.0, 300.0)
+	# The glass shows through the tab page.
+	_tabs.add_theme_stylebox_override(&"panel", StyleBoxEmpty.new())
 	_rows.add_child(_tabs)
 
 	_begin_tab("Controls")
@@ -78,8 +83,11 @@ func _ready() -> void:
 	folder_button.pressed.connect(Saves.open_save_folder)
 	_tab.add_child(folder_button)
 
-	_back = Button.new()
-	_back.text = "Back"
+	var back: GlassButton = GlassButton.new()
+	back.title = "Back"
+	back.custom_minimum_size = Vector2(0.0, 48.0)
+	back.highlighted = true
+	_back = back
 	_back.pressed.connect(close)
 	_rows.add_child(_back)
 	UiSounds.wire(self)

@@ -13,8 +13,10 @@ const MUZZLE_FLASH: PackedScene = preload("res://content/effects/muzzle_flash/mu
 const MUZZLE_SMOKE: PackedScene = preload("res://content/effects/muzzle_smoke/muzzle_smoke.tscn")
 ## World and characters, same as the bullets.
 const MUZZLE_RAY_MASK: int = 3
-## Raising a weapon after a switch.
-const EQUIP_TIME_S: float = 0.35
+## Procedural switch motion (data/weapons/switch_motion.tres, rules in SwitchMotionRules).
+const SWITCH_MOTION: SwitchMotionSettings = preload("res://data/weapons/switch_motion.tres")
+## Draw timer value meaning "no draw in progress".
+const DRAW_DONE_S: float = 1000.0
 ## The player's first-person arms, put on the weapon's arm rig (game/player/fps_arms.gd).
 const FPS_ARMS: FpsArmsSettings = preload("res://data/player/fps_arms.tres")
 ## World (1) and characters/targets (2): what a blade can hit.
@@ -47,6 +49,11 @@ var animation_player: AnimationPlayer:
 		return _anim
 var _flash: OmniLight3D
 var _flash_particles: GPUParticles3D
+var _flash_quad_size: Vector2
+## The voice playing the reload sound and its stream (the pool reuses voices, so the stream is checked before a stop).
+var _reload_voice: AudioStreamPlayer
+var _reload_stream: AudioStream
+var _smoke_quad_size: Vector2
 var _smoke_particles: GPUParticles3D
 var _muzzle: Node3D
 var _kick: float = 0.0
@@ -66,7 +73,10 @@ var _sway_rotation_deg: Vector3 = Vector3.ZERO
 var _flash_remaining: float = 0.0
 var _was_reloading: bool = false
 ## 1 right after the weapon is raised, falling to 0.
-var _equip: float = 0.0
+var _draw_elapsed_s: float = DRAW_DONE_S
+## 0 = in hand, 1 = fully lowered: grows while the weapon is being put away (see begin_holster).
+var _holster: float = 0.0
+var _holstering: bool = false
 ## Seconds into a melee swing, or -1 when not swinging.
 var _melee_t: float = -1.0
 var _melee_hit_pending: bool = false
@@ -122,14 +132,40 @@ func equip() -> void:
 	visual_aim = 0.0
 	_visual_aim_velocity = 0.0
 	_aim_target = 0.0
-	_equip = 1.0
+	_draw_elapsed_s = 0.0
+	clear_holster()
 	_melee_t = -1.0
 	_play_anim(definition.anim_draw, 0.0)
 
 
-## False while reloading, swapping the attachment or swinging: the weapon cannot be put away mid-action.
+## Starts lowering the weapon so the holder can switch to another one when is_holstered() turns true.
+## A reload under way is abandoned: no ammo is loaded, its sound is cut and the arms go back to the idle clip.
+func begin_holster() -> void:
+	_holstering = true
+	if not logic.is_reloading:
+		return
+	logic.cancel_reload()
+	_was_reloading = false
+	if _reload_voice != null and _reload_voice.playing and _reload_voice.stream == _reload_stream:
+		_reload_voice.stop()
+	if _anim != null and _anim.has_animation(definition.anim_idle):
+		_anim.play(definition.anim_idle, SWITCH_MOTION.holster_time_s)
+
+
+func is_holstered() -> bool:
+	return _holstering and _holster >= 1.0
+
+
+## Back in hand at once (a switch finished, or a saved game was loaded).
+func clear_holster() -> void:
+	_holstering = false
+	_holster = 0.0
+
+
+## False while swapping the attachment or swinging: the weapon cannot be put away mid-action. A reload can be
+## abandoned (begin_holster).
 func can_holster() -> bool:
-	return not logic.is_reloading and _melee_t < 0.0 and _swap_remaining <= 0.0
+	return _melee_t < 0.0 and _swap_remaining <= 0.0
 
 
 ## Swaps to the other version (suppressor <-> muzzle brake). False when there is none or the weapon is busy.
@@ -138,7 +174,7 @@ func toggle_variant() -> bool:
 		return false
 	set_variant((_variant_index + 1) % _variants.size())
 	_swap_remaining = definition.variant_swap_s
-	_equip = 1.0
+	_draw_elapsed_s = 0.0
 	_play_anim(definition.anim_draw, 0.0)
 	return true
 
@@ -152,14 +188,14 @@ func set_variant(index: int) -> void:
 	logic.swap_definition(definition)
 	if _viewmodel != null and _viewmodel.has_method(&"show_suppressor"):
 		_viewmodel.call(&"show_suppressor", definition.suppressed)
-	if _flash != null:
-		_flash.light_energy = 0.6 if definition.suppressed else 2.5
+	_apply_muzzle_effects()
 
 
 ## Returns this tick's recoil kick in radians: x = pitch up, y = yaw.
 ## moving: 0 = still, 1 = walking speed or faster.
 func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3D, aim: Transform3D,
 		moving: float, crouched: bool) -> Vector2:
+	_holster = move_toward(_holster, 1.0 if _holstering else 0.0, delta / SWITCH_MOTION.holster_time_s)
 	if definition.melee:
 		return _melee_update(intent, delta, shooter, aim)
 	var swapping: bool = _swap_remaining > 0.0
@@ -185,7 +221,8 @@ func physics_update(intent: InputIntent, delta: float, shooter: CollisionObject3
 	var kick: Vector2 = Vector2.ZERO
 	var shots: int = logic.update(delta, intent.fire and not swapping, intent.fire_pressed and not swapping) if _ballistics != null else 0
 	if logic.is_reloading and not _was_reloading:
-		Audio.play_2d(definition.reload_empty_sound if logic.magazine == 0 else definition.reload_sound, &"Weapons")
+		_reload_voice = Audio.play_2d(definition.reload_empty_sound if logic.magazine == 0 else definition.reload_sound, &"Weapons")
+		_reload_stream = _reload_voice.stream if _reload_voice != null else null
 		var empty: bool = logic.magazine == 0
 		_play_anim(definition.anim_reload_empty if empty else definition.anim_reload,
 				definition.reload_time_empty if empty else definition.reload_time)
@@ -255,7 +292,7 @@ func _process(delta: float) -> void:
 	spring = ViewmodelRecoilRules.step(_kick_rotation, _kick_rotation_velocity, definition.recoil_spring_hz, definition.recoil_spring_damping, delta)
 	_kick_rotation = spring[0]
 	_kick_rotation_velocity = spring[1]
-	_equip = move_toward(_equip, 0.0, delta / EQUIP_TIME_S)
+	_draw_elapsed_s += delta
 	_sway_position = WeaponSwayRules.approach(_sway_position,
 		WeaponSwayRules.target_position(definition, _turn_rate, _strafe_speed, aim_blend), definition.sway_smoothing, delta)
 	_sway_rotation_deg = WeaponSwayRules.approach(_sway_rotation_deg,
@@ -271,18 +308,20 @@ func _process(delta: float) -> void:
 	var sway_rotation: Vector3 = Vector3(deg_to_rad(rotation_deg.x), deg_to_rad(rotation_deg.y), deg_to_rad(rotation_deg.z))
 	var base: Vector3 = definition.viewmodel_hip_position.lerp(definition.viewmodel_ads_position, visual_aim) \
 		+ Vector3(0.0, -AdsRules.arc_offset_m(clampf(visual_aim, 0.0, 1.0), definition.ads_arc_m), 0.0) + _sway_position + bob_position
+	var switch_offset: Vector3 = SWITCH_MOTION.lowered_offset * SwitchMotionRules.position_weight(_holster, _draw_elapsed_s, SWITCH_MOTION)
+	var switch_rotation_deg: Vector3 = SWITCH_MOTION.lowered_rotation_deg * SwitchMotionRules.rotation_weight(_holster, _draw_elapsed_s, SWITCH_MOTION)
 	if _anim != null:
-		# The animations carry the reload; the spring kick and the hip turn go on top, about the grip.
+		# The animations carry the reload; the spring kick and the hip turn go on top, about the grip. Drawing and
+		# putting the weapon away have no clips, so the gun is lowered and tilted here.
 		var aimed: float = visual_aim
-		var turn: Vector3 = definition.viewmodel_hip_rotation_deg * (1.0 - aimed) + _kick_rotation
-		_viewmodel.transform = Transform3D(Basis.from_euler(sway_rotation), base + _kick_position) \
+		var turn: Vector3 = definition.viewmodel_hip_rotation_deg * (1.0 - aimed) + _kick_rotation + switch_rotation_deg
+		_viewmodel.transform = Transform3D(Basis.from_euler(sway_rotation), base + _kick_position + switch_offset) \
 				* ViewmodelRecoilRules.about_pivot(turn, definition.viewmodel_pivot)
 	else:
 		var reload_dip: float = sin(logic.reload_progress() * PI) * 0.12
-		var raise: float = _equip * _equip
 		var swing: float = sin(clampf(_melee_t / _melee_swing_s(), 0.0, 1.0) * PI) if definition.melee else 0.0
-		_viewmodel.position = base + Vector3(-0.10 * swing, -reload_dip - raise * 0.3 + 0.03 * swing, _kick * KICK_DISTANCE + raise * 0.1 - 0.28 * swing)
-		_viewmodel.rotation = Vector3(-reload_dip * 2.0 - raise * 0.7 + 0.25 * swing, 0.6 * swing, 0.0) + sway_rotation
+		_viewmodel.position = base + Vector3(-0.10 * swing, -reload_dip + 0.03 * swing, _kick * KICK_DISTANCE - 0.28 * swing) + switch_offset
+		_viewmodel.rotation = Vector3(-reload_dip * 2.0 + 0.25 * swing, 0.6 * swing, 0.0) + sway_rotation + switch_rotation_deg * (PI / 180.0)
 	_flash_remaining -= delta
 	_flash.visible = _flash_remaining > 0.0
 
@@ -353,17 +392,18 @@ func _build_viewmodel() -> void:
 		(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_flash = OmniLight3D.new()
 	_flash.light_color = Color(1.0, 0.8, 0.5)
-	_flash.light_energy = 0.6 if definition.suppressed else 2.5
 	_flash.omni_range = 2.5
 	_flash.visible = false
 	var muzzle: Node3D = _viewmodel.get_node_or_null(^"Muzzle") as Node3D
 	_muzzle = muzzle if muzzle != null else _viewmodel
 	_muzzle.add_child(_flash)
 	_flash_particles = MUZZLE_FLASH.instantiate() as GPUParticles3D
-	_flash_particles.scale = Vector3.ONE * (0.4 if definition.suppressed else 1.0)
+	_flash_quad_size = (_flash_particles.draw_pass_1 as QuadMesh).size
 	_muzzle.add_child(_flash_particles)
 	_smoke_particles = MUZZLE_SMOKE.instantiate() as GPUParticles3D
+	_smoke_quad_size = (_smoke_particles.draw_pass_1 as QuadMesh).size
 	_muzzle.add_child(_smoke_particles)
+	_apply_muzzle_effects()
 	_anim = _viewmodel.get_node_or_null(^"AnimationPlayer") as AnimationPlayer
 	if _anim == null:
 		_anim = _viewmodel.find_child("AnimationPlayer", true, false) as AnimationPlayer
@@ -380,3 +420,23 @@ func _play_anim(anim_name: StringName, duration_s: float) -> void:
 	_anim.play(anim_name, -1.0, speed)
 	if definition.anim_idle != &"" and _anim.has_animation(definition.anim_idle):
 		_anim.queue(definition.anim_idle)
+
+
+## Flash light, flash sprite and smoke sizes from the definition; the suppressed version is dimmer and smaller.
+func _apply_muzzle_effects() -> void:
+	if _flash == null:
+		return
+	var flash_scale: float = definition.muzzle_flash_scale * (0.4 if definition.suppressed else 1.0)
+	_flash.light_energy = definition.muzzle_light_energy * (0.24 if definition.suppressed else 1.0)
+	_flash.omni_range = 2.5 * clampf(flash_scale, 0.2, 1.0)
+	# The flash sprite is a billboard that ignores the node's scale, so the quad itself is resized (a copy per
+	# weapon: the scene's mesh is shared by every instance).
+	_resize_quad(_flash_particles, _flash_quad_size, flash_scale)
+	_resize_quad(_smoke_particles, _smoke_quad_size, definition.muzzle_smoke_scale)
+	_smoke_particles.amount_ratio = clampf(definition.muzzle_smoke_scale, 0.2, 1.0)
+
+
+func _resize_quad(particles: GPUParticles3D, base_size: Vector2, factor: float) -> void:
+	var quad: QuadMesh = particles.draw_pass_1.duplicate() as QuadMesh
+	quad.size = base_size * factor
+	particles.draw_pass_1 = quad

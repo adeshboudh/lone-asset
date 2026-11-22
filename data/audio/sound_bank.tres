@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SoundBank" load_steps=53 format=3]
+[gd_resource type="Resource" script_class="SoundBank" load_steps=59 format=3]
 
 [ext_resource type="Script" path="res://game/audio/sound_bank.gd" id="1_bank"]
 [ext_resource type="AudioStream" path="res://content/audio/sfx/footstep_concrete_1.wav" id="6_footstep_concrete_1"]
@@ -52,6 +52,12 @@
 [ext_resource type="AudioStream" path="res://content/audio/weapons/m4a1/fire_auto_muffled.wav" id="75_m4a1_fire_auto_muffled"]
 [ext_resource type="AudioStream" path="res://content/audio/weapons/m4a1/fire_suppressed.wav" id="76_m4a1_fire_suppressed"]
 [ext_resource type="AudioStream" path="res://content/audio/weapons/m4a1/fire_suppressed_muffled.wav" id="77_m4a1_fire_suppressed_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/Files/Glock_17_Fire.wav" id="90_glock_fire"]
+[ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/Files/Glock_17_Fire_Suppressed.wav" id="91_glock_fire_suppressed"]
+[ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/Files/Glock_17_Reload_Tactical.wav" id="92_glock_reload"]
+[ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/Files/Glock_17_Reload_Empty.wav" id="93_glock_reload_empty"]
+[ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/fire_muffled.wav" id="94_glock_fire_muffled"]
+[ext_resource type="AudioStream" path="res://content/audio/weapons/glock_17/fire_suppressed_muffled.wav" id="95_glock_fire_suppressed_muffled"]
 
 [resource]
 script = ExtResource("1_bank")
@@ -81,6 +87,12 @@ sounds = {
 &"terminal_loop": [ExtResource("51_terminal_loop")],
 &"terminal_done": [ExtResource("52_terminal_done")],
 &"objective_complete": [ExtResource("53_objective_complete")],
+&"glock_fire": [ExtResource("90_glock_fire")],
+&"glock_fire_muffled": [ExtResource("94_glock_fire_muffled")],
+&"glock_fire_suppressed_muffled": [ExtResource("95_glock_fire_suppressed_muffled")],
+&"glock_fire_suppressed": [ExtResource("91_glock_fire_suppressed")],
+&"glock_reload": [ExtResource("92_glock_reload")],
+&"glock_reload_empty": [ExtResource("93_glock_reload_empty")],
 &"m4a1_fire_semi": [ExtResource("72_m4a1_fire_semi")],
 &"m4a1_fire_semi_muffled": [ExtResource("73_m4a1_fire_semi_muffled")],
 &"m4a1_fire_auto": [ExtResource("74_m4a1_fire_auto")],

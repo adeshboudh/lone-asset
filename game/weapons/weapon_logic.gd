@@ -66,6 +66,12 @@ func start_reload() -> bool:
 	return true
 
 
+## Stops a reload that is under way: no ammo moves, the magazine and reserve stay as they were.
+func cancel_reload() -> void:
+	is_reloading = false
+	_reload_remaining = 0.0
+
+
 ## Switches to another version of the same weapon (attachment swap); magazine and reserve carry over.
 func swap_definition(weapon: WeaponDefinition) -> void:
 	definition = weapon

@@ -97,3 +97,18 @@ func test_fire_mode_cycles() -> void:
 	assert_str(String(logic.fire_mode)).is_not_equal(String(first))
 	logic.toggle_fire_mode()
 	assert_str(String(logic.fire_mode)).is_equal(String(first))
+
+
+func test_cancelled_reload_loads_nothing() -> void:
+	var logic: WeaponLogic = WeaponLogic.new(RIFLE)
+	logic.magazine = 5
+	var reserve: int = logic.reserve
+	logic.start_reload()
+	for i: int in 30:
+		logic.update(1.0 / 60.0, false, false)
+	logic.cancel_reload()
+	assert_bool(logic.is_reloading).is_false()
+	for i: int in 300:
+		logic.update(1.0 / 60.0, false, false)
+	assert_int(logic.magazine).is_equal(5)
+	assert_int(logic.reserve).is_equal(reserve)

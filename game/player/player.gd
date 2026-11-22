@@ -51,6 +51,8 @@ var _pose: BodyPoseState = BodyPoseState.new()
 ## Every weapon carried, in slot order, and the index of the one in hand.
 var _weapons: Array[Weapon] = []
 var _slot: int = 0
+## Slot being switched to while the weapon in hand is put away, or -1.
+var _pending_slot: int = -1
 var _weapon: Weapon
 
 @onready var _input: PlayerInput = %PlayerInput
@@ -184,7 +186,7 @@ func _physics_process(delta: float) -> void:
 	for held: Weapon in _weapons:
 		held.visible = held == _weapon and not _binoculars.is_active
 	# Raised binoculars take both hands: the weapon sees no input.
-	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active else intent
+	var weapon_intent: InputIntent = _idle_intent if _binoculars.is_active or _pending_slot >= 0 else intent
 	var kick: Vector2 = _weapon.physics_update(weapon_intent, delta, self, _camera.global_transform, moving, _stance.is_crouched)
 	_interactor.physics_update(_camera, intent, delta)
 	_recoil_pitch += kick.x
@@ -209,13 +211,24 @@ func _build_loadout() -> void:
 		held.visible = held == _weapon
 
 
+## A switch first puts the weapon in hand away (Weapon.begin_holster), then raises the new one.
 func _switch_weapon(requested: int) -> void:
+	if _pending_slot >= 0:
+		if _weapon.is_holstered():
+			var next: int = _pending_slot
+			_pending_slot = -1
+			_select_slot(next, false)
+		return
 	var slot: int = LoadoutRules.slot_after(requested, _slot, _weapons.size(), _weapon.can_holster() and not _binoculars.is_active)
 	if slot != _slot:
-		_select_slot(slot, false)
+		_pending_slot = slot
+		_weapon.begin_holster()
 
 
 func _select_slot(slot: int, silent: bool) -> void:
+	_pending_slot = -1
+	for held: Weapon in _weapons:
+		held.clear_holster()
 	_slot = slot
 	_weapon = _weapons[slot]
 	for held: Weapon in _weapons:

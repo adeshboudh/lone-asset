@@ -146,6 +146,13 @@ extends Resource
 @export var reload_sound: StringName = &"rifle_reload"
 @export var reload_empty_sound: StringName = &"rifle_reload_empty"
 
+@export_group("Muzzle effects")
+## Size of the muzzle flash sprite and smoke puff (1 = rifle size); the suppressed version is smaller still.
+@export var muzzle_flash_scale: float = 1.0
+@export var muzzle_smoke_scale: float = 1.0
+## Brightness of the flash light at the muzzle (the suppressed version uses a quarter of it).
+@export var muzzle_light_energy: float = 2.5
+
 @export_group("Presentation")
 ## First-person model. Must contain a Node3D named "Muzzle".
 @export var viewmodel_scene: PackedScene

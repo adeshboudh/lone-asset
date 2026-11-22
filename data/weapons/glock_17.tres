@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/weapons/weapon_definition.gd" id="1_def"]
+[ext_resource type="PackedScene" path="res://content/weapons/glock_17/glock_17_viewmodel.tscn" id="2_view"]
+[ext_resource type="Resource" path="res://data/weapons/glock_17_suppressed.tres" id="3_alt"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"glock_17"
+alt_variant = ExtResource("3_alt")
+display_name = "Glock 17, muzzle brake"
+spread_hip_deg = 1.6
+spread_ads_deg = 0.12
+spread_per_shot_deg = 0.4
+spread_max_bloom_deg = 1.8
+recoil_pitch_deg = 0.5
+recoil_yaw_deg = 0.2
+penetration_power = 60.0
+suppressed = false
+noise_radius_m = 45.0
+flash_exposure = 1.0
+fire_sound = &"glock_fire"
+tracer_enabled = false
+damage = 30.0
+fire_rate_rpm = 450.0
+fire_modes = Array[StringName]([&"semi"])
+magazine_size = 17
+reserve_ammo = 68
+reload_time = 3.45
+reload_time_empty = 4.5
+muzzle_velocity = 300.0
+gravity_scale = 1.5
+max_range = 200.0
+spread_move_add_deg = 1.8
+recoil_ads_mult = 0.6
+ads_fov = 62.0
+ads_time = 0.2
+reload_sound = &"glock_reload"
+reload_empty_sound = &"glock_reload_empty"
+viewmodel_scene = ExtResource("2_view")
+scope_zoom = 1.0
+muzzle_flash_scale = 0.3
+muzzle_smoke_scale = 0.14
+muzzle_light_energy = 0.6
+viewmodel_hip_position = Vector3(0.06, -0.065, -0.28)
+viewmodel_ads_position = Vector3(0.0, -0.02, -0.25)
+viewmodel_pivot = Vector3(0.0, -0.07, 0.05)
+recoil_kick_back_m = 0.008
+recoil_kick_up_m = 0.0015
+recoil_kick_pitch_deg = 2.0
+recoil_kick_yaw_deg = 0.4
+recoil_kick_roll_deg = 0.6
+recoil_kick_ads_mult = 0.45
+recoil_spring_hz = 4.5
+recoil_spring_damping = 0.42
+anim_idle = &"Glock_17_Idle"
+anim_draw = &""
+anim_fire = &""
+anim_reload = &"Glock_17_Reload_Tactical"
+anim_reload_empty = &"Glock_17_Reload_Empty"

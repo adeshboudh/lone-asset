@@ -9,7 +9,7 @@ const SECTION: String = "settings"
 
 var mouse_sensitivity_scale: float = 1.0
 var invert_y: bool = false
-var fov_deg: float = 75.0
+var fov_deg: float = 80.0
 var head_bob: bool = true
 var master_volume: float = 0.8
 var music_volume: float = 0.8

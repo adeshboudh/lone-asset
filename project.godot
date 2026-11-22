@@ -51,6 +51,10 @@ window/stretch/aspect="expand"
 
 enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg", "res://addons/godot_mcp_bridge/plugin.cfg")
 
+[gui]
+
+theme/custom="res://data/ui/lone_asset_theme.tres"
+
 [input]
 
 pause={

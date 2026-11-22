@@ -48,9 +48,15 @@ func setup(player: Player) -> void:
 	EventBus.damage_applied.connect(_on_damage_applied)
 	Mission.changed.connect(_refresh_objectives)
 	EventBus.reload_blocked.connect(_on_reload_blocked)
+	EventBus.toast_requested.connect(_on_toast_requested)
 	Mission.objective_completed.connect(_on_objective_completed)
 	_toast_label.modulate.a = 0.0
 	_refresh_objectives()
+
+
+func _on_toast_requested(text: String) -> void:
+	_toast_label.text = text
+	_toast_remaining = 1.5
 
 
 func _on_reload_blocked(_reason: StringName) -> void:

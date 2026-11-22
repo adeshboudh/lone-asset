@@ -1,8 +1,13 @@
-[gd_resource type="Resource" script_class="GuardProfile" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="GuardProfile" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://game/ai/guard/guard_profile.gd" id="1_profile"]
 [ext_resource type="Resource" path="res://data/weapons/rifle_guard.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/magazines/stanag_30.tres" id="3_mag"]
+[ext_resource type="Resource" path="res://data/ammo/fmj_556.tres" id="4_ammo"]
 
 [resource]
 script = ExtResource("1_profile")
 weapon = ExtResource("2_weapon")
+drop_magazine = ExtResource("3_mag")
+drop_ammo = ExtResource("4_ammo")
+drop_magazine_rounds = 20

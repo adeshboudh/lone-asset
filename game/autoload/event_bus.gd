@@ -26,3 +26,6 @@ signal reload_blocked(reason: StringName)
 
 ## The magazine in a weapon changed (a reload finished). weapon_id: the weapon definition's id.
 signal magazine_changed(weapon_id: StringName)
+
+## A short message for the HUD toast (a pickup taken, the pouches full).
+signal toast_requested(text: String)

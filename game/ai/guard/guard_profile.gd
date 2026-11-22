@@ -3,6 +3,12 @@ extends Resource
 ## Tuning for one kind of guard (design §7.1). Edited in data/ai/guard_default.tres.
 ## Combat values join in WP 8.
 
+@export_group("Loot")
+## A dead guard drops one magazine with this many rounds (0 drops nothing).
+@export var drop_magazine: MagazineType
+@export var drop_ammo: AmmoType
+@export var drop_magazine_rounds: int = 0
+
 @export_group("Health")
 @export var max_health: float = 100.0
 

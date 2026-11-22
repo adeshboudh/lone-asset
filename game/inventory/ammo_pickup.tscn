@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://game/inventory/ammo_pickup.gd" id="1_pickup"]
+[ext_resource type="Script" path="res://game/interaction/interactable.gd" id="2_inter"]
+[ext_resource type="Resource" path="res://data/interaction/pickup.tres" id="3_def"]
+
+[sub_resource type="BoxMesh" id="box_mesh"]
+size = Vector3(0.2, 0.1, 0.1)
+
+[sub_resource type="SphereShape3D" id="use_shape"]
+radius = 0.5
+
+[node name="AmmoPickup" type="Node3D"]
+script = ExtResource("1_pickup")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("box_mesh")
+
+[node name="Label" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+billboard = 1
+pixel_size = 0.002
+font_size = 32
+outline_size = 8
+
+[node name="Interactable" type="Area3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+script = ExtResource("2_inter")
+definition = ExtResource("3_def")
+
+[node name="Shape" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("use_shape")

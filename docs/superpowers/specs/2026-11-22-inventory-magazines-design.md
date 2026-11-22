@@ -1,6 +1,6 @@
 # Magazines, ammo types and inventory: design
 
-Date: 2026-11-22. Status: approved; pull request 1 (data, rules and magazine-based reload) is implemented on `feat/glock-17`. This is a post-Milestone-1 feature (`docs/architecture.md` lists inventory as out of scope for M1); the first pull request updates that document.
+Date: 2026-11-22. Status: approved; pull requests 1 (data, rules and magazine-based reload) and 2 (inventory screen) are implemented on `feat/glock-17`. This is a post-Milestone-1 feature (`docs/architecture.md` lists inventory as out of scope for M1); the first pull request updates that document.
 
 ## Intent
 
@@ -126,3 +126,5 @@ Mixed rounds in a magazine (the ordered round list already allows it), magazine 
 ## Implementation notes (pull request 1)
 
 The ammo numbers in `data/ammo/` are first guesses: armour-piercing 5.56 is 0.9 damage, 2.0 penetration, 1.05 velocity; subsonic 9x19 is 0.9 damage, 0.8 penetration, 0.7 velocity and half the noise radius. The 33-round Glock magazine uses the 17-round magazine's icon. Schema version 1 saves keep their `mag` and `reserve` numbers; `Player.load_state` turns a save without an `inventory` key into magazines (a reserve becomes full spare magazines of the weapon's default type while pouches are free, then loose ammo).
+
+Pull request 2 as built: the screen is code-built (`InventoryScreen`); the key is `Tab` (`inventory` action); the screen shows pouches, loose ammo and the guns in hand, and the fill and unload times are in `data/inventory/inventory_settings.tres`. Opening it releases the mouse without pausing (the pause-on-capture-loss rule only fires for a capture that was lost, not one that was released). The `round_load` sound is a generated click (`tools/audio/make_round_load_sound.py`).

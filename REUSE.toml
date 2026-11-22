@@ -112,3 +112,9 @@ path = ["content/weapons/m4a1_ms/textures/*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (rifle textures supplied by the developer; origin and terms unknown)"
 SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/effects/muzzle_smoke/TX_Smoke.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (texture supplied by the developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"

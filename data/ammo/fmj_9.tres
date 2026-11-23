@@ -17,3 +17,4 @@ velocity_mult = 1.0
 noise_mult = 1.0
 tracer = false
 box_label = ExtResource("3_label")
+box_size_m = Vector3(0.1, 0.062, 0.036)

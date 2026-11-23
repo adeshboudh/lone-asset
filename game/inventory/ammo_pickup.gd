@@ -9,6 +9,8 @@ enum Kind { LOOSE_AMMO, MAGAZINE }
 ## One shared box mesh: surface "Ammo_Label" (front and back) takes the ammo's label, the rest is the cardboard.
 const AMMO_BOX_MODEL: PackedScene = preload("res://content/weapons/common/ammo_boxes/ammo_box.glb")
 const AMMO_BOX_LABEL_SURFACE: String = "Label"
+## Size of the box mesh as modelled; the model is scaled to `AmmoType.box_size_m`.
+const AMMO_BOX_MODEL_SIZE_M: Vector3 = Vector3(0.19, 0.1, 0.07)
 ## A magazine lies on its side, thin side up (half its thickness above the table).
 const MAGAZINE_LYING_DEG: float = 90.0
 const MAGAZINE_REST_HEIGHT_M: float = 0.012
@@ -64,6 +66,10 @@ func _make_model() -> Node3D:
 		if ammo == null or ammo.box_label == null:
 			return null
 		var box: Node3D = AMMO_BOX_MODEL.instantiate()
+		box.scale = ammo.box_size_m / AMMO_BOX_MODEL_SIZE_M
+		# Lying on its biggest face, label up (the model stands on its bottom edge; its origin is bottom centre).
+		box.rotation_degrees.x = -90.0
+		box.position.y = ammo.box_size_m.z * 0.5
 		var label: StandardMaterial3D = StandardMaterial3D.new()
 		label.albedo_texture = ammo.box_label
 		label.roughness = 0.8

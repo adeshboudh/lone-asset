@@ -2,8 +2,6 @@ class_name SettingsRules
 extends RefCounted
 ## Pure rules for the player settings (design §15).
 
-const FOV_MIN: float = 70.0
-const FOV_MAX: float = 100.0
 const SENSITIVITY_MIN: float = 0.25
 const SENSITIVITY_MAX: float = 3.0
 const RENDER_SCALE_MIN: float = 0.5
@@ -20,10 +18,6 @@ const PRESETS: Dictionary = {
 
 ## Volume sliders run 0–1; below this a bus is muted.
 const SILENT_BELOW: float = 0.001
-
-
-static func clamp_fov(value: float) -> float:
-	return clampf(value, FOV_MIN, FOV_MAX)
 
 
 static func clamp_sensitivity(value: float) -> float:

@@ -28,8 +28,8 @@ var _toast_remaining: float = 0.0
 @onready var _vignette: ColorRect = %Vignette
 
 ## Where the suspicion arcs sit, in pixels from the crosshair.
-const INDICATOR_RADIUS: float = 130.0
-const HIT_ARC_RADIUS: float = 105.0
+const INDICATOR_RADIUS: float = 217.0
+const HIT_ARC_RADIUS: float = 175.0
 const HIT_ARC_TIME_S: float = 1.5
 const HURT_FLASH_RATE: float = 1.8
 ## Arc colour by suspicion band (design §9.5). Normal shows nothing.
@@ -145,12 +145,12 @@ func _on_damage_applied(target: Node, info: DamageInfo, killed: bool) -> void:
 func _draw_binocular_reticle(center: Vector2, binoculars: Binoculars) -> void:
 	var color: Color = Color(1.0, 1.0, 1.0, 0.8)
 	for direction: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-		_crosshair.draw_line(center + direction * 6.0, center + direction * 40.0, color, 1.5)
-	_crosshair.draw_arc(center, 20.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 0.25), 1.5)
+		_crosshair.draw_line(center + direction * 10.0, center + direction * 67.0, color, 2.5)
+	_crosshair.draw_arc(center, 33.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 0.25), 2.5)
 	if binoculars.tag_progress > 0.0:
-		_crosshair.draw_arc(center, 20.0, -PI * 0.5, -PI * 0.5 + TAU * binoculars.tag_progress, 32, Color(1.0, 0.8, 0.2), 4.0)
+		_crosshair.draw_arc(center, 33.0, -PI * 0.5, -PI * 0.5 + TAU * binoculars.tag_progress, 32, Color(1.0, 0.8, 0.2), 7.0)
 	var font: Font = ThemeDB.fallback_font
-	_crosshair.draw_string(font, center + Vector2(50.0, 50.0), "%dx" % int(binoculars.zoom), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, color)
+	_crosshair.draw_string(font, center + Vector2(83.0, 83.0), "%dx" % int(binoculars.zoom), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 26, color)
 
 
 ## Markers over tagged guards. They are drawn on screen, so walls do not hide them.
@@ -168,10 +168,10 @@ func _draw_tags() -> void:
 		var at: Vector2 = camera.unproject_position(spot)
 		var fade: float = clampf(time_left / 5.0, 0.3, 1.0)
 		var color: Color = Color(1.0, 0.8, 0.2, fade)
-		var points: PackedVector2Array = [at + Vector2(0, 8), at + Vector2(-8, -4), at + Vector2(8, -4)]
+		var points: PackedVector2Array = [at + Vector2(0, 13), at + Vector2(-13, -7), at + Vector2(13, -7)]
 		_indicators.draw_colored_polygon(points, color)
 		var distance: float = camera.global_position.distance_to(guard.global_position)
-		_indicators.draw_string(font, at + Vector2(-16.0, -10.0), "%d m" % roundi(distance), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, color)
+		_indicators.draw_string(font, at + Vector2(-27.0, -17.0), "%d m" % roundi(distance), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 15, color)
 
 
 ## One arc around the crosshair per suspicious guard, pointing at it. A fuller, thicker arc means more suspicion.
@@ -190,7 +190,7 @@ func _draw_indicators() -> void:
 			continue
 		var hit_angle: float = -PI * 0.5 - forward.signed_angle_to(from_shooter, Vector3.UP)
 		var fade: float = 1.0 - float(hit["age"]) / HIT_ARC_TIME_S
-		_indicators.draw_arc(center, HIT_ARC_RADIUS, hit_angle - 0.35, hit_angle + 0.35, 12, Color(1.0, 0.1, 0.1, fade), 8.0)
+		_indicators.draw_arc(center, HIT_ARC_RADIUS, hit_angle - 0.35, hit_angle + 0.35, 12, Color(1.0, 0.1, 0.1, fade), 13.0)
 	for node: Node in get_tree().get_nodes_in_group(&"guards"):
 		var guard: Guard = node as Guard
 		if guard.is_dead or not BAND_COLORS.has(guard.suspicion.band):
@@ -205,7 +205,7 @@ func _draw_indicators() -> void:
 		var color: Color = BAND_COLORS[guard.suspicion.band]
 		color.a = lerpf(0.5, 1.0, t)
 		var half_span: float = lerpf(0.12, 0.45, t)
-		_indicators.draw_arc(center, INDICATOR_RADIUS, angle - half_span, angle + half_span, 14, color, lerpf(3.0, 11.0, t))
+		_indicators.draw_arc(center, INDICATOR_RADIUS, angle - half_span, angle + half_span, 14, color, lerpf(5.0, 18.0, t))
 
 
 func _draw_crosshair() -> void:
@@ -221,13 +221,13 @@ func _draw_crosshair() -> void:
 	var color: Color = Color(1.0, 1.0, 1.0, 0.85 * CrosshairRules.tick_alpha(weapon.aim_blend, weapon.definition.scope_zoom))
 	var camera: Camera3D = _player.camera
 	var gap: float = CrosshairRules.gap_px(weapon.current_spread_deg, camera.fov, _crosshair.size.y * 0.5)
-	var length: float = 8.0
+	var length: float = 13.0
 	if color.a > 0.01:
 		for direction: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]:
-			_crosshair.draw_line(center + direction * gap, center + direction * (gap + length), color, 2.0)
+			_crosshair.draw_line(center + direction * gap, center + direction * (gap + length), color, 3.0)
 
 	if _hit_marker_remaining > 0.0:
 		var marker_color: Color = Color(1.0, 0.3, 0.25) if _hit_marker_killed else Color.WHITE
 		for diagonal: Vector2 in [Vector2(1, 1), Vector2(-1, 1), Vector2(1, -1), Vector2(-1, -1)]:
 			var d: Vector2 = diagonal.normalized()
-			_crosshair.draw_line(center + d * 6.0, center + d * 13.0, marker_color, 2.0)
+			_crosshair.draw_line(center + d * 10.0, center + d * 22.0, marker_color, 3.0)

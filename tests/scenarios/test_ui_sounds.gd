@@ -1,22 +1,19 @@
 extends GdUnitTestSuite
-## Menu sounds: hover and press sounds come from UiSounds.wire, and a button can pick its own press sound.
+## Menu sounds: hover and press sounds come from UiSounds.wire, and the press sound is always the click.
 
 var _played: Array[StringName] = []
 var _recorder: Callable
 var _root: Control
 var _plain: Button
-var _start: Button
 var _off: Button
 
 
 func before_test() -> void:
 	_root = auto_free(Control.new())
 	_plain = Button.new()
-	_start = Button.new()
-	_start.set_meta(UiSounds.META, &"ui_start")
 	_off = Button.new()
 	_off.disabled = true
-	for button: Button in [_plain, _start, _off]:
+	for button: Button in [_plain, _off]:
 		_root.add_child(button)
 	add_child(_root)
 	UiSounds.wire(_root)
@@ -32,11 +29,6 @@ func after_test() -> void:
 func test_pressing_a_button_plays_the_click() -> void:
 	_plain.pressed.emit()
 	assert_array(_played).is_equal([&"ui_click"])
-
-
-func test_button_can_pick_the_start_sound() -> void:
-	_start.pressed.emit()
-	assert_array(_played).is_equal([&"ui_start"])
 
 
 func test_hover_and_focus_play_the_hover_sound() -> void:

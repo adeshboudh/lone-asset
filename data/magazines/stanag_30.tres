@@ -1,7 +1,10 @@
-[gd_resource type="Resource" script_class="MagazineType" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="MagazineType" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://game/inventory/magazine_type.gd" id="1_s"]
 [ext_resource type="Texture2D" path="res://content/weapons/m4a1_ms/Files/Icon_M4A1_Magazine.png" id="2_icon"]
+[ext_resource type="ArrayMesh" path="res://content/weapons/m4a1_ms/Files/MS_M4A1_Magazine_LOD0.obj" id="3_model"]
+[ext_resource type="Texture2D" path="res://content/weapons/m4a1_ms/textures/m4a1_albedo.png" id="4_albedo"]
+[ext_resource type="Texture2D" path="res://content/weapons/m4a1_ms/textures/m4a1_normal.png" id="5_normal"]
 
 [resource]
 script = ExtResource("1_s")
@@ -11,3 +14,6 @@ icon = ExtResource("2_icon")
 family = &"stanag"
 accepted_calibers = Array[StringName]([&"556x45"])
 capacity = 30
+mesh = ExtResource("3_model")
+albedo = ExtResource("4_albedo")
+normal = ExtResource("5_normal")

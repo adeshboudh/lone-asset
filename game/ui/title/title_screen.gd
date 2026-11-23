@@ -22,8 +22,6 @@ var _settings_button: GlassButton
 func _ready() -> void:
 	_build()
 	_continue_button.visible = Saves.has_checkpoint()
-	_play_button.set_meta(UiSounds.META, &"ui_start")
-	_continue_button.set_meta(UiSounds.META, &"ui_start")
 	var settings: SettingsPanel = SettingsPanel.new()
 	add_child(settings)
 	_settings_button.pressed.connect(settings.open)
@@ -55,10 +53,10 @@ func _build() -> void:
 	var margin: MarginContainer = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 48)
+		margin.add_theme_constant_override("margin_" + side, 80)
 	add_child(margin)
 	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 24)
+	row.add_theme_constant_override("separation", 40)
 	margin.add_child(row)
 	row.add_child(_left_column())
 	var gap: Control = Control.new()
@@ -70,14 +68,14 @@ func _build() -> void:
 	tip.theme_type_variation = &"MutedLabel"
 	tip.text = "Tip: " + TIPS[randi() % TIPS.size()]
 	tip.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	tip.position = Vector2(48.0, -44.0)
+	tip.position = Vector2(80.0, -73.0)
 	add_child(tip)
 	var version: Label = Label.new()
 	version.theme_type_variation = &"SmallLabel"
 	version.text = "build %s" % ProjectSettings.get_setting("application/config/version")
 	version.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	version.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	version.position = Vector2(-48.0, -40.0)
+	version.position = Vector2(-80.0, -67.0)
 	add_child(version)
 
 
@@ -101,11 +99,11 @@ func _shade() -> Control:
 
 func _left_column() -> Control:
 	var column: VBoxContainer = VBoxContainer.new()
-	column.custom_minimum_size = Vector2(420.0, 0.0)
-	column.add_theme_constant_override("separation", 10)
+	column.custom_minimum_size = Vector2(700.0, 0.0)
+	column.add_theme_constant_override("separation", 17)
 	var title: Label = Label.new()
 	title.theme_type_variation = &"TitleLabel"
-	title.add_theme_font_size_override("font_size", 64)
+	title.add_theme_font_size_override("font_size", 73)
 	title.text = "LONE ASSET"
 	column.add_child(title)
 	var subtitle: Label = Label.new()
@@ -113,7 +111,7 @@ func _left_column() -> Control:
 	subtitle.text = "TACTICAL STEALTH  -  PROTOTYPE"
 	column.add_child(subtitle)
 	var space: Control = Control.new()
-	space.custom_minimum_size = Vector2(0.0, 36.0)
+	space.custom_minimum_size = Vector2(0.0, 60.0)
 	column.add_child(space)
 	_continue_button = _menu_button("Continue", "Resume from the last checkpoint", true)
 	_play_button = _menu_button("New game", "Start the mission from the beginning", false)
@@ -135,15 +133,15 @@ func _menu_button(title: String, subtitle: String, highlighted: bool) -> GlassBu
 
 func _right_column() -> Control:
 	var card: GlassPanel = GlassPanel.new()
-	card.custom_minimum_size = Vector2(340.0, 0.0)
+	card.custom_minimum_size = Vector2(567.0, 0.0)
 	card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	var box: VBoxContainer = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
+	box.add_theme_constant_override("separation", 13)
 	card.add_child(box)
 	var heading: HBoxContainer = HBoxContainer.new()
-	heading.add_theme_constant_override("separation", 8)
+	heading.add_theme_constant_override("separation", 13)
 	var marker: ColorRect = ColorRect.new()
-	marker.custom_minimum_size = Vector2(10.0, 10.0)
+	marker.custom_minimum_size = Vector2(17.0, 17.0)
 	marker.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	marker.color = Color("3ddc5f")
 	heading.add_child(marker)

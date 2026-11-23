@@ -8,6 +8,8 @@ const LAYER: int = 8
 signal hold_started(actor: Node)
 signal hold_stopped(actor: Node)
 signal completed(actor: Node)
+## The player's crosshair moved onto or off this (the Interactor sets it).
+signal focus_changed(focused: bool)
 
 @export var definition: InteractionDefinition
 ## Stable ID the mission refers to (design §11.1).
@@ -16,6 +18,12 @@ signal completed(actor: Node)
 
 ## What the HUD shows. Starts as the definition's text; the owner changes it (Open / Close).
 var prompt_text: String = ""
+
+var is_focused: bool = false:
+	set(value):
+		if value != is_focused:
+			is_focused = value
+			focus_changed.emit(value)
 
 
 func _ready() -> void:

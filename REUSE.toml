@@ -52,10 +52,16 @@ SPDX-FileCopyrightText = "Unknown author (recorded sounds, original page not fou
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = ["tools/audio/source/ui_*.wav", "content/audio/sfx/ui_*.wav*"]
+path = ["content/audio/sfx/footstep_*.wav*", "content/audio/sfx/landing_*.wav*"]
 precedence = "override"
-SPDX-FileCopyrightText = "Generated with Stable Audio (small-sfx) by the project developer, prompts in text_to_sfx.ipynb"
-SPDX-License-Identifier = "LicenseRef-Stable-Audio-generated"
+SPDX-FileCopyrightText = "Unknown author (footstep and landing sounds supplied by the project developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/audio/sfx/ui_*.wav*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (UI sounds, pasted by the project developer, source not recorded)"
+SPDX-License-Identifier = "CC-BY-4.0"
 
 [[annotations]]
 path = ["content/characters/agent/**", "content/ui/portraits/**"]

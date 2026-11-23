@@ -23,12 +23,12 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Box" type="VBoxContainer" parent="Center"]
-custom_minimum_size = Vector2(280, 0)
-theme_override_constants/separation = 12
+custom_minimum_size = Vector2(467, 0)
+theme_override_constants/separation = 20
 
 [node name="Title" type="Label" parent="Center/Box"]
 unique_name_in_owner = true
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 46
 text = "ELIMINATED"
 horizontal_alignment = 1
 

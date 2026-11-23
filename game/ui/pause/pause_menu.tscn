@@ -24,11 +24,11 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Glass" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(360, 0)
+custom_minimum_size = Vector2(600, 0)
 script = ExtResource("2_glass")
 
 [node name="Box" type="VBoxContainer" parent="Center/Glass"]
-theme_override_constants/separation = 10
+theme_override_constants/separation = 17
 
 [node name="Title" type="Label" parent="Center/Glass/Box"]
 theme_type_variation = &"TitleLabel"

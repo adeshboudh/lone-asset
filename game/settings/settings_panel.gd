@@ -23,18 +23,18 @@ func _ready() -> void:
 	add_child(center)
 	# A frosted-glass window over whatever is behind (the title cover, the paused game).
 	var window: GlassPanel = GlassPanel.new()
-	window.custom_minimum_size = Vector2(560.0, 0.0)
+	window.custom_minimum_size = Vector2(933.0, 0.0)
 	center.add_child(window)
 	_rows = VBoxContainer.new()
-	_rows.add_theme_constant_override(&"separation", 10)
+	_rows.add_theme_constant_override(&"separation", 17)
 	window.add_child(_rows)
 	var title: Label = Label.new()
 	title.text = "SETTINGS"
 	title.theme_type_variation = &"TitleLabel"
-	title.add_theme_font_size_override(&"font_size", 34)
+	title.add_theme_font_size_override(&"font_size", 39)
 	_rows.add_child(title)
 	_tabs = TabContainer.new()
-	_tabs.custom_minimum_size = Vector2(0.0, 300.0)
+	_tabs.custom_minimum_size = Vector2(0.0, 500.0)
 	# The glass shows through the tab page.
 	_tabs.add_theme_stylebox_override(&"panel", StyleBoxEmpty.new())
 	_rows.add_child(_tabs)
@@ -47,9 +47,6 @@ func _ready() -> void:
 		func() -> bool: return Settings.invert_y,
 		func(v: bool) -> void: Settings.invert_y = v)
 	_begin_tab("Video")
-	_add_slider("Field of view", SettingsRules.FOV_MIN, SettingsRules.FOV_MAX, 1.0,
-		func() -> float: return Settings.fov_deg,
-		func(v: float) -> void: Settings.fov_deg = v)
 	_add_option("Graphics quality", ["Low", "Medium", "High"],
 		func() -> int: return Settings.quality,
 		func(v: int) -> void: Settings.quality = v)
@@ -85,7 +82,7 @@ func _ready() -> void:
 
 	var back: GlassButton = GlassButton.new()
 	back.title = "Back"
-	back.custom_minimum_size = Vector2(0.0, 48.0)
+	back.custom_minimum_size = Vector2(0.0, 80.0)
 	back.highlighted = true
 	_back = back
 	_back.pressed.connect(close)
@@ -108,7 +105,7 @@ func close() -> void:
 func _begin_tab(tab_name: String) -> void:
 	_tab = VBoxContainer.new()
 	_tab.name = tab_name
-	_tab.add_theme_constant_override(&"separation", 10)
+	_tab.add_theme_constant_override(&"separation", 17)
 	_tabs.add_child(_tab)
 
 
@@ -116,7 +113,7 @@ func _add_slider(label_text: String, low: float, high: float, step: float, gette
 	var row: HBoxContainer = HBoxContainer.new()
 	var label: Label = Label.new()
 	label.text = label_text
-	label.custom_minimum_size = Vector2(200.0, 0.0)
+	label.custom_minimum_size = Vector2(333.0, 0.0)
 	row.add_child(label)
 	var slider: HSlider = HSlider.new()
 	slider.min_value = low
@@ -124,10 +121,10 @@ func _add_slider(label_text: String, low: float, high: float, step: float, gette
 	slider.step = step
 	slider.value = getter.call()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.custom_minimum_size = Vector2(180.0, 24.0)
+	slider.custom_minimum_size = Vector2(300.0, 40.0)
 	row.add_child(slider)
 	var readout: Label = Label.new()
-	readout.custom_minimum_size = Vector2(56.0, 0.0)
+	readout.custom_minimum_size = Vector2(93.0, 0.0)
 	readout.text = _format(slider.value, high)
 	row.add_child(readout)
 	slider.value_changed.connect(func(v: float) -> void:
@@ -141,7 +138,7 @@ func _add_option(label_text: String, choices: Array[String], getter: Callable, s
 	var row: HBoxContainer = HBoxContainer.new()
 	var label: Label = Label.new()
 	label.text = label_text
-	label.custom_minimum_size = Vector2(200.0, 0.0)
+	label.custom_minimum_size = Vector2(333.0, 0.0)
 	row.add_child(label)
 	var option: OptionButton = OptionButton.new()
 	for choice: String in choices:

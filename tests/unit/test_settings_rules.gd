@@ -2,12 +2,6 @@ extends GdUnitTestSuite
 ## SettingsRules (pure logic).
 
 
-func test_fov_is_kept_between_70_and_100() -> void:
-	assert_float(SettingsRules.clamp_fov(50.0)).is_equal(70.0)
-	assert_float(SettingsRules.clamp_fov(120.0)).is_equal(100.0)
-	assert_float(SettingsRules.clamp_fov(85.0)).is_equal(85.0)
-
-
 func test_sensitivity_is_clamped() -> void:
 	assert_float(SettingsRules.clamp_sensitivity(0.0)).is_equal(SettingsRules.SENSITIVITY_MIN)
 	assert_float(SettingsRules.clamp_sensitivity(9.0)).is_equal(SettingsRules.SENSITIVITY_MAX)

@@ -7,14 +7,13 @@ var _saved: Dictionary = {}
 
 
 func before_test() -> void:
-	_saved = {"master": Settings.master_volume, "sfx": Settings.sfx_volume, "fov": Settings.fov_deg,
+	_saved = {"master": Settings.master_volume, "sfx": Settings.sfx_volume,
 		"invert": Settings.invert_y, "sens": Settings.mouse_sensitivity_scale}
 
 
 func after_test() -> void:
 	Settings.master_volume = _saved["master"]
 	Settings.sfx_volume = _saved["sfx"]
-	Settings.fov_deg = _saved["fov"]
 	Settings.invert_y = _saved["invert"]
 	Settings.mouse_sensitivity_scale = _saved["sens"]
 	Settings.commit()
@@ -29,23 +28,14 @@ func test_volume_changes_reach_the_buses() -> void:
 
 
 func test_settings_survive_a_save_and_load() -> void:
-	Settings.fov_deg = 90.0
 	Settings.invert_y = true
 	Settings.mouse_sensitivity_scale = 1.5
 	Settings.commit()
-	Settings.fov_deg = 75.0
 	Settings.invert_y = false
 	Settings.mouse_sensitivity_scale = 1.0
 	Settings.load_from_disk()
-	assert_float(Settings.fov_deg).is_equal(90.0)
 	assert_bool(Settings.invert_y).is_true()
 	assert_float(Settings.mouse_sensitivity_scale).is_equal(1.5)
-
-
-func test_out_of_range_values_are_clamped_on_commit() -> void:
-	Settings.fov_deg = 200.0
-	Settings.commit()
-	assert_float(Settings.fov_deg).is_equal(100.0)
 
 
 func test_a_walking_guard_makes_footstep_sounds() -> void:

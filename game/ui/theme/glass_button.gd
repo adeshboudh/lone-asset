@@ -19,7 +19,7 @@ const GLASS: ShaderMaterial = preload("res://data/ui/glass_material.tres")
 		theme_type_variation = &"GlassButtonAccent" if value else &"GlassButton"
 
 ## Space left of the text (room for an icon).
-@export var inset_left: float = 22.0:
+@export var inset_left: float = 37.0:
 	set(value):
 		inset_left = value
 		if _column != null:
@@ -34,16 +34,16 @@ func _init() -> void:
 	theme_type_variation = &"GlassButton"
 	material = GLASS
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
-	custom_minimum_size = Vector2(0.0, 64.0)
+	custom_minimum_size = Vector2(0.0, 107.0)
 	action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
 	var column: VBoxContainer = VBoxContainer.new()
 	_column = column
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	column.offset_left = inset_left
-	column.offset_right = -12.0
+	column.offset_right = -20.0
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", -2)
+	column.add_theme_constant_override("separation", -3)
 	add_child(column)
 	_title_label = Label.new()
 	_title_label.theme_type_variation = &"HeaderLabel"

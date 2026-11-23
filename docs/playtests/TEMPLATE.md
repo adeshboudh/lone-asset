@@ -7,7 +7,7 @@ SPDX-License-Identifier: CC-BY-4.0
 
 - Build (version string from the title screen):
 - Hardware / OS / renderer (Vulkan or OpenGL):
-- Quality preset / render scale / FOV / sensitivity:
+- Quality preset / render scale / sensitivity:
 - Recording file:
 - Approach (undetected / combat / mixed):
 - Completed mission: yes / no, time:

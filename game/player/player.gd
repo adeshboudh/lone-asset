@@ -90,9 +90,7 @@ func _ready() -> void:
 	_stance.setup(_collision, settings)
 	_head.position.y = _stance.eye_height
 	_body.setup(_camera, settings.stand_eye_height, settings.crouch_eye_height)
-	_base_fov = Settings.fov_deg
-	_camera.fov = _base_fov
-	Settings.changed.connect(func() -> void: _base_fov = Settings.fov_deg)
+	_base_fov = _camera.fov
 	add_to_group(&"player")
 	_movement.landed.connect(_on_landed)
 	_noise.stepped.connect(_audio.on_step)
@@ -284,7 +282,7 @@ func _on_weapon_fired(_origin: Vector3, _direction: Vector3, source: Weapon) -> 
 
 func _on_landed(fall_height: float) -> void:
 	_noise.on_landed(self, fall_height)
-	_audio.on_landed(fall_height)
+	_audio.on_landed(fall_height, _noise.surface_of(self))
 	var amount: float = DamageRules.fall_damage(fall_height, _health.max_health)
 	if amount <= 0.0:
 		return

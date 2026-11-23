@@ -12,7 +12,7 @@ signal closed
 const SETTINGS: InventorySettings = preload("res://data/inventory/inventory_settings.tres")
 const PORTRAIT: Texture2D = preload("res://content/ui/portraits/agent_portrait.png")
 const ROUND_SOUND: StringName = &"round_load"
-const ICON_SIZE: int = 36
+const ICON_SIZE: int = 60
 const POUCH_COLUMNS: int = 2
 
 var is_open: bool = false
@@ -116,15 +116,15 @@ func _build() -> void:
 	var margin: MarginContainer = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 40)
+		margin.add_theme_constant_override("margin_" + side, 67)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(margin)
 	var page: VBoxContainer = VBoxContainer.new()
-	page.add_theme_constant_override("separation", 12)
+	page.add_theme_constant_override("separation", 20)
 	page.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(page)
 	var panels: HBoxContainer = HBoxContainer.new()
-	panels.add_theme_constant_override("separation", 20)
+	panels.add_theme_constant_override("separation", 33)
 	panels.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panels.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	page.add_child(panels)
@@ -137,11 +137,11 @@ func _build() -> void:
 func _panel(heading: String, width: float) -> Array:
 	var panel: GlassPanel = GlassPanel.new()
 	# Wide screens give the panels their ratio; narrow ones shrink them to this minimum.
-	panel.custom_minimum_size = Vector2(300.0, 0.0)
+	panel.custom_minimum_size = Vector2(500.0, 0.0)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_stretch_ratio = width
 	var box: VBoxContainer = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
+	box.add_theme_constant_override("separation", 17)
 	panel.add_child(box)
 	box.add_child(_heading(heading))
 	box.add_child(HSeparator.new())
@@ -150,9 +150,9 @@ func _panel(heading: String, width: float) -> Array:
 
 func _heading(text: String) -> HBoxContainer:
 	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 13)
 	var marker: ColorRect = ColorRect.new()
-	marker.custom_minimum_size = Vector2(10.0, 10.0)
+	marker.custom_minimum_size = Vector2(17.0, 17.0)
 	marker.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	marker.color = Color("3ddc5f")
 	row.add_child(marker)
@@ -171,15 +171,15 @@ func _equipment_panel() -> Control:
 	guns_label.text = "IN HAND"
 	box.add_child(guns_label)
 	_gun_list = VBoxContainer.new()
-	_gun_list.add_theme_constant_override("separation", 6)
+	_gun_list.add_theme_constant_override("separation", 10)
 	box.add_child(_gun_list)
 	_pouch_label = Label.new()
 	_pouch_label.theme_type_variation = &"MutedLabel"
 	box.add_child(_pouch_label)
 	_pouch_grid = GridContainer.new()
 	_pouch_grid.columns = POUCH_COLUMNS
-	_pouch_grid.add_theme_constant_override("h_separation", 8)
-	_pouch_grid.add_theme_constant_override("v_separation", 8)
+	_pouch_grid.add_theme_constant_override("h_separation", 13)
+	_pouch_grid.add_theme_constant_override("v_separation", 13)
 	box.add_child(_pouch_grid)
 	return made[0]
 
@@ -192,7 +192,7 @@ func _character_panel() -> Control:
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	portrait.custom_minimum_size = Vector2(0.0, 260.0)
+	portrait.custom_minimum_size = Vector2(0.0, 433.0)
 	box.add_child(portrait)
 	var health_row: HBoxContainer = HBoxContainer.new()
 	var health_name: Label = Label.new()
@@ -207,7 +207,7 @@ func _character_panel() -> Control:
 	_health_bar = ProgressBar.new()
 	_health_bar.theme_type_variation = &"HealthBar"
 	_health_bar.show_percentage = false
-	_health_bar.custom_minimum_size = Vector2(0.0, 10.0)
+	_health_bar.custom_minimum_size = Vector2(0.0, 17.0)
 	box.add_child(_health_bar)
 	_free_label = Label.new()
 	_free_label.theme_type_variation = &"MutedLabel"
@@ -223,7 +223,7 @@ func _inventory_panel() -> Control:
 	loose_label.text = "LOOSE AMMO"
 	box.add_child(loose_label)
 	_loose_list = VBoxContainer.new()
-	_loose_list.add_theme_constant_override("separation", 6)
+	_loose_list.add_theme_constant_override("separation", 10)
 	box.add_child(_loose_list)
 	var spacer: Control = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -234,14 +234,14 @@ func _inventory_panel() -> Control:
 	actions_label.text = "MAGAZINE"
 	box.add_child(actions_label)
 	_actions = VBoxContainer.new()
-	_actions.add_theme_constant_override("separation", 6)
+	_actions.add_theme_constant_override("separation", 10)
 	box.add_child(_actions)
 	_progress_label = Label.new()
 	box.add_child(_progress_label)
 	_progress = ProgressBar.new()
 	_progress.max_value = 1.0
 	_progress.show_percentage = false
-	_progress.custom_minimum_size = Vector2(0.0, 10.0)
+	_progress.custom_minimum_size = Vector2(0.0, 17.0)
 	box.add_child(_progress)
 	return made[0]
 
@@ -249,7 +249,7 @@ func _inventory_panel() -> Control:
 func _key_hints() -> Control:
 	var row: HBoxContainer = HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_theme_constant_override("separation", 24)
+	row.add_theme_constant_override("separation", 40)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for hint: String in ["Click  Select a magazine", "TAB / ESC  Close"]:
 		var label: Label = Label.new()
@@ -292,18 +292,18 @@ func _gun_row(weapon: Weapon) -> Control:
 	var panel: PanelContainer = PanelContainer.new()
 	panel.theme_type_variation = &"SlotPanel"
 	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
+	row.add_theme_constant_override("separation", 20)
 	panel.add_child(row)
 	if weapon.definition.icon != null:
 		var picture: TextureRect = TextureRect.new()
 		picture.texture = weapon.definition.icon
-		picture.custom_minimum_size = Vector2(110.0, 44.0)
+		picture.custom_minimum_size = Vector2(183.0, 73.0)
 		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		row.add_child(picture)
 	var text: VBoxContainer = VBoxContainer.new()
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	text.add_theme_constant_override("separation", -2)
+	text.add_theme_constant_override("separation", -3)
 	var name_label: Label = Label.new()
 	name_label.theme_type_variation = &"HeaderLabel"
 	name_label.text = weapon.definition.display_name
@@ -330,7 +330,7 @@ func _gun_detail(logic: WeaponLogic) -> String:
 
 func _pouch_slot(index: int, inventory: AmmoInventory) -> Control:
 	var button: GlassButton = GlassButton.new()
-	button.custom_minimum_size = Vector2(0.0, 64.0)
+	button.custom_minimum_size = Vector2(0.0, 107.0)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.toggle_mode = true
 	if index >= inventory.pouches.size():
@@ -345,7 +345,7 @@ func _pouch_slot(index: int, inventory: AmmoInventory) -> Control:
 	button.expand_icon = true
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.add_theme_constant_override("icon_max_width", ICON_SIZE)
-	button.inset_left = 54.0
+	button.inset_left = 90.0
 	button.set_pressed_no_signal(index == _selected)
 	button.pressed.connect(_select.bind(index))
 	return button
@@ -355,12 +355,12 @@ func _loose_row(ammo: AmmoType, count: int) -> Control:
 	var panel: PanelContainer = PanelContainer.new()
 	panel.theme_type_variation = &"SlotPanel"
 	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
+	row.add_theme_constant_override("separation", 20)
 	panel.add_child(row)
 	if ammo.icon != null:
 		var picture: TextureRect = TextureRect.new()
 		picture.texture = ammo.icon
-		picture.custom_minimum_size = Vector2(56.0, 44.0)
+		picture.custom_minimum_size = Vector2(93.0, 73.0)
 		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		row.add_child(picture)
@@ -407,7 +407,7 @@ func _action_button(title: String, subtitle: String, callback: Callable, highlig
 	button.title = title
 	button.subtitle = subtitle
 	button.highlighted = highlighted
-	button.custom_minimum_size = Vector2(0.0, 52.0 if subtitle.is_empty() else 60.0)
+	button.custom_minimum_size = Vector2(0.0, 87.0 if subtitle.is_empty() else 100.0)
 	button.pressed.connect(callback)
 	return button
 

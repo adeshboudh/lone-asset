@@ -6,6 +6,13 @@ extends Node3D
 
 enum Kind { LOOSE_AMMO, MAGAZINE }
 
+## One shared box mesh: surface "Ammo_Label" (front and back) takes the ammo's label, the rest is the cardboard.
+const AMMO_BOX_MODEL: PackedScene = preload("res://content/weapons/common/ammo_boxes/ammo_box.glb")
+const AMMO_BOX_LABEL_SURFACE: String = "Label"
+## A magazine lies on its side, thin side up (half its thickness above the table).
+const MAGAZINE_LYING_DEG: float = 90.0
+const MAGAZINE_REST_HEIGHT_M: float = 0.012
+
 ## Stable id for saves (a guard's drop uses "drop_" plus the guard's id).
 @export var pickup_id: StringName
 @export var kind: Kind = Kind.LOOSE_AMMO
@@ -29,18 +36,56 @@ func _ready() -> void:
 	_interactable.prompt_text = "Take %s" % description()
 	_interactable.completed.connect(_on_completed)
 	_label.text = description()
+	# The name shows only while the crosshair is on the pickup.
+	_label.visible = false
+	_interactable.focus_changed.connect(func(focused: bool) -> void: _label.visible = focused)
 	var material: StandardMaterial3D = StandardMaterial3D.new()
 	material.albedo_color = Color(0.75, 0.6, 0.2) if kind == Kind.LOOSE_AMMO else Color(0.2, 0.22, 0.25)
 	_box.material_override = material
 	if kind == Kind.MAGAZINE:
 		_box.scale = Vector3(0.5, 1.4, 1.0)
-	# The ammo or magazine picture when there is one; the box is the fallback.
+	var model: Node3D = _make_model()
+	if model != null:
+		add_child(model)
+		_box.visible = false
+		return
+	# No 3D model: the ammo or magazine picture when there is one; the box is the fallback.
 	var picture: Texture2D = ammo.icon if kind == Kind.LOOSE_AMMO and ammo != null else (magazine_type.icon if magazine_type != null else null)
 	if picture != null:
 		_icon.texture = picture
 		_icon.pixel_size = 0.24 / float(maxi(picture.get_width(), picture.get_height()))
 		_icon.visible = true
 		_box.visible = false
+
+
+## The 3D model of the box or magazine, or null when the ammo or magazine type has none.
+func _make_model() -> Node3D:
+	if kind == Kind.LOOSE_AMMO:
+		if ammo == null or ammo.box_label == null:
+			return null
+		var box: Node3D = AMMO_BOX_MODEL.instantiate()
+		var label: StandardMaterial3D = StandardMaterial3D.new()
+		label.albedo_texture = ammo.box_label
+		label.roughness = 0.8
+		for mesh: MeshInstance3D in box.find_children("*", "MeshInstance3D", true, false):
+			for surface: int in mesh.mesh.get_surface_count():
+				if mesh.mesh.surface_get_material(surface).resource_name.contains(AMMO_BOX_LABEL_SURFACE):
+					mesh.set_surface_override_material(surface, label)
+		return box
+	if magazine_type == null or magazine_type.mesh == null:
+		return null
+	var magazine: MeshInstance3D = MeshInstance3D.new()
+	magazine.mesh = magazine_type.mesh
+	var metal: StandardMaterial3D = StandardMaterial3D.new()
+	metal.albedo_texture = magazine_type.albedo
+	metal.normal_enabled = magazine_type.normal != null
+	metal.normal_texture = magazine_type.normal
+	metal.metallic = 0.5
+	metal.roughness = 0.6
+	magazine.material_override = metal
+	magazine.rotation_degrees.z = MAGAZINE_LYING_DEG
+	magazine.position.y = MAGAZINE_REST_HEIGHT_M
+	return magazine
 
 
 ## "5.56x45 FMJ x30" or "STANAG 30-round (20, 5.56x45 FMJ)".

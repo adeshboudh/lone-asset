@@ -22,7 +22,13 @@ func setup(player: Player) -> void:
 
 
 func physics_update(camera: Camera3D, intent: InputIntent, delta: float) -> void:
-	focus = _find_focus(camera)
+	var found: Interactable = _find_focus(camera)
+	if found != focus:
+		if is_instance_valid(focus):
+			focus.is_focused = false
+		focus = found
+		if focus != null:
+			focus.is_focused = true
 	if not intent.interact:
 		_armed = true
 		_cancel_hold()

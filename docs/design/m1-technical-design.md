@@ -691,7 +691,7 @@ class_name EquipmentDefinition extends Resource
 Implemented early (with WP 5) because silence made the prototype hard to judge.
 
 - **Buses** (`game/audio/default_bus_layout.tres`): `Master` → `Music`, `SFX` → (`Weapons`, `Footsteps`, `Ambience`), `UI`, `Voice`.
-- **Menu sounds**: `UiSounds.wire(menu)` connects `ui_hover` (mouse-over, keyboard focus) and a press sound to every button under a node; a button picks its press sound with the `ui_sound` metadata (default `ui_click`, `ui_start` on Play and Continue). Call it before connecting actions that leave the screen.
+- **Menu sounds**: `UiSounds.wire(menu)` connects `ui_hover` (mouse-over, keyboard focus) and `ui_click` (press) to every button under a node. Call it before connecting actions that leave the screen.
 - **`Audio` autoload**: `play_2d` (the player's own weapon, footsteps and landings, 8 pooled voices), `play_3d` (positional sounds such as bullet impacts, at most 24 pooled voices), `play_ui` (plays while paused) and `make_loop` (level ambience, e.g. wind).
 - **Sound bank** (`data/audio/sound_bank.tres`): sound id → variants, picked at random so footsteps and shots do not repeat exactly. Weapons name their sounds in their `WeaponDefinition` (fire, dry fire, reload, reload from empty).
 - **Placeholder sounds** are synthesised by `tools/audio/make_placeholder_sounds.py` (our own work, CC BY 4.0). Replace a file and keep its name to swap in a real recording.
@@ -710,7 +710,7 @@ Implemented early (with WP 5) because silence made the prototype hard to judge.
 | Title | Continue (if checkpoint), New game, Settings |
 | HUD | Crosshair (spread-reactive), ammo/fire mode, health, stance icon, exposure meter ("LIGHT" bar, done in WP 5), suspicion indicators, objective text, damage direction, interaction prompt + hold progress |
 | Pause | Resume (re-captures the mouse), Settings, Restart from checkpoint, Quit to title |
-| Settings | Mouse sensitivity, invert Y, FOV (70–100), quality preset, render scale, master/music/SFX volume, head bob, key rebinding |
+| Settings | Mouse sensitivity, invert Y, quality preset, render scale, master/music/SFX volume, head bob, key rebinding |
 | Mission end | Success/fail, time, detected yes/no, optional objective result, Retry / Title |
 | Debug overlay (F3) | WP 5: noise rings (radius by type, fading), light-volume boxes coloured by level, light level / exposure / active volume / last noise. Later: FPS, frame time, AI/perception/physics ms, draw calls, memory, guard states. Enabled in all Milestone 1 previews; restricted to development builds before a public release |
 
@@ -718,7 +718,7 @@ Built with Godot `Control` nodes and one shared `Theme`. All text through `tr()`
 
 **Implemented in WP 11**
 
-- `Settings` autoload (`game/autoload/settings.gd`, rules in `game/settings/settings_rules.gd`): mouse sensitivity scale (0.25–3), invert Y, FOV (70–100), head bob, master / music / effects volume. Saved to `user://settings.cfg`, applied immediately (bus volumes here, the player reads the rest). `SettingsPanel` is shared by the title and pause menus.
+- `Settings` autoload (`game/autoload/settings.gd`, rules in `game/settings/settings_rules.gd`): mouse sensitivity scale (0.25–3), invert Y, head bob, master / music / effects volume. Saved to `user://settings.cfg`, applied immediately (bus volumes here, the player reads the rest). `SettingsPanel` is shared by the title and pause menus.
 - The HUD gained a stance line; the end screen shows time, detected yes/no, guards eliminated and the stealth bonus.
 - WP 13 added **graphics quality** (Low / Medium / High: shadow map size, soft shadows, MSAA or FXAA, SSAO, glow; table in `SettingsRules.PRESETS`) and **render scale** (50–100 %, FSR 1 upscaling below 100 %), applied by `Settings.apply_graphics()` to the window and every `WorldEnvironment`, and again whenever a level becomes ready.
 - **Deferred**: key rebinding and the `tr()` translation keys (all text is still literal).

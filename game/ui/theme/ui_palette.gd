@@ -13,7 +13,7 @@ extends Resource
 ## The thin light edge of a glass window or button.
 @export var glass_border: Color = Color(1.0, 1.0, 1.0, 0.16)
 ## Padding inside a glass window.
-@export var glass_pad: int = 16
+@export var glass_pad: int = 27
 
 @export_group("Lines")
 @export var border: Color = Color("2b3235")
@@ -34,11 +34,11 @@ extends Resource
 @export var danger: Color = Color("d9453d")
 
 @export_group("Sizes")
-@export var font_size: int = 18
-@export var font_size_small: int = 14
-@export var font_size_header: int = 21
-@export var font_size_title: int = 38
-@export var border_width: int = 1
+@export var font_size: int = 20
+@export var font_size_small: int = 15
+@export var font_size_header: int = 24
+@export var font_size_title: int = 42
+@export var border_width: int = 2
 @export var corner_radius: int = 0
-@export var pad_x: int = 12
-@export var pad_y: int = 6
+@export var pad_x: int = 20
+@export var pad_y: int = 10

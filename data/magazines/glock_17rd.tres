@@ -1,7 +1,10 @@
-[gd_resource type="Resource" script_class="MagazineType" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="MagazineType" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://game/inventory/magazine_type.gd" id="1_s"]
 [ext_resource type="Texture2D" path="res://content/weapons/glock_17/Files/Icon_Glock_17_Magazine.png" id="2_icon"]
+[ext_resource type="ArrayMesh" path="res://content/weapons/glock_17/Files/MS_Glock_17_Magazine_LOD0.obj" id="3_model"]
+[ext_resource type="Texture2D" path="res://content/weapons/glock_17/Files/TX_Glock_17_AL.png" id="4_albedo"]
+[ext_resource type="Texture2D" path="res://content/weapons/glock_17/Files/TX_Glock_17_NR.png" id="5_normal"]
 
 [resource]
 script = ExtResource("1_s")
@@ -11,3 +14,6 @@ icon = ExtResource("2_icon")
 family = &"glock_9mm"
 accepted_calibers = Array[StringName]([&"9x19"])
 capacity = 17
+mesh = ExtResource("3_model")
+albedo = ExtResource("4_albedo")
+normal = ExtResource("5_normal")

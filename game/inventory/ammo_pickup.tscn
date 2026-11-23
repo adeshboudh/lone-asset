@@ -20,9 +20,8 @@ mesh = SubResource("box_mesh")
 
 [node name="Icon" type="Sprite3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.03, 0)
 visible = false
-billboard = 1
 pixel_size = 0.0008
 alpha_cut = 2
 

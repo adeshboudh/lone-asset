@@ -266,9 +266,13 @@ def main() -> None:
     for _ in range(3):
         shot_suppressed(rng)
     add_recorded("rifle_shot_suppressed")
-    for surface in ("concrete", "metal", "grass"):
-        add(f"footstep_{surface}", [footstep(rng, surface) for _ in range(3)], muffled=True)
-    add("landing", [landing(rng)], muffled=True)
+    for surface in ("concrete", "metal", "grass"):  # recordings now; the draws keep the random stream
+        for _ in range(3):
+            footstep(rng, surface)
+    landing(rng)
+    for surface in ("concrete", "dirt", "generic", "grass", "metal"):
+        add_recorded(f"footstep_{surface}")
+        add_recorded(f"landing_{surface}")
     reload(rng, False)  # recordings now (convert_recorded_shots.py); the draws keep the random stream
     reload(rng, True)
     add_recorded("rifle_reload", muffled=False)

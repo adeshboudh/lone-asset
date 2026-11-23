@@ -104,13 +104,13 @@ static func _panels(theme: Theme, p: UiPalette) -> void:
 		theme.set_stylebox("panel", type_name, box(p, p.panel, p.border))
 	theme.set_color("font_color", "TooltipLabel", p.text)
 	_variation(theme, "SlotPanel", "PanelContainer")
-	theme.set_stylebox("panel", "SlotPanel", box(p, p.slot, p.border, [1, 1, 1, 1], 6, 6))
+	theme.set_stylebox("panel", "SlotPanel", box(p, p.slot, p.border, [1, 1, 1, 1], 10, 10))
 	_variation(theme, "OverlayPanel", "PanelContainer")
 	theme.set_stylebox("panel", "OverlayPanel", box(p, p.overlay, p.border))
 	theme.set_stylebox("separator", "HSeparator", box(p, p.border, p.border, [0, 0, 0, 0], 0, 0))
 	theme.set_stylebox("separator", "VSeparator", box(p, p.border, p.border, [0, 0, 0, 0], 0, 0))
-	theme.set_constant("separation", "HSeparator", 8)
-	theme.set_constant("separation", "VSeparator", 8)
+	theme.set_constant("separation", "HSeparator", 13)
+	theme.set_constant("separation", "VSeparator", 13)
 
 
 static func _bars(theme: Theme, p: UiPalette) -> void:
@@ -125,9 +125,9 @@ static func _bars(theme: Theme, p: UiPalette) -> void:
 
 static func _tabs(theme: Theme, p: UiPalette, semibold: Font) -> void:
 	for type_name: String in ["TabContainer", "TabBar"]:
-		theme.set_stylebox("tab_selected", type_name, box(p, p.accent_wash, p.accent, [0, 0, 0, 2], 16, 8))
+		theme.set_stylebox("tab_selected", type_name, box(p, p.accent_wash, p.accent, [0, 0, 0, 3], 27, 13))
 		theme.set_stylebox("tab_unselected", type_name, box(p, Color(0, 0, 0, 0), p.border, [0, 0, 0, 1], 16, 8))
-		theme.set_stylebox("tab_hovered", type_name, box(p, Color(0, 0, 0, 0), p.accent_dim, [0, 0, 0, 2], 16, 8))
+		theme.set_stylebox("tab_hovered", type_name, box(p, Color(0, 0, 0, 0), p.accent_dim, [0, 0, 0, 3], 27, 13))
 		theme.set_stylebox("tab_disabled", type_name, box(p, Color(0, 0, 0, 0), p.border, [0, 0, 0, 1], 16, 8))
 		theme.set_color("font_selected_color", type_name, p.text)
 		theme.set_color("font_unselected_color", type_name, p.text_muted)
@@ -144,9 +144,9 @@ static func _inputs(theme: Theme, p: UiPalette) -> void:
 	theme.set_color("font_color", "LineEdit", p.text)
 	theme.set_color("caret_color", "LineEdit", p.accent)
 	theme.set_color("selection_color", "LineEdit", p.accent_dim)
-	theme.set_stylebox("slider", "HSlider", box(p, p.slot, p.border, [1, 1, 1, 1], 0, 2))
-	theme.set_stylebox("grabber_area", "HSlider", box(p, p.accent_dim, p.accent_dim, [0, 0, 0, 0], 0, 2))
-	theme.set_stylebox("grabber_area_highlight", "HSlider", box(p, p.accent, p.accent, [0, 0, 0, 0], 0, 2))
+	theme.set_stylebox("slider", "HSlider", box(p, p.slot, p.border, [1, 1, 1, 1], 0, 3))
+	theme.set_stylebox("grabber_area", "HSlider", box(p, p.accent_dim, p.accent_dim, [0, 0, 0, 0], 0, 3))
+	theme.set_stylebox("grabber_area_highlight", "HSlider", box(p, p.accent, p.accent, [0, 0, 0, 0], 0, 3))
 
 
 static func _scrollbars(theme: Theme, p: UiPalette) -> void:
@@ -180,14 +180,14 @@ static func _glass(theme: Theme, p: UiPalette) -> void:
 
 ## Check boxes and slider grabbers drawn here (the default icons are white and vanish on a dark panel).
 static func _icons(theme: Theme, p: UiPalette) -> void:
-	var off: Texture2D = _square(20, p.slot, p.border_strong, Color(0, 0, 0, 0))
-	var on: Texture2D = _square(20, p.slot, p.accent, p.accent)
+	var off: Texture2D = _square(33, p.slot, p.border_strong, Color(0, 0, 0, 0))
+	var on: Texture2D = _square(33, p.slot, p.accent, p.accent)
 	for type_name: String in ["CheckBox", "CheckButton"]:
 		theme.set_icon("unchecked", type_name, off)
 		theme.set_icon("checked", type_name, on)
 		theme.set_icon("unchecked_disabled", type_name, off)
 		theme.set_icon("checked_disabled", type_name, on)
-		theme.set_constant("h_separation", type_name, 10)
+		theme.set_constant("h_separation", type_name, 17)
 	var grabber: Texture2D = _square(16, p.accent, p.accent, Color(0, 0, 0, 0))
 	var grabber_hot: Texture2D = _square(16, p.text, p.accent, Color(0, 0, 0, 0))
 	theme.set_icon("grabber", "HSlider", grabber)
@@ -195,19 +195,19 @@ static func _icons(theme: Theme, p: UiPalette) -> void:
 	theme.set_icon("grabber_disabled", "HSlider", _square(16, p.border_strong, p.border_strong, Color(0, 0, 0, 0)))
 
 
-## A square icon: filled, with a 2 px border; `mark` fills the inner square when its alpha is above zero.
+## A square icon: filled, with a 3 px border; `mark` fills the inner square when its alpha is above zero.
 static func _square(size: int, fill: Color, line: Color, mark: Color) -> ImageTexture:
 	var image: Image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	image.fill(fill)
 	for i: int in size:
-		for t: int in 2:
+		for t: int in 3:
 			image.set_pixel(i, t, line)
 			image.set_pixel(i, size - 1 - t, line)
 			image.set_pixel(t, i, line)
 			image.set_pixel(size - 1 - t, i, line)
 	if mark.a > 0.0:
-		for x: int in range(5, size - 5):
-			for y: int in range(5, size - 5):
+		for x: int in range(8, size - 8):
+			for y: int in range(8, size - 8):
 				image.set_pixel(x, y, mark)
 	return ImageTexture.create_from_image(image)
 

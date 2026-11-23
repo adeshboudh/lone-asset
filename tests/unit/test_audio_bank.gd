@@ -41,11 +41,18 @@ func test_guard_rifle_sound_exists() -> void:
 	assert_bool(BANK.has_sound(StringName(String(guard_profile.weapon.fire_sound) + "_muffled"))).is_true()
 
 
+func test_every_surface_has_footstep_and_landing_sounds_with_muffled_copies() -> void:
+	for surface: StringName in AudioRules.FOOTSTEP_SURFACES + [AudioRules.GENERIC_SURFACE]:
+		for id: StringName in [AudioRules.footstep_id(surface), AudioRules.landing_id(surface)]:
+			assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
+			assert_bool(BANK.has_sound(StringName(String(id) + "_muffled"))).override_failure_message("missing muffled '%s'" % id).is_true()
+
+
 func test_gameplay_sounds_exist_with_muffled_copies() -> void:
-	for id: StringName in [&"footstep_concrete", &"footstep_metal", &"footstep_grass", &"landing", &"impact_world", &"impact_body", &"m4a1_fire_suppressed", &"m4a1_fire_semi", &"m4a1_fire_auto"]:
+	for id: StringName in [&"impact_world", &"impact_body", &"m4a1_fire_suppressed", &"m4a1_fire_semi", &"m4a1_fire_auto"]:
 		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
 		assert_bool(BANK.has_sound(StringName(String(id) + "_muffled"))).override_failure_message("missing muffled '%s'" % id).is_true()
-	for id: StringName in [&"hit_marker", &"ui_click", &"ui_hover", &"ui_start", &"wind_loop"]:
+	for id: StringName in [&"hit_marker", &"ui_click", &"ui_hover", &"wind_loop"]:
 		assert_bool(BANK.has_sound(id)).override_failure_message("missing '%s'" % id).is_true()
 
 

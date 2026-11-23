@@ -6,6 +6,8 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 @export var icon: Texture2D
+## Label drawn on the front and back of the ammo box model (the pickup in the world).
+@export var box_label: Texture2D
 ## Caliber id; a magazine accepts the calibers listed in its type.
 @export var caliber: StringName
 

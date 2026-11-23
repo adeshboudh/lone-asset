@@ -41,6 +41,18 @@ func test_the_course_has_pickups() -> void:
 	assert_object(_pickup(&"pickup_mag_ap")).is_not_null()
 
 
+func test_pickups_show_3d_models_when_the_type_has_one() -> void:
+	var box: AmmoPickup = _pickup(&"pickup_loose_556")
+	var mag: AmmoPickup = _pickup(&"pickup_mag_ap")
+	for pickup: AmmoPickup in [box, mag]:
+		assert_bool(pickup._box.visible).is_false()
+		assert_bool(pickup._icon.visible).is_false()
+		assert_array(pickup.find_children("*", "MeshInstance3D", true, false).filter(func(n: Node) -> bool: return n != pickup._box)).is_not_empty()
+	var label: MeshInstance3D = box.find_children("*", "MeshInstance3D", true, false).filter(func(n: Node) -> bool: return n != box._box)[0]
+	var overrides: Array = range(label.mesh.get_surface_count()).map(func(i: int) -> Material: return label.get_surface_override_material(i))
+	assert_array(overrides.filter(func(m: Material) -> bool: return m != null)).has_size(1)
+
+
 func test_taking_loose_ammo_adds_it_to_the_inventory() -> void:
 	var before: int = _player.inventory.loose_count(&"fmj_556")
 	var pickup: AmmoPickup = _pickup(&"pickup_loose_556")
@@ -80,14 +92,17 @@ func test_the_player_can_look_at_a_pickup_and_take_it_with_the_interact_key() ->
 	_player.velocity = Vector3.ZERO
 	# Looking down at it, as one would at something on the floor.
 	_player._pitch = -0.84
+	assert_bool(pickup._label.visible).is_false()
 	await _ticks(4)
 	assert_object(_player.interactor.focus).is_not_null()
+	assert_bool(pickup._label.visible).is_true()
 	intent.interact = true
 	intent.interact_pressed = true
 	await _ticks(2)
 	intent.interact = false
 	intent.interact_pressed = false
 	assert_bool(pickup.is_taken).is_true()
+	assert_bool(pickup._label.visible).is_false()
 
 
 func test_a_dead_guard_drops_a_magazine_that_can_be_taken() -> void:

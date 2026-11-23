@@ -24,7 +24,7 @@ func physics_update(body: CharacterBody3D, on_floor: bool, speed: float, crouche
 	if _stride_progress < stride:
 		return
 	_stride_progress = fmod(_stride_progress, stride)
-	var surface: StringName = _surface_of(body)
+	var surface: StringName = surface_of(body)
 	var radius: float = profiles.footstep_radius(type) * profiles.surface_multiplier(surface)
 	NoiseSystem.emit_noise(type, body.global_position, radius, body)
 	stepped.emit(type, surface)
@@ -42,7 +42,7 @@ func emit_shot(body: CharacterBody3D, weapon: WeaponDefinition, noise_mult: floa
 
 
 ## The "surface" metadata of the floor under the body, or &"" for the default surface.
-func _surface_of(body: CharacterBody3D) -> StringName:
+func surface_of(body: CharacterBody3D) -> StringName:
 	var from: Vector3 = body.global_position + Vector3.UP * SURFACE_RAY_UP
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 		from, from + Vector3.DOWN * (SURFACE_RAY_UP + SURFACE_RAY_DOWN), NoiseSystem.WORLD_MASK, [body.get_rid()])

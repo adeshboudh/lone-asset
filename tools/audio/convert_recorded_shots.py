@@ -23,12 +23,6 @@ SHOTS: dict[str, str] = {}  # the pistol and the old M4 shots were removed 2026-
 SLICED_SHOTS: dict[str, str] = {}
 SHOT_LENGTH_S = 0.7
 SHOT_LEAD_S = 0.03
-# Menu sounds: (source, kept seconds, peak level). Hover is quieter than the rest.
-UI_SOUNDS = {
-    "ui_hover": ("ui_hover.wav", 0.3, 0.5),
-    "ui_click": ("ui_click.wav", 0.3, 0.8),
-    "ui_start": ("ui_start.wav", 0.6, 0.9),
-}
 
 
 def decode(path: Path) -> np.ndarray:
@@ -104,22 +98,12 @@ def sliced_shots() -> None:
             print(f"{sound_id}_{i}")
 
 
-def ui_sounds() -> None:
-    for sound_id, (file, keep_s, peak) in UI_SOUNDS.items():
-        x = decode(SOURCE / file)[: int(keep_s * SR)]
-        fade = int(0.06 * SR)
-        x[-fade:] *= np.linspace(1.0, 0.0, fade)
-        write_wav(sound_id, normalise(x, peak))
-        print(sound_id)
-
-
 def main() -> None:
-    # --shots: only the gun shots and menu sounds (the sources of the other sounds are unchanged).
+    # --shots: only the gun shots (the sources of the other sounds are unchanged).
     if "--shots" not in sys.argv:
         dry_fire()
         reloads()
     sliced_shots()
-    ui_sounds()
     for sound_id, file in SHOTS.items():
         x = decode(SOURCE / file)[: int(KEEP_S * SR)]
         fade = int(FADE_S * SR)

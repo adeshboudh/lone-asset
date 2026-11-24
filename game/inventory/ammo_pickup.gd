@@ -1,8 +1,8 @@
 class_name AmmoPickup
 extends Node3D
 ## Loose ammo or a magazine lying in the level (docs/superpowers/specs/2026-11-22-inventory-magazines-design.md).
-## The player takes it with the interact key. Loose ammo is always taken; a magazine needs a free pouch and stays
-## where it is when the pouches are full. A taken pickup is saved with the checkpoint.
+## The player takes it with the interact key. Loose ammo and magazines need free slots; what does not fit stays
+## where it is. A taken pickup is saved with the checkpoint.
 
 enum Kind { LOOSE_AMMO, MAGAZINE }
 
@@ -103,28 +103,35 @@ func description() -> String:
 	return "%s (%d, %s)" % [magazine_type.display_name, count, ammo.display_name]
 
 
-## Puts the pickup into the player's inventory. False (and it stays) when a magazine does not fit in the pouches.
-func take(player: Player) -> bool:
+## Puts the pickup into the player's inventory and returns how many rounds went in (a magazine counts as its rounds,
+## 0 when it did not fit). Loose ammo takes backpack slots, so only what fits is taken and the rest stays in the world
+## (`count` goes down). A magazine goes to a free rig slot, otherwise a free backpack slot.
+func take(player: Player) -> int:
 	if is_taken or ammo == null:
-		return false
+		return 0
 	var inventory: AmmoInventory = player.inventory
+	var taken: int
 	if kind == Kind.LOOSE_AMMO:
-		inventory.add_loose(ammo.id, count)
-	else:
-		var magazine: Magazine = Magazine.new(magazine_type)
-		for i: int in mini(count, magazine_type.capacity):
-			magazine.rounds.append(ammo.id)
-		if not inventory.add_magazine(magazine):
-			return false
+		taken = inventory.add_loose(ammo.id, count)
+		count -= taken
+		if count <= 0:
+			_mark_taken()
+		return taken
+	var magazine: Magazine = Magazine.new(magazine_type)
+	for i: int in mini(count, magazine_type.capacity):
+		magazine.rounds.append(ammo.id)
+	if not inventory.add_magazine(magazine) and not inventory.add_to_backpack(magazine):
+		return 0
 	_mark_taken()
-	return true
+	return magazine.count()
 
 
 func save_state() -> Dictionary:
-	return {"taken": is_taken}
+	return {"taken": is_taken, "count": count}
 
 
 func load_state(data: Dictionary) -> void:
+	count = int(data.get("count", count))
 	if bool(data.get("taken", false)):
 		_mark_taken()
 
@@ -134,11 +141,16 @@ func _on_completed(actor: Node) -> void:
 	if player == null:
 		return
 	var text: String = description()
-	if take(player):
-		Audio.play_2d(&"round_load", &"SFX")
-		EventBus.toast_requested.emit("TOOK %s" % text.to_upper())
+	var wanted: int = count
+	var taken: int = take(player)
+	if taken <= 0:
+		EventBus.toast_requested.emit("NO ROOM IN THE RIG OR BACKPACK")
+		return
+	Audio.play_2d(&"round_load", &"SFX")
+	if kind == Kind.LOOSE_AMMO and taken < wanted:
+		EventBus.toast_requested.emit("TOOK %d, BACKPACK FULL" % taken)
 	else:
-		EventBus.toast_requested.emit("POUCHES FULL")
+		EventBus.toast_requested.emit("TOOK %s" % text.to_upper())
 
 
 func _mark_taken() -> void:

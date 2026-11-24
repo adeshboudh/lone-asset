@@ -3,7 +3,6 @@ extends CharacterBody3D
 ## An enemy guard (design §7.1). The root owns movement and navigation; the brain decides what to do.
 
 ## A navigation target farther than this (horizontally) from the mesh counts as unreachable.
-const AMMO_PICKUP: PackedScene = preload("res://game/inventory/ammo_pickup.tscn")
 const OFF_MESH_DISTANCE_M: float = 1.0
 ## A waypoint closer than this (horizontally) counts as reached.
 const WAYPOINT_REACHED_M: float = 0.3
@@ -322,19 +321,26 @@ func on_death() -> void:
 	tween.tween_property(_model, "rotation:x", -PI * 0.5, 0.4).set_ease(Tween.EASE_IN)
 
 
-## Leaves the guard's spare magazine on the floor (a pickup the player can take).
+## Leaves the guard's spare magazine on the floor in a container the player can open.
 func _drop_loot() -> void:
 	if profile.drop_magazine == null or profile.drop_ammo == null or profile.drop_magazine_rounds <= 0:
 		return
-	var pickup: AmmoPickup = AMMO_PICKUP.instantiate() as AmmoPickup
-	pickup.pickup_id = StringName("drop_" + String(guard_id))
-	pickup.kind = AmmoPickup.Kind.MAGAZINE
-	pickup.magazine_type = profile.drop_magazine
-	pickup.ammo = profile.drop_ammo
-	pickup.count = profile.drop_magazine_rounds
-	pickup.top_level = true
-	pickup.transform = Transform3D(Basis(), global_position + Vector3(0.45, 0.05, 0.2))
-	get_parent().add_child.call_deferred(pickup)
+	var container: LootContainer = LootContainer.new()
+	container.container_id = StringName("drop_" + String(guard_id))
+	container.title = "Fallen guard"
+	container.box_size_m = Vector3.ZERO
+	container.store = LootStore.new(4)
+	container.store.add_magazine(Magazine.new(profile.drop_magazine, _rounds_of(profile.drop_ammo.id, mini(profile.drop_magazine_rounds, profile.drop_magazine.capacity))))
+	container.top_level = true
+	container.transform = Transform3D(Basis(), global_position + Vector3(0.45, 0.0, 0.2))
+	get_parent().add_child.call_deferred(container)
+
+
+func _rounds_of(ammo_id: StringName, count: int) -> Array:
+	var rounds: Array = []
+	for i: int in count:
+		rounds.append(ammo_id)
+	return rounds
 
 
 # --- Internals ---------------------------------------------------------------------------------------

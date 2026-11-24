@@ -36,6 +36,8 @@
 [ext_resource type="Resource" path="res://data/ammo/subsonic_9.tres" id="pk_sub9"]
 [ext_resource type="Resource" path="res://data/magazines/stanag_30.tres" id="pk_stanag"]
 [ext_resource type="Resource" path="res://data/magazines/glock_17rd.tres" id="pk_glock"]
+[ext_resource type="Script" path="res://game/inventory/loot_container.gd" id="lc_script"]
+[ext_resource type="Script" path="res://game/inventory/starting_magazine.gd" id="lc_sm"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -99,6 +101,18 @@ albedo_color = Color(0.2, 1, 0.4, 0.18)
 emission_enabled = true
 emission = Color(0.2, 1, 0.4, 1)
 emission_energy_multiplier = 0.6
+
+[sub_resource type="Resource" id="crate_mag_1"]
+script = ExtResource("lc_sm")
+type = ExtResource("pk_stanag")
+ammo = ExtResource("pk_ap556")
+rounds = 18
+
+[sub_resource type="Resource" id="crate_mag_2"]
+script = ExtResource("lc_sm")
+type = ExtResource("pk_stanag")
+ammo = ExtResource("pk_fmj556")
+rounds = 30
 
 [node name="MovementCourse" type="Node3D" unique_id=1274757934]
 script = ExtResource("1_course")
@@ -592,3 +606,14 @@ kind = 1
 ammo = ExtResource("pk_sub9")
 count = 17
 magazine_type = ExtResource("pk_glock")
+
+[node name="SupplyCrate" type="Node3D" parent="Pickups"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 13)
+script = ExtResource("lc_script")
+container_id = &"crate_start"
+title = "Supply crate"
+starting_magazines = Array[ExtResource("lc_sm")]([SubResource("crate_mag_1"), SubResource("crate_mag_2")])
+starting_loose = {
+"fmj_556": 40,
+"subsonic_9": 25
+}

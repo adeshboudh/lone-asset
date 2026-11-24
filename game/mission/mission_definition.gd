@@ -7,3 +7,5 @@ extends Resource
 @export var objectives: Array[ObjectiveDefinition] = []
 ## Reasons that fail the mission, such as &"player_died".
 @export var fail_conditions: Array[StringName] = []
+## True when the operative from the previous mission (the saved profile) starts this one instead of the starting loadout.
+@export var carry_over: bool = false

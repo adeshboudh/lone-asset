@@ -34,7 +34,7 @@ game/core        Game state machine, shared helpers
 game/autoload    Global services (below)
 game/player      Player, input intent, movement, stance, lean
 game/weapons     Weapon framework, projectiles
-game/inventory   Magazines, ammo types, pouches and loose ammo (rules and runtime classes)
+game/inventory   Magazines, ammo types, rig, backpack, loose ammo and containers (rules and runtime classes)
 game/damage      Health, hit zones, damage rules
 game/ai          Guard brain and states, perception, suspicion, navigation routes
 game/noise       Noise events and emitters
@@ -79,7 +79,7 @@ tools/ci         CI scripts (tests, export, budgets)
 
 - Physics layers: 1 world, 2 characters, bit 4 interactables.
 - Doorways must be at least 2.0 m wide and 2.6 m high or the navmesh bake closes them. Rebake with `godot --headless --path . -s res://dev/bake_navmesh.gd` after geometry changes.
-- Checkpoints: JSON at `user://saves/checkpoint.json`, written atomically (temp then rename), `schema_version` 2 (weapons hold a magazine and a chambered round, the player has an `inventory`; version 1 saves are migrated in `Player.load_state`), written on `checkpoint_requested`, deleted on mission complete. Bump the version and add a migration if the schema changes.
+- Checkpoints: JSON at `user://saves/checkpoint.json`, written atomically (temp then rename), `schema_version` 3 (weapons hold a magazine and a chambered round, the player has an `inventory` with rig and backpack and a `condition`, containers are saved under `world.containers`; version 1 and 2 saves are migrated in `SaveRules.migrate` and `Player.load_state`), written on `checkpoint_requested`, deleted on mission complete. Bump the version and add a migration if the schema changes.
 - `AnimatableBody3D` with `sync_to_physics`: set `transform` once, not position and rotation separately.
 - After adding a script with `class_name`, run `godot --headless --path . --import` to refresh the class cache.
 - gdUnit: `get_tree().current_scene` is null; free scenes in `after_test` or CI fails with exit code 101 (orphans).
@@ -97,6 +97,10 @@ tools/ci         CI scripts (tests, export, budgets)
 - Commit style: Conventional Commits (`feat:`, `fix:`, `docs:`, `build:`). 
 - Do not merge a PR until the developer has played the build and approved.
 - Out of scope for Milestone 1: multiplayer, vehicles, multiple levels, procedural content, mod tools, browser build. Magazines and ammo types (`game/inventory`, `docs/superpowers/specs/2026-11-22-inventory-magazines-design.md`) are being built after M1 on `feat/glock-17`.
+
+## UI and picture standard
+
+Everything on screen is designed for **1920x1080** (16:9): `display/window/size` 1920x1080, stretch `canvas_items`, aspect `expand`. All pixel sizes, paddings, offsets and font sizes (HUD, crosshair, menus, inventory) are in 1080p pixels, and every panel stays inside a 67 px margin (`tests/scenarios/test_ui_scale.gd`, `test_inventory_screen.gd`). The camera FOV is Godot's vertical one: 80 vertical is about 112 horizontal at 16:9. Text in a slot or row is trimmed with an ellipsis rather than widening it; long lists scroll. New UI needs a test that it fits 1920x1080 at its fullest.
 
 ## Where things are decided
 

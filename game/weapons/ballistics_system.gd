@@ -13,6 +13,7 @@ const MAX_PENETRATION_THICKNESS_M: float = 1.0
 const MAX_IMPACT_FX: int = 12
 const MAX_IMPACT_PUFFS: int = 12
 const DEBRIS: Texture2D = preload("res://content/effects/impacts/debris.png")
+const MARK_BASE_SIZE_M: float = 0.08
 const BULLET_HOLE: Texture2D = preload("res://content/effects/impacts/bullet_hole.png")
 ## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
 const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
@@ -60,6 +61,8 @@ var _pool: Array[Projectile] = []
 var _gravity: Vector3 = Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _marks: Array[MeshInstance3D] = []
 var _next_mark: int = 0
+## One material per mark texture (bullet hole, blood), shared by every mark that uses it.
+var _mark_materials: Dictionary = {}
 var puff_count: int:
 	get:
 		var playing: int = 0
@@ -86,12 +89,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	var mark_mesh: QuadMesh = QuadMesh.new()
-	mark_mesh.size = Vector2(0.08, 0.08)
-	var mark_material: StandardMaterial3D = StandardMaterial3D.new()
-	mark_material.albedo_texture = BULLET_HOLE
-	mark_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mark_mesh.material = mark_material
+	mark_mesh.size = Vector2(MARK_BASE_SIZE_M, MARK_BASE_SIZE_M)
 	for i: int in MAX_IMPACT_MARKS:
 		var mark: MeshInstance3D = MeshInstance3D.new()
 		mark.mesh = mark_mesh
@@ -173,7 +171,7 @@ func _resolve_hit(projectile: Projectile, hit: Dictionary) -> bool:
 	var position: Vector3 = hit["position"]
 	var normal: Vector3 = hit["normal"]
 	var surface: SurfaceDefinition = _surface_of(collider)
-	_place_mark(collider as Node3D, position, normal)
+	_place_mark(collider as Node3D, position, normal, surface)
 	_spawn_impact_fx(surface, position, normal)
 	_spawn_impact_puff(surface, position, normal)
 	# One noise per bullet, however many surfaces it passes.
@@ -233,7 +231,7 @@ func _bounce_or_pass(projectile: Projectile, surface: SurfaceDefinition, collide
 		return false
 	projectile.damage *= left / projectile.power
 	projectile.power = left
-	_place_mark(collider as Node3D, exit_position, exit["normal"])
+	_place_mark(collider as Node3D, exit_position, exit["normal"], surface)
 	_spawn_impact_fx(surface, exit_position, exit["normal"])
 	_spawn_impact_puff(surface, exit_position, exit["normal"])
 	projectile.position = exit_position + direction * 0.02
@@ -245,6 +243,9 @@ func _bounce_or_pass(projectile: Projectile, surface: SurfaceDefinition, collide
 func _surface_of(collider: Object) -> SurfaceDefinition:
 	if surfaces == null:
 		return null
+	# Anything with health is flesh, whatever it is tagged.
+	if HealthComponent.of(collider) != null:
+		return surfaces.lookup(&"flesh")
 	var node: Node = collider as Node
 	for i: int in 3:
 		if node == null:
@@ -255,7 +256,7 @@ func _surface_of(collider: Object) -> SurfaceDefinition:
 	return surfaces.default_surface
 
 
-func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
+func _place_mark(parent: Node3D, position: Vector3, normal: Vector3, surface: SurfaceDefinition) -> void:
 	var mark: MeshInstance3D = _marks[_next_mark]
 	_next_mark = (_next_mark + 1) % _marks.size()
 	# Marks follow what they hit (e.g. a falling target).
@@ -265,7 +266,15 @@ func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
 		mark.reparent(new_parent, false)
 	var up_hint: Vector3 = Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP
 	var facing: Basis = Basis.looking_at(-normal, up_hint)
-	mark.global_transform = Transform3D(facing.rotated(normal, randf() * TAU), position + normal * 0.005)
+	var size: float = MARK_BASE_SIZE_M
+	var texture: Texture2D = BULLET_HOLE
+	if surface != null:
+		size = surface.mark_size_m
+		if surface.mark_texture != null:
+			texture = surface.mark_texture
+	mark.material_override = _mark_material(texture)
+	var spun: Basis = facing.rotated(normal, randf() * TAU).scaled_local(Vector3.ONE * (size / MARK_BASE_SIZE_M))
+	mark.global_transform = Transform3D(spun, position + normal * 0.005)
 	mark.visible = true
 
 
@@ -425,3 +434,13 @@ func _spawn_impact_puff(surface: SurfaceDefinition, position: Vector3, normal: V
 	puff.color = surface.flipbook_tint
 	puff.restart()
 	puff.emitting = true
+
+
+func _mark_material(texture: Texture2D) -> StandardMaterial3D:
+	if not _mark_materials.has(texture):
+		var material: StandardMaterial3D = StandardMaterial3D.new()
+		material.albedo_texture = texture
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_mark_materials[texture] = material
+	return _mark_materials[texture]

@@ -232,3 +232,12 @@ func test_hit_on_a_surface_without_a_flipbook_starts_no_puff() -> void:
 	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
 	await _ticks(10)
 	assert_int(_ballistics.puff_count).is_equal(0)
+
+
+func test_hit_on_a_body_starts_no_dust_puff() -> void:
+	_ballistics.surfaces = SURFACES
+	_dummy(Vector3(0.0, 0.0, -10.0))
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	assert_int(_ballistics.puff_count).is_equal(0)

@@ -12,6 +12,7 @@ const MAX_RICOCHETS: int = 1
 const MAX_PENETRATION_THICKNESS_M: float = 1.0
 const MAX_IMPACT_FX: int = 12
 const MAX_IMPACT_PUFFS: int = 12
+const BULLET_HOLE: Texture2D = preload("res://content/effects/impacts/bullet_hole.png")
 ## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
 const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
 
@@ -84,9 +85,10 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	var mark_mesh: QuadMesh = QuadMesh.new()
-	mark_mesh.size = Vector2(0.05, 0.05)
+	mark_mesh.size = Vector2(0.08, 0.08)
 	var mark_material: StandardMaterial3D = StandardMaterial3D.new()
-	mark_material.albedo_color = Color(0.05, 0.05, 0.05)
+	mark_material.albedo_texture = BULLET_HOLE
+	mark_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mark_mesh.material = mark_material
 	for i: int in MAX_IMPACT_MARKS:
@@ -261,7 +263,8 @@ func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
 	if mark.get_parent() != new_parent:
 		mark.reparent(new_parent, false)
 	var up_hint: Vector3 = Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP
-	mark.global_transform = Transform3D(Basis.looking_at(-normal, up_hint), position + normal * 0.005)
+	var facing: Basis = Basis.looking_at(-normal, up_hint)
+	mark.global_transform = Transform3D(facing.rotated(normal, randf() * TAU), position + normal * 0.005)
 	mark.visible = true
 
 

@@ -73,7 +73,7 @@ var _fx: Array[CPUParticles3D] = []
 var _next_fx: int = 0
 var _puffs: Array[CPUParticles3D] = []
 var _next_puff: int = 0
-## One quad per sheet, so a puff swaps meshes and not materials.
+## One quad per surface (sheet and size), so a puff swaps meshes and not materials.
 var _puff_meshes: Dictionary = {}
 ## Shots fired so far per shooter (instance id), for the every-nth tracer rule.
 var _shot_counts: Dictionary = {}
@@ -334,8 +334,9 @@ func _build_impact_fx() -> void:
 	quad.size = Vector2.ONE
 	var material: StandardMaterial3D = StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	# Particle billboard keeps each chunk's spin and scale (plain billboard drops both).
-	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	# Without this the billboard ignores the particle scale and every chunk is a metre wide.
+	material.billboard_keep_scale = true
 	material.albedo_texture = DEBRIS
 	material.vertex_color_use_as_albedo = true
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -350,8 +351,6 @@ func _build_impact_fx() -> void:
 		particles.emitting = false
 		particles.explosiveness = 1.0
 		particles.spread = 55.0
-		particles.angle_min = -180.0
-		particles.angle_max = 180.0
 		particles.gravity = Vector3(0.0, -6.0, 0.0)
 		particles.color_ramp = fade
 		particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -402,22 +401,23 @@ func _build_impact_puffs() -> void:
 		_puffs.append(puff)
 
 
-func _puff_mesh(sheet: Texture2D, grid: int) -> QuadMesh:
-	if not _puff_meshes.has(sheet):
+func _puff_mesh(surface: SurfaceDefinition) -> QuadMesh:
+	if not _puff_meshes.has(surface):
 		var material: StandardMaterial3D = StandardMaterial3D.new()
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 		material.vertex_color_use_as_albedo = true
-		material.albedo_texture = sheet
-		material.particles_anim_h_frames = grid
-		material.particles_anim_v_frames = grid
+		material.albedo_texture = surface.flipbook
+		material.particles_anim_h_frames = surface.flipbook_grid
+		material.particles_anim_v_frames = surface.flipbook_grid
 		material.particles_anim_loop = false
 		var quad: QuadMesh = QuadMesh.new()
-		quad.size = Vector2.ONE
+		# Size lives in the quad: the particle billboard mode ignores the particle scale.
+		quad.size = Vector2.ONE * surface.flipbook_size_m
 		quad.material = material
-		_puff_meshes[sheet] = quad
-	return _puff_meshes[sheet]
+		_puff_meshes[surface] = quad
+	return _puff_meshes[surface]
 
 
 ## Plays the surface's flipbook once at the hit point. The particle lives one frame time per sheet frame.
@@ -427,11 +427,9 @@ func _spawn_impact_puff(surface: SurfaceDefinition, position: Vector3, normal: V
 	var puff: CPUParticles3D = _puffs[_next_puff]
 	_next_puff = (_next_puff + 1) % _puffs.size()
 	puff.emitting = false
-	puff.mesh = _puff_mesh(surface.flipbook, surface.flipbook_grid)
+	puff.mesh = _puff_mesh(surface)
 	puff.global_position = position + normal * 0.05
 	puff.lifetime = float(surface.flipbook_grid * surface.flipbook_grid) / surface.flipbook_fps
-	puff.scale_amount_min = surface.flipbook_size_m
-	puff.scale_amount_max = surface.flipbook_size_m
 	puff.color = surface.flipbook_tint
 	puff.restart()
 	puff.emitting = true

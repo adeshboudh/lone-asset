@@ -18,14 +18,15 @@ extends Resource
 @export_group("Impact flipbook")
 ## 4x4 sprite sheet played once, camera-facing, at the hit point. Null = no puff on this surface.
 @export var flipbook: Texture2D
-@export var flipbook_size_m: float = 0.25
+## The sheet is grid x grid frames (4 = 16 frames, 1 = a single image).
+@export_range(1, 8) var flipbook_grid: int = 4
+@export var flipbook_size_m: float = 0.15
 @export var flipbook_fps: float = 25.0
 @export var flipbook_tint: Color = Color.WHITE
 
 @export_group("Impact mark")
-## Decal left on what was hit. Null = the bullet hole.
-@export var mark_texture: Texture2D
-@export var mark_size_m: float = 0.08
+## False for anything that moves or is not a solid surface (bodies), where a decal would be left floating.
+@export var leaves_mark: bool = true
 
 @export_group("Ricochet")
 ## A bullet bounces when it meets the surface at or below this angle to the surface plane (degrees). 0 = never.

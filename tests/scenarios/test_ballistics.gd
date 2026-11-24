@@ -234,10 +234,12 @@ func test_hit_on_a_surface_without_a_flipbook_starts_no_puff() -> void:
 	assert_int(_ballistics.puff_count).is_equal(0)
 
 
-func test_hit_on_a_body_starts_no_dust_puff() -> void:
+func test_hit_on_a_body_splashes_blood_and_leaves_no_mark_on_it() -> void:
 	_ballistics.surfaces = SURFACES
-	_dummy(Vector3(0.0, 0.0, -10.0))
+	var dummy: TargetDummy = _dummy(Vector3(0.0, 0.0, -10.0))
 	await _ticks(2)
 	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
 	await _ticks(10)
-	assert_int(_ballistics.puff_count).is_equal(0)
+	# The blood splat floats free for a moment (one puff); no decal is stuck to the body, where it would hang in the air once the body falls.
+	assert_int(_ballistics.puff_count).is_equal(1)
+	assert_int(dummy.find_children("*", "MeshInstance3D", true, false).filter(func(n: Node) -> bool: return (n as MeshInstance3D).mesh is QuadMesh).size()).is_equal(0)

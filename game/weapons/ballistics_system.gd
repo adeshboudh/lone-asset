@@ -12,6 +12,7 @@ const MAX_RICOCHETS: int = 1
 const MAX_PENETRATION_THICKNESS_M: float = 1.0
 const MAX_IMPACT_FX: int = 12
 const MAX_IMPACT_PUFFS: int = 12
+const DEBRIS: Texture2D = preload("res://content/effects/impacts/debris.png")
 const BULLET_HOLE: Texture2D = preload("res://content/effects/impacts/bullet_hole.png")
 ## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
 const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
@@ -328,9 +329,9 @@ func _build_impact_fx() -> void:
 	quad.size = Vector2.ONE
 	var material: StandardMaterial3D = StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	# Without this the billboard ignores the particle scale and every spark is a metre wide.
-	material.billboard_keep_scale = true
+	# Particle billboard keeps each chunk's spin and scale (plain billboard drops both).
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.albedo_texture = DEBRIS
 	material.vertex_color_use_as_albedo = true
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	quad.material = material
@@ -344,6 +345,8 @@ func _build_impact_fx() -> void:
 		particles.emitting = false
 		particles.explosiveness = 1.0
 		particles.spread = 55.0
+		particles.angle_min = -180.0
+		particles.angle_max = 180.0
 		particles.gravity = Vector3(0.0, -6.0, 0.0)
 		particles.color_ramp = fade
 		particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

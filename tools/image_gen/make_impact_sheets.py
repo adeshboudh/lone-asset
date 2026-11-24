@@ -8,7 +8,8 @@
 
 List the puffs in a clip:   uv run tools/image_gen/make_impact_sheets.py list Bullet_Impacts.mov
 Write one sheet:            uv run tools/image_gen/make_impact_sheets.py sheet Bullet_Impacts.mov 3 dust_puff
-Needs ffmpeg on PATH. Sheets go to content/effects/impacts/<name>.png.
+Debris sprite from a black-background blob: uv run tools/image_gen/make_impact_sheets.py debris TX_Particle.png
+Needs ffmpeg on PATH (not for debris). Sheets go to content/effects/impacts/<name>.png.
 """
 from __future__ import annotations
 
@@ -64,8 +65,21 @@ def make_sheet(frames: np.ndarray, start: int, end: int) -> Image.Image:
     return sheet
 
 
+def make_debris(source: Path) -> None:
+    """White blob whose brightness becomes its alpha, so the black background is see-through."""
+    gray = Image.open(source).convert("L")
+    blob = Image.new("RGBA", gray.size, (255, 255, 255, 0))
+    blob.putalpha(gray)
+    OUT.mkdir(parents=True, exist_ok=True)
+    blob.save(OUT / "debris.png")
+    print(f"wrote {OUT / 'debris.png'}")
+
+
 def main() -> None:
     command, source = sys.argv[1], Path(sys.argv[2])
+    if command == "debris":
+        make_debris(source)
+        return
     frames = decode(source)
     found = runs(frames)
     if command == "list":

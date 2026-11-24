@@ -21,9 +21,8 @@ Every bullet impact shows an animated puff (dust, sparks or glass burst, from th
 
 ### Flipbook puff
 
-- `FlipbookRules` (`game/weapons/flipbook_rules.gd`, pure): `frame_at(age_s, fps, frames) -> int` (clamped to the last frame), `finished(age_s, fps, frames) -> bool`.
-- A billboard quad with a small shader steps through the sheet by `frame` (uniform columns/rows, no per-frame allocation). Unshaded, alpha blend, tinted by `flipbook_tint`.
-- `SurfaceDefinition` gains an export group "Impact flipbook": `flipbook: Texture2D`, `flipbook_size_m`, `flipbook_fps`, `flipbook_tint`. Empty `flipbook` = no puff.
+- Godot animates sprite sheets on particles itself (`particles_anim_h_frames`/`v_frames`, `BILLBOARD_PARTICLES`), so a puff is a pooled one-shot `CPUParticles3D` with one particle living `16 / fps` seconds. No custom shader and no rules class are needed. Unshaded, alpha blend, tinted by `flipbook_tint`.
+- `SurfaceDefinition` gains an export group "Impact flipbook": `flipbook: Texture2D` (4x4 sheet), `flipbook_size_m`, `flipbook_fps`, `flipbook_tint`. Empty `flipbook` = no puff.
 - `BallisticsSystem` owns a pool of 12 puffs, reused round-robin like the particle pool, placed at the hit point offset along the normal. The existing particle burst stays as the debris spray.
 - Surface mapping: concrete, dirt, wood, grass use the dust puff (tinted); metal uses the spark puff; a new `glass` entry uses the glass burst. No level node is tagged `glass` in this change.
 
@@ -33,8 +32,7 @@ Every bullet impact shows an animated puff (dust, sparks or glass burst, from th
 
 ## Testing
 
-- Unit: `FlipbookRules` (frame index, clamp, finished).
-- Scenario: a shot at a tagged surface activates a puff with that surface's sheet and tint; marks still never parent under a CSG node.
+- Scenario: a shot at a surface with a flipbook starts one puff, and one at a surface without starts none; marks still never parent under a CSG node.
 - `tools/ci/run_tests.sh` and `reuse lint` before pushing.
 
 ## Out of scope

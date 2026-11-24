@@ -175,3 +175,44 @@ func test_cancelled_reload_loads_nothing() -> void:
 		logic.update(1.0 / 60.0, false, false)
 	assert_int(logic.magazine).is_equal(5)
 	assert_int(logic.inventory.pouches[0].count()).is_equal(30)
+
+
+func _rifle_with_rig(rig: Array[Magazine]) -> WeaponLogic:
+	var inventory: AmmoInventory = AmmoInventory.new(4)
+	for magazine: Magazine in rig:
+		inventory.add_magazine(magazine)
+	var logic: WeaponLogic = WeaponLogic.new(RIFLE, inventory)
+	logic.set_round_count(5)
+	return logic
+
+
+func test_reload_with_takes_the_chosen_magazine_not_the_best() -> void:
+	var stanag: MagazineType = RIFLE.default_magazine
+	var ammo: AmmoType = RIFLE.default_ammo
+	var small: Magazine = Magazine.new(stanag, [ammo.id, ammo.id, ammo.id, ammo.id, ammo.id, ammo.id, ammo.id, ammo.id])
+	var big: Magazine = Magazine.full_of(stanag, ammo)
+	var logic: WeaponLogic = _rifle_with_rig([big, small])
+	assert_bool(logic.start_reload_with(1)).is_true()
+	logic.update(10.0, false, false)
+	assert_object(logic.inserted).is_same(small)
+	assert_bool(logic.inventory.pouches.has(big)).is_true()
+
+
+func test_reload_with_refuses_another_family_and_bad_index() -> void:
+	var glock: MagazineType = preload("res://data/magazines/glock_17rd.tres")
+	var logic: WeaponLogic = _rifle_with_rig([Magazine.full_of(glock, preload("res://data/ammo/fmj_9.tres"))])
+	assert_bool(logic.start_reload_with(0)).is_false()
+	assert_str(String(logic.reload_block)).is_equal("wrong_fit")
+	assert_bool(logic.start_reload_with(7)).is_false()
+	assert_str(String(logic.reload_block)).is_equal("no_magazine")
+
+
+func test_reload_with_a_magazine_moved_away_keeps_the_gun_magazine() -> void:
+	var magazine: Magazine = Magazine.full_of(RIFLE.default_magazine, RIFLE.default_ammo)
+	var logic: WeaponLogic = _rifle_with_rig([magazine])
+	var before: Magazine = logic.inserted
+	assert_bool(logic.start_reload_with(0)).is_true()
+	logic.inventory.pouches.clear()
+	logic.update(10.0, false, false)
+	assert_object(logic.inserted).is_same(before)
+	assert_bool(logic.is_reloading).is_false()

@@ -34,8 +34,8 @@ func test_rounds_load_by_caliber() -> void:
 	assert_bool(MagazineRules.can_load(_mag(GLOCK_17, NINE, 0), FMJ)).is_false()
 
 
-func test_a_magazine_holds_one_ammo_type() -> void:
-	assert_bool(MagazineRules.can_load(_mag(STANAG, FMJ, 3), AP)).is_false()
+func test_a_magazine_may_hold_mixed_ammo() -> void:
+	assert_bool(MagazineRules.can_load(_mag(STANAG, FMJ, 3), AP)).is_true()
 	assert_bool(MagazineRules.can_load(_mag(STANAG, FMJ, 3), FMJ)).is_true()
 	assert_bool(MagazineRules.can_load(_mag(STANAG, FMJ, 0), AP)).is_true()
 
@@ -73,3 +73,15 @@ func test_best_magazine_skips_other_families_empty_and_less_full_ones() -> void:
 	var pouches: Array[Magazine] = [_mag(GLOCK_17, NINE, 17), _mag(STANAG, FMJ, 0), _mag(STANAG, FMJ, 8)]
 	assert_int(MagazineRules.best_magazine(pouches, RIFLE, FMJ.id, 0)).is_equal(2)
 	assert_int(MagazineRules.best_magazine(pouches, RIFLE, FMJ.id, 8)).is_equal(-1)
+
+
+func test_mixed_magazine_fires_last_loaded_first() -> void:
+	var magazine: Magazine = Magazine.new(STANAG)
+	MagazineRules.load_round(magazine, FMJ)
+	MagazineRules.load_round(magazine, AP)
+	assert_array(magazine.rounds).is_equal([FMJ.id, AP.id])
+	assert_str(String(MagazineRules.unload_round(magazine))).is_equal(String(AP.id))
+
+
+func test_wrong_caliber_is_still_refused() -> void:
+	assert_bool(MagazineRules.can_load(Magazine.new(STANAG), NINE)).is_false()

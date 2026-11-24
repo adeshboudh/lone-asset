@@ -11,6 +11,9 @@ var magazine: Magazine
 ## The ammo being loaded (FILL only).
 var ammo: AmmoType
 
+## True when the operation stopped before finishing because rounds could not be put away (no room).
+var blocked: bool = false
+
 var _progress_s: float = 0.0
 
 
@@ -26,7 +29,7 @@ func fraction(settings: InventorySettings) -> float:
 
 
 ## Advances time; returns how many rounds moved (0 or more).
-func advance(delta: float, inventory: AmmoInventory, settings: InventorySettings) -> int:
+func advance(delta: float, inventory: LooseAmmoStore, settings: InventorySettings) -> int:
 	var moved: int = 0
 	_progress_s += delta
 	var per_round: float = _time_per_round(settings)
@@ -34,6 +37,7 @@ func advance(delta: float, inventory: AmmoInventory, settings: InventorySettings
 		_progress_s -= per_round
 		var done: bool = inventory.fill_one(magazine, ammo) if kind == Kind.FILL else inventory.unload_one(magazine)
 		if not done:
+			blocked = true
 			break
 		moved += 1
 	if is_finished(inventory):
@@ -42,7 +46,9 @@ func advance(delta: float, inventory: AmmoInventory, settings: InventorySettings
 
 
 ## Nothing more can be moved: the magazine is full or out of loose ammo (FILL), or empty (UNLOAD).
-func is_finished(inventory: AmmoInventory) -> bool:
+func is_finished(inventory: LooseAmmoStore) -> bool:
+	if blocked:
+		return true
 	if kind == Kind.FILL:
 		return not MagazineRules.can_load(magazine, ammo) or inventory.loose_count(ammo.id) < 1
 	return magazine.is_empty()

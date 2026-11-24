@@ -15,8 +15,8 @@ Every bullet impact shows an animated puff (dust, sparks or glass burst, from th
 ### Assets
 
 - `tools/image_gen/make_impact_sheets.py` cuts the source clips (`Bullet_Impacts.mov`, `Glass_Hits.mov`; qtrle with alpha, 720x576, 25 fps) into single puffs with ffmpeg, drops empty frames, scales each frame to about 256 px and tiles 16 frames into one PNG with alpha.
-- Output: `content/fx/impacts/dust_puff.png`, `spark_puff.png`, `glass_burst.png`. The `.mov` sources stay out of git.
-- `TX_Decal_Hit.png` moves to `content/fx/impacts/bullet_hole.png`.
+- Output: `content/effects/impacts/dust_puff.png`, `spark_puff.png`, `glass_burst.png`. The `.mov` sources stay out of git.
+- `TX_Decal_Hit.png` moves to `content/effects/impacts/bullet_hole.png`.
 - Each asset gets an entry in `content/LICENSES.md` and `REUSE.toml`; `reuse lint` must pass.
 
 ### Flipbook puff

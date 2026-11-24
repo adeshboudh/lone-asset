@@ -8,6 +8,8 @@ extends Resource
 @export var icon: Texture2D
 ## Label drawn on the front and back of the ammo box model (the pickup in the world).
 @export var box_label: Texture2D
+## Real-world size of the ammo box in metres: x along the label, y the label's height, z the thickness.
+@export var box_size_m: Vector3 = Vector3(0.1, 0.062, 0.036)
 ## Caliber id; a magazine accepts the calibers listed in its type.
 @export var caliber: StringName
 

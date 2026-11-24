@@ -214,3 +214,21 @@ func _wall(position: Vector3, size: Vector3, surface: StringName) -> StaticBody3
 	wall.set_meta(&"surface", surface)
 	_arena.add_child(wall)
 	return wall
+
+
+func test_hit_on_a_surface_with_a_flipbook_starts_a_puff() -> void:
+	_ballistics.surfaces = SURFACES
+	_wall(Vector3(0.0, 1.0, -10.0), Vector3(4.0, 4.0, 0.1), &"concrete")
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	assert_int(_ballistics.puff_count).is_equal(1)
+
+
+func test_hit_on_a_surface_without_a_flipbook_starts_no_puff() -> void:
+	_ballistics.surfaces = SURFACES
+	_wall(Vector3(0.0, 1.0, -10.0), Vector3(4.0, 4.0, 0.1), &"water")
+	await _ticks(2)
+	_ballistics.fire(Vector3(0.0, 1.19, 0.0), Vector3.FORWARD, RIFLE, null)
+	await _ticks(10)
+	assert_int(_ballistics.puff_count).is_equal(0)

@@ -11,6 +11,7 @@ const MAX_RICOCHETS: int = 1
 ## Thickest layer a bullet can pass through; thicker objects stop it however much power it has.
 const MAX_PENETRATION_THICKNESS_M: float = 1.0
 const MAX_IMPACT_FX: int = 12
+const MAX_IMPACT_PUFFS: int = 12
 ## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
 const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
 
@@ -57,9 +58,21 @@ var _pool: Array[Projectile] = []
 var _gravity: Vector3 = Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _marks: Array[MeshInstance3D] = []
 var _next_mark: int = 0
+var puff_count: int:
+	get:
+		var playing: int = 0
+		for puff: CPUParticles3D in _puffs:
+			if puff.emitting:
+				playing += 1
+		return playing
+
 var _tracers: MultiMesh
 var _fx: Array[CPUParticles3D] = []
 var _next_fx: int = 0
+var _puffs: Array[CPUParticles3D] = []
+var _next_puff: int = 0
+## One quad per sheet, so a puff swaps meshes and not materials.
+var _puff_meshes: Dictionary = {}
 ## Shots fired so far per shooter (instance id), for the every-nth tracer rule.
 var _shot_counts: Dictionary = {}
 
@@ -85,6 +98,7 @@ func _ready() -> void:
 		_marks.append(mark)
 	_build_tracers()
 	_build_impact_fx()
+	_build_impact_puffs()
 
 
 ## shooter is excluded from the bullet's collisions.
@@ -158,6 +172,7 @@ func _resolve_hit(projectile: Projectile, hit: Dictionary) -> bool:
 	var surface: SurfaceDefinition = _surface_of(collider)
 	_place_mark(collider as Node3D, position, normal)
 	_spawn_impact_fx(surface, position, normal)
+	_spawn_impact_puff(surface, position, normal)
 	# One noise per bullet, however many surfaces it passes.
 	if projectile.impacts == 0:
 		NoiseSystem.emit_noise(NoiseEvent.IMPACT, position, NoiseSystem.profiles.impact_m, projectile.source)
@@ -217,6 +232,7 @@ func _bounce_or_pass(projectile: Projectile, surface: SurfaceDefinition, collide
 	projectile.power = left
 	_place_mark(collider as Node3D, exit_position, exit["normal"])
 	_spawn_impact_fx(surface, exit_position, exit["normal"])
+	_spawn_impact_puff(surface, exit_position, exit["normal"])
 	projectile.position = exit_position + direction * 0.02
 	projectile.trail_from = projectile.travelled
 	return true
@@ -351,3 +367,55 @@ func _spawn_impact_fx(surface: SurfaceDefinition, position: Vector3, normal: Vec
 	particles.color = surface.fx_color
 	particles.restart()
 	particles.emitting = true
+
+
+func _build_impact_puffs() -> void:
+	for i: int in MAX_IMPACT_PUFFS:
+		var puff: CPUParticles3D = CPUParticles3D.new()
+		puff.one_shot = true
+		puff.emitting = false
+		puff.amount = 1
+		puff.explosiveness = 1.0
+		puff.gravity = Vector3.ZERO
+		puff.initial_velocity_max = 0.0
+		puff.anim_speed_min = 1.0
+		puff.anim_speed_max = 1.0
+		puff.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		puff.top_level = true
+		add_child(puff)
+		_puffs.append(puff)
+
+
+func _puff_mesh(sheet: Texture2D) -> QuadMesh:
+	if not _puff_meshes.has(sheet):
+		var material: StandardMaterial3D = StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		material.vertex_color_use_as_albedo = true
+		material.albedo_texture = sheet
+		material.particles_anim_h_frames = 4
+		material.particles_anim_v_frames = 4
+		material.particles_anim_loop = false
+		var quad: QuadMesh = QuadMesh.new()
+		quad.size = Vector2.ONE
+		quad.material = material
+		_puff_meshes[sheet] = quad
+	return _puff_meshes[sheet]
+
+
+## Plays the surface's flipbook once at the hit point. The sheet has 16 frames, so the particle lives 16 / fps seconds.
+func _spawn_impact_puff(surface: SurfaceDefinition, position: Vector3, normal: Vector3) -> void:
+	if surface == null or surface.flipbook == null:
+		return
+	var puff: CPUParticles3D = _puffs[_next_puff]
+	_next_puff = (_next_puff + 1) % _puffs.size()
+	puff.emitting = false
+	puff.mesh = _puff_mesh(surface.flipbook)
+	puff.global_position = position + normal * 0.05
+	puff.lifetime = 16.0 / surface.flipbook_fps
+	puff.scale_amount_min = surface.flipbook_size_m
+	puff.scale_amount_max = surface.flipbook_size_m
+	puff.color = surface.flipbook_tint
+	puff.restart()
+	puff.emitting = true

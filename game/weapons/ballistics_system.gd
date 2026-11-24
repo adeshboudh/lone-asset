@@ -11,6 +11,9 @@ const MAX_RICOCHETS: int = 1
 ## Thickest layer a bullet can pass through; thicker objects stop it however much power it has.
 const MAX_PENETRATION_THICKNESS_M: float = 1.0
 const MAX_IMPACT_FX: int = 12
+const MAX_IMPACT_PUFFS: int = 12
+const DEBRIS: Texture2D = preload("res://content/effects/impacts/debris.png")
+const BULLET_HOLE: Texture2D = preload("res://content/effects/impacts/bullet_hole.png")
 ## Smallest apparent width of a tracer (radians), so it stays visible far away instead of shrinking to a sub-pixel dot.
 const TRACER_MIN_ANGULAR_WIDTH: float = 0.003
 
@@ -57,9 +60,21 @@ var _pool: Array[Projectile] = []
 var _gravity: Vector3 = Vector3.DOWN * float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _marks: Array[MeshInstance3D] = []
 var _next_mark: int = 0
+var puff_count: int:
+	get:
+		var playing: int = 0
+		for puff: CPUParticles3D in _puffs:
+			if puff.emitting:
+				playing += 1
+		return playing
+
 var _tracers: MultiMesh
 var _fx: Array[CPUParticles3D] = []
 var _next_fx: int = 0
+var _puffs: Array[CPUParticles3D] = []
+var _next_puff: int = 0
+## One quad per surface (sheet and size), so a puff swaps meshes and not materials.
+var _puff_meshes: Dictionary = {}
 ## Shots fired so far per shooter (instance id), for the every-nth tracer rule.
 var _shot_counts: Dictionary = {}
 
@@ -71,9 +86,10 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	var mark_mesh: QuadMesh = QuadMesh.new()
-	mark_mesh.size = Vector2(0.05, 0.05)
+	mark_mesh.size = Vector2(0.08, 0.08)
 	var mark_material: StandardMaterial3D = StandardMaterial3D.new()
-	mark_material.albedo_color = Color(0.05, 0.05, 0.05)
+	mark_material.albedo_texture = BULLET_HOLE
+	mark_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mark_mesh.material = mark_material
 	for i: int in MAX_IMPACT_MARKS:
@@ -85,6 +101,7 @@ func _ready() -> void:
 		_marks.append(mark)
 	_build_tracers()
 	_build_impact_fx()
+	_build_impact_puffs()
 
 
 ## shooter is excluded from the bullet's collisions.
@@ -156,8 +173,10 @@ func _resolve_hit(projectile: Projectile, hit: Dictionary) -> bool:
 	var position: Vector3 = hit["position"]
 	var normal: Vector3 = hit["normal"]
 	var surface: SurfaceDefinition = _surface_of(collider)
-	_place_mark(collider as Node3D, position, normal)
+	if surface == null or surface.leaves_mark:
+		_place_mark(collider as Node3D, position, normal)
 	_spawn_impact_fx(surface, position, normal)
+	_spawn_impact_puff(surface, position, normal)
 	# One noise per bullet, however many surfaces it passes.
 	if projectile.impacts == 0:
 		NoiseSystem.emit_noise(NoiseEvent.IMPACT, position, NoiseSystem.profiles.impact_m, projectile.source)
@@ -215,8 +234,10 @@ func _bounce_or_pass(projectile: Projectile, surface: SurfaceDefinition, collide
 		return false
 	projectile.damage *= left / projectile.power
 	projectile.power = left
-	_place_mark(collider as Node3D, exit_position, exit["normal"])
+	if surface == null or surface.leaves_mark:
+		_place_mark(collider as Node3D, exit_position, exit["normal"])
 	_spawn_impact_fx(surface, exit_position, exit["normal"])
+	_spawn_impact_puff(surface, exit_position, exit["normal"])
 	projectile.position = exit_position + direction * 0.02
 	projectile.trail_from = projectile.travelled
 	return true
@@ -226,6 +247,9 @@ func _bounce_or_pass(projectile: Projectile, surface: SurfaceDefinition, collide
 func _surface_of(collider: Object) -> SurfaceDefinition:
 	if surfaces == null:
 		return null
+	# Anything with health is flesh, whatever it is tagged.
+	if HealthComponent.of(collider) != null:
+		return surfaces.lookup(&"flesh")
 	var node: Node = collider as Node
 	for i: int in 3:
 		if node == null:
@@ -245,7 +269,8 @@ func _place_mark(parent: Node3D, position: Vector3, normal: Vector3) -> void:
 	if mark.get_parent() != new_parent:
 		mark.reparent(new_parent, false)
 	var up_hint: Vector3 = Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP
-	mark.global_transform = Transform3D(Basis.looking_at(-normal, up_hint), position + normal * 0.005)
+	var facing: Basis = Basis.looking_at(-normal, up_hint)
+	mark.global_transform = Transform3D(facing.rotated(normal, randf() * TAU), position + normal * 0.005)
 	mark.visible = true
 
 
@@ -310,8 +335,9 @@ func _build_impact_fx() -> void:
 	var material: StandardMaterial3D = StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	# Without this the billboard ignores the particle scale and every spark is a metre wide.
+	# Without this the billboard ignores the particle scale and every chunk is a metre wide.
 	material.billboard_keep_scale = true
+	material.albedo_texture = DEBRIS
 	material.vertex_color_use_as_albedo = true
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	quad.material = material
@@ -351,3 +377,59 @@ func _spawn_impact_fx(surface: SurfaceDefinition, position: Vector3, normal: Vec
 	particles.color = surface.fx_color
 	particles.restart()
 	particles.emitting = true
+
+
+func _build_impact_puffs() -> void:
+	# Holds full opacity for the first half, then fades, so a single image (blood) does not pop out.
+	var fade: Gradient = Gradient.new()
+	fade.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
+	fade.colors = PackedColorArray([Color.WHITE, Color.WHITE, Color(1.0, 1.0, 1.0, 0.0)])
+	for i: int in MAX_IMPACT_PUFFS:
+		var puff: CPUParticles3D = CPUParticles3D.new()
+		puff.one_shot = true
+		puff.emitting = false
+		puff.amount = 1
+		puff.explosiveness = 1.0
+		puff.gravity = Vector3.ZERO
+		puff.initial_velocity_max = 0.0
+		puff.anim_speed_min = 1.0
+		puff.anim_speed_max = 1.0
+		puff.color_ramp = fade
+		puff.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		puff.top_level = true
+		add_child(puff)
+		_puffs.append(puff)
+
+
+func _puff_mesh(surface: SurfaceDefinition) -> QuadMesh:
+	if not _puff_meshes.has(surface):
+		var material: StandardMaterial3D = StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		material.vertex_color_use_as_albedo = true
+		material.albedo_texture = surface.flipbook
+		material.particles_anim_h_frames = surface.flipbook_grid
+		material.particles_anim_v_frames = surface.flipbook_grid
+		material.particles_anim_loop = false
+		var quad: QuadMesh = QuadMesh.new()
+		# Size lives in the quad: the particle billboard mode ignores the particle scale.
+		quad.size = Vector2.ONE * surface.flipbook_size_m
+		quad.material = material
+		_puff_meshes[surface] = quad
+	return _puff_meshes[surface]
+
+
+## Plays the surface's flipbook once at the hit point. The particle lives one frame time per sheet frame.
+func _spawn_impact_puff(surface: SurfaceDefinition, position: Vector3, normal: Vector3) -> void:
+	if surface == null or surface.flipbook == null:
+		return
+	var puff: CPUParticles3D = _puffs[_next_puff]
+	_next_puff = (_next_puff + 1) % _puffs.size()
+	puff.emitting = false
+	puff.mesh = _puff_mesh(surface)
+	puff.global_position = position + normal * 0.05
+	puff.lifetime = float(surface.flipbook_grid * surface.flipbook_grid) / surface.flipbook_fps
+	puff.color = surface.flipbook_tint
+	puff.restart()
+	puff.emitting = true

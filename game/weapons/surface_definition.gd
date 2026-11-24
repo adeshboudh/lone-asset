@@ -15,6 +15,13 @@ extends Resource
 @export var fx_lifetime_s: float = 0.4
 @export var fx_size_m: float = 0.045
 
+@export_group("Impact flipbook")
+## 4x4 sprite sheet played once, camera-facing, at the hit point. Null = no puff on this surface.
+@export var flipbook: Texture2D
+@export var flipbook_size_m: float = 0.45
+@export var flipbook_fps: float = 25.0
+@export var flipbook_tint: Color = Color.WHITE
+
 @export_group("Ricochet")
 ## A bullet bounces when it meets the surface at or below this angle to the surface plane (degrees). 0 = never.
 @export_range(0.0, 45.0) var ricochet_max_angle_deg: float = 0.0

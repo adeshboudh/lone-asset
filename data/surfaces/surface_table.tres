@@ -1,17 +1,27 @@
-[gd_resource type="Resource" script_class="SurfaceTable" load_steps=10 format=3]
+[gd_resource type="Resource" script_class="SurfaceTable" load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://game/weapons/surface_table.gd" id="1_table"]
 [ext_resource type="Script" path="res://game/weapons/surface_definition.gd" id="2_def"]
+
+[ext_resource type="Texture2D" path="res://content/effects/impacts/dust_puff.png" id="3_dust"]
+[ext_resource type="Texture2D" path="res://content/effects/impacts/spark_puff.png" id="4_spark"]
+[ext_resource type="Texture2D" path="res://content/effects/impacts/glass_burst.png" id="5_glass"]
 
 [sub_resource type="Resource" id="default"]
 script = ExtResource("2_def")
 id = &"default"
 fx_color = Color(0.75, 0.75, 0.75, 1)
+flipbook = ExtResource("3_dust")
+flipbook_size_m = 0.35
+flipbook_tint = Color(0.75, 0.75, 0.75, 1)
 
 [sub_resource type="Resource" id="concrete"]
 script = ExtResource("2_def")
 id = &"concrete"
 fx_color = Color(0.7, 0.7, 0.68, 1)
+flipbook = ExtResource("3_dust")
+flipbook_size_m = 0.5
+flipbook_tint = Color(0.78, 0.78, 0.76, 1)
 fx_count = 10
 fx_speed_m = 2.5
 ricochet_max_angle_deg = 8.0
@@ -23,6 +33,8 @@ penetration_cost_per_m = 1500.0
 script = ExtResource("2_def")
 id = &"metal"
 fx_color = Color(1, 0.8, 0.35, 1)
+flipbook = ExtResource("4_spark")
+flipbook_size_m = 0.3
 fx_count = 12
 fx_speed_m = 5.0
 fx_lifetime_s = 0.25
@@ -37,6 +49,9 @@ penetration_cost_per_m = 1200.0
 script = ExtResource("2_def")
 id = &"grass"
 fx_color = Color(0.35, 0.5, 0.2, 1)
+flipbook = ExtResource("3_dust")
+flipbook_size_m = 0.35
+flipbook_tint = Color(0.5, 0.58, 0.35, 1)
 fx_count = 8
 fx_speed_m = 2.0
 fx_lifetime_s = 0.5
@@ -47,6 +62,9 @@ penetration_cost_per_m = 800.0
 script = ExtResource("2_def")
 id = &"dirt"
 fx_color = Color(0.45, 0.33, 0.22, 1)
+flipbook = ExtResource("3_dust")
+flipbook_size_m = 0.5
+flipbook_tint = Color(0.6, 0.48, 0.35, 1)
 fx_count = 10
 fx_speed_m = 2.0
 fx_lifetime_s = 0.5
@@ -57,6 +75,9 @@ penetration_cost_per_m = 800.0
 script = ExtResource("2_def")
 id = &"wood"
 fx_color = Color(0.7, 0.5, 0.3, 1)
+flipbook = ExtResource("3_dust")
+flipbook_size_m = 0.4
+flipbook_tint = Color(0.75, 0.58, 0.4, 1)
 fx_count = 8
 fx_speed_m = 2.5
 fx_lifetime_s = 0.35
@@ -78,7 +99,20 @@ ricochet_damage_keep = 0.4
 penetrable = true
 penetration_cost_per_m = 350.0
 
+[sub_resource type="Resource" id="glass"]
+script = ExtResource("2_def")
+id = &"glass"
+fx_color = Color(0.85, 0.92, 1, 1)
+fx_count = 10
+fx_speed_m = 4.0
+fx_lifetime_s = 0.4
+fx_size_m = 0.03
+flipbook = ExtResource("5_glass")
+flipbook_size_m = 0.4
+penetrable = true
+penetration_cost_per_m = 200.0
+
 [resource]
 script = ExtResource("1_table")
 default_surface = SubResource("default")
-surfaces = Array[ExtResource("2_def")]([SubResource("concrete"), SubResource("metal"), SubResource("grass"), SubResource("dirt"), SubResource("wood"), SubResource("water")])
+surfaces = Array[ExtResource("2_def")]([SubResource("concrete"), SubResource("metal"), SubResource("grass"), SubResource("dirt"), SubResource("wood"), SubResource("water"), SubResource("glass")])

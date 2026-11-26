@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/fence/sm_fence_gate.glb" id="1_njdwy"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uby4o"]
+size = Vector3(3.038044, 1.0416007, 0.07762325)
+
+[node name="FenceGate" type="StaticBody3D" unique_id=223395061]
+metadata/surface = &"metal"
+
+[node name="Model" type="Node3D" parent="." unique_id=137399949 instance=ExtResource("1_njdwy")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=1022203830]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52080035, 5.9604645e-08)
+shape = SubResource("BoxShape3D_uby4o")

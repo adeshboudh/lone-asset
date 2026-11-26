@@ -28,7 +28,7 @@ SPDX-FileCopyrightText = "2023 Mike Schulze and gdUnit4 contributors"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
-path = "content/environment/textures/**"
+path = ["content/environment/textures/t_wall_plaster*", "content/environment/textures/t_floor_concrete*"]
 precedence = "override"
 SPDX-FileCopyrightText = "Rob Tuytel (Poly Haven)"
 SPDX-License-Identifier = "CC0-1.0"
@@ -152,3 +152,15 @@ precedence = "override"
 SPDX-FileCopyrightText = "Unknown author (hit-effect textures and clips supplied by the developer; origin and terms unknown)"
 
 SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/environment/props/city/**", "content/environment/props/fence/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unknown author (city props collection volume 1 and chain-link fence pack, low-poly game-ready packs supplied by the developer; origin and terms unknown)"
+SPDX-License-Identifier = "LicenseRef-Rifle-model-unknown"
+
+[[annotations]]
+path = ["content/environment/textures/t_floor_worn*", "content/environment/textures/t_wall_shuttered*"]
+precedence = "override"
+SPDX-FileCopyrightText = "Dimitrios Savva, Charlotte Baglioni, Dario Barresi, Rico Cilliers (Poly Haven)"
+SPDX-License-Identifier = "CC0-1.0"

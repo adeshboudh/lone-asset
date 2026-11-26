@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_post_box.glb" id="1_kfmfk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ivahu"]
+size = Vector3(0.73384523, 1.1915916, 0.7338462)
+
+[node name="PostBox" type="StaticBody3D" unique_id=886071871]
+metadata/surface = &"metal"
+
+[node name="Model" type="Node3D" parent="." unique_id=1083070379 instance=ExtResource("1_kfmfk")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=1280580219]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3841858e-07, 0.5957958, 2.3841858e-07)
+shape = SubResource("BoxShape3D_ivahu")

@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_pallet.glb" id="1_g7apl"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_43g4u"]
+size = Vector3(1.8994473, 0.13593799, 1.7893076)
+
+[node name="Pallet" type="StaticBody3D" unique_id=823045013]
+metadata/surface = &"wood"
+
+[node name="Model" type="Node3D" parent="." unique_id=112849248 instance=ExtResource("1_g7apl")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=2143418715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.9604645e-08, 0.067968994, -5.9604645e-08)
+shape = SubResource("BoxShape3D_43g4u")

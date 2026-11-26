@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/fence/sm_wall_fence_straight.glb" id="1_f1srr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fntcr"]
+size = Vector3(3.0992317, 2.338564, 0.20000005)
+
+[node name="WallFenceStraight" type="StaticBody3D" unique_id=2105103825]
+metadata/surface = &"metal"
+
+[node name="Model" type="Node3D" parent="." unique_id=57783501 instance=ExtResource("1_f1srr")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=900681719]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.169282, -1.1920929e-07)
+shape = SubResource("BoxShape3D_fntcr")

@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_post_barrier.glb" id="1_8dxrf"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_d4gwp"]
+size = Vector3(3.573774, 1.0227691, 1.2951577)
+
+[node name="PostBarrier" type="StaticBody3D" unique_id=2119475273]
+metadata/surface = &"concrete"
+
+[node name="Model" type="Node3D" parent="." unique_id=376663033 instance=ExtResource("1_8dxrf")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=970053612]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1920929e-07, 0.51138455, 1.1920929e-07)
+shape = SubResource("BoxShape3D_d4gwp")

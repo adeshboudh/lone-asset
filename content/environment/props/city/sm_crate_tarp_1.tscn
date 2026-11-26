@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_crate_tarp_1.glb" id="1_ckgvt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fsxdi"]
+size = Vector3(0.9875772, 0.9232194, 0.97491837)
+
+[node name="CrateTarp1" type="StaticBody3D" unique_id=859323518]
+metadata/surface = &"wood"
+
+[node name="Model" type="Node3D" parent="." unique_id=1437499285 instance=ExtResource("1_ckgvt")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=1178508604]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1920929e-07, 0.4616097, 0)
+shape = SubResource("BoxShape3D_fsxdi")

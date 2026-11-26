@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_park_bench_short.glb" id="1_4lk5b"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_p4xp6"]
+size = Vector3(1.098384, 1.070339, 1.9187047)
+
+[node name="ParkBenchShort" type="StaticBody3D" unique_id=84627075]
+metadata/surface = &"wood"
+
+[node name="Model" type="Node3D" parent="." unique_id=404532234 instance=ExtResource("1_4lk5b")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=105963999]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.9604645e-08, 0.5351695, 1.1920929e-07)
+shape = SubResource("BoxShape3D_p4xp6")

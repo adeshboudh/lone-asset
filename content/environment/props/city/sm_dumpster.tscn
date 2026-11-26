@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_dumpster.glb" id="1_ah38l"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l8irv"]
+size = Vector3(1.4535708, 1.4795382, 2.130465)
+
+[node name="Dumpster" type="StaticBody3D" unique_id=574188170]
+metadata/surface = &"metal"
+
+[node name="Model" type="Node3D" parent="." unique_id=969258561 instance=ExtResource("1_ah38l")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=1986262757]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3841858e-07, 0.7397691, -2.3841858e-07)
+shape = SubResource("BoxShape3D_l8irv")

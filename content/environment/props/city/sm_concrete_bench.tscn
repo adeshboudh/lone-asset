@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_concrete_bench.glb" id="1_lf00t"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_p2h1c"]
+size = Vector3(1.1489497, 1.0771058, 2.0716333)
+
+[node name="ConcreteBench" type="StaticBody3D" unique_id=1148802326]
+metadata/surface = &"concrete"
+
+[node name="Model" type="Node3D" parent="." unique_id=840582113 instance=ExtResource("1_lf00t")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=833950137]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.9604645e-08, 0.5385529, 0)
+shape = SubResource("BoxShape3D_p2h1c")

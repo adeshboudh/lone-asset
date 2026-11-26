@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://content/environment/props/city/sm_parking_meter.glb" id="1_0mc8d"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_s216k"]
+size = Vector3(0.20680475, 1.3909943, 0.11090219)
+
+[node name="ParkingMeter" type="StaticBody3D" unique_id=581150182]
+metadata/surface = &"metal"
+
+[node name="Model" type="Node3D" parent="." unique_id=1926350145 instance=ExtResource("1_0mc8d")]
+
+[node name="Shape" type="CollisionShape3D" parent="." unique_id=964052228]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.69549716, 5.9604645e-08)
+shape = SubResource("BoxShape3D_s216k")

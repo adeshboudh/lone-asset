@@ -50,7 +50,7 @@ func save_checkpoint() -> bool:
 		"objectives": Mission.state.save_state()["objectives"],
 		"player": player.save_state(),
 		"guards": [],
-		"world": {"doors": {}, "terminals": {}, "pickups": {}},
+		"world": {"doors": {}, "terminals": {}, "pickups": {}, "containers": {}},
 	}
 	for node: Node in get_tree().get_nodes_in_group(&"guards"):
 		data["guards"].append((node as Guard).save_state())
@@ -63,6 +63,9 @@ func save_checkpoint() -> bool:
 	for node: Node in get_tree().get_nodes_in_group(&"pickups"):
 		var pickup: AmmoPickup = node as AmmoPickup
 		data["world"]["pickups"][String(pickup.pickup_id)] = pickup.save_state()
+	for node: Node in get_tree().get_nodes_in_group(&"containers"):
+		var container: LootContainer = node as LootContainer
+		data["world"]["containers"][String(container.container_id)] = container.save_state()
 	data["world"]["tags"] = player.binoculars.save_state()
 	var ok: bool = _write(data)
 	if ok:
@@ -92,6 +95,7 @@ func apply(data: Dictionary) -> void:
 		terminal.load_state(world.get("terminals", {}).get(String(terminal.terminal_id), {}))
 	# Deferred: a dead guard's drop is added to the level a moment after the guard is restored.
 	_restore_pickups.call_deferred(world.get("pickups", {}))
+	_restore_containers.call_deferred(world.get("containers", {}))
 	Mission.load_state(data.get("mission", {}), data.get("objectives", {}))
 
 
@@ -99,6 +103,12 @@ func _restore_pickups(saved: Dictionary) -> void:
 	for node: Node in get_tree().get_nodes_in_group(&"pickups"):
 		var pickup: AmmoPickup = node as AmmoPickup
 		pickup.load_state(saved.get(String(pickup.pickup_id), {}))
+
+
+func _restore_containers(saved: Dictionary) -> void:
+	for node: Node in get_tree().get_nodes_in_group(&"containers"):
+		var container: LootContainer = node as LootContainer
+		container.load_state(saved.get(String(container.container_id), {}))
 
 
 ## Opens the folder holding the checkpoint in the system file manager, so players can back it up or

@@ -95,6 +95,31 @@ func start_reload() -> bool:
 	if not found.get("ok", false):
 		reload_block = &"no_magazine"
 		return false
+	return _begin_reload(found)
+
+
+## Starts a reload with the rig magazine at `rig_index` (chosen by dragging it onto the gun). False (and reload_block
+## says why: &"no_magazine" for a bad index, &"wrong_fit" for a magazine of another family, &"full" when the gun is
+## full and the magazine holds no more rounds than the one inserted).
+func start_reload_with(rig_index: int) -> bool:
+	if is_reloading:
+		reload_block = &""
+		return false
+	if inventory == null or rig_index < 0 or rig_index >= inventory.pouches.size():
+		reload_block = &"no_magazine"
+		return false
+	var chosen: Magazine = inventory.pouches[rig_index]
+	if not MagazineRules.can_insert(definition, chosen):
+		reload_block = &"wrong_fit"
+		return false
+	var in_gun: int = inserted.count() if inserted != null else 0
+	if inserted != null and inserted.is_full() and chambered != &"" and chosen.count() <= in_gun:
+		reload_block = &"full"
+		return false
+	return _begin_reload({"ok": true, "magazine": chosen, "pouch": rig_index})
+
+
+func _begin_reload(found: Dictionary) -> bool:
 	reload_block = &""
 	_reload_magazine = found["magazine"]
 	_reload_pouch = found["pouch"]

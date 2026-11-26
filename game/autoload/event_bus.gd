@@ -29,3 +29,6 @@ signal magazine_changed(weapon_id: StringName)
 
 ## A short message for the HUD toast (a pickup taken, the pouches full).
 signal toast_requested(text: String)
+
+## The player opened a container: show its contents next to the inventory. anchor is where it is (walking away closes it).
+signal container_opened(store: LootStore, title: String, anchor: Node3D)

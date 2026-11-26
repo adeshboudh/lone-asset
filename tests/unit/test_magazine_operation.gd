@@ -48,13 +48,14 @@ func test_filling_finishes_when_the_magazine_is_full() -> void:
 	assert_int(inventory.loose_count(FMJ.id)).is_equal(70)
 
 
-func test_a_magazine_with_other_ammo_cannot_be_filled() -> void:
+func test_a_magazine_with_other_ammo_takes_more_on_top() -> void:
 	var inventory: AmmoInventory = _inventory(10)
 	var magazine: Magazine = Magazine.full_of(STANAG, AP)
 	magazine.rounds.resize(5)
 	var operation: MagazineOperation = MagazineOperation.new(MagazineOperation.Kind.FILL, magazine, FMJ)
-	assert_bool(operation.is_finished(inventory)).is_true()
-	assert_int(operation.advance(10.0, inventory, SETTINGS)).is_equal(0)
+	assert_bool(operation.is_finished(inventory)).is_false()
+	assert_int(operation.advance(10.0, inventory, SETTINGS)).is_greater(0)
+	assert_str(String(magazine.top())).is_equal(String(FMJ.id))
 
 
 func test_unloading_is_faster_and_returns_the_rounds() -> void:

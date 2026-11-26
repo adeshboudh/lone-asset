@@ -1,15 +1,19 @@
 class_name AmmoInventory
-extends RefCounted
-## The player's magazine pouches (a fixed number of slots) and loose ammo. Saved with the checkpoint.
+extends LooseAmmoStore
+## The player's tactical rig and backpack. `pouches` is the rig: a fixed number of slots, and the only magazines the
+## reload key uses. `backpack` holds spare magazines (moved into the rig in the inventory screen) and `loose` is its
+## loose ammo. Saved with the checkpoint.
 
 var pouch_count: int
 var pouches: Array[Magazine] = []
-## Ammo id to number of loose rounds.
-var loose: Dictionary = {}
+var backpack_capacity: int
+var backpack: Array[Magazine] = []
+# `loose` (from LooseAmmoStore) is the backpack's loose ammo.
 
 
-func _init(slots: int = 6) -> void:
+func _init(slots: int = 6, backpack_slots: int = 12) -> void:
 	pouch_count = slots
+	backpack_capacity = backpack_slots
 
 
 ## False when every pouch is taken.
@@ -20,41 +24,46 @@ func add_magazine(magazine: Magazine) -> bool:
 	return true
 
 
-func loose_count(ammo_id: StringName) -> int:
-	return int(loose.get(ammo_id, 0))
+## Backpack slots in use: one per magazine and one per started stack of loose ammo (AmmoType.stack_size).
+func slots_used() -> int:
+	var used: int = backpack.size()
+	for id: StringName in loose:
+		used += _stacks(id, loose_count(id))
+	return used
 
 
-func add_loose(ammo_id: StringName, count: int) -> void:
-	if count > 0:
-		loose[ammo_id] = loose_count(ammo_id) + count
+func free_slots() -> int:
+	return maxi(backpack_capacity - slots_used(), 0)
 
 
-## Takes up to `count` loose rounds; returns how many were taken.
-func take_loose(ammo_id: StringName, count: int) -> int:
-	var taken: int = mini(count, loose_count(ammo_id))
-	if taken <= 0:
-		return 0
-	loose[ammo_id] = loose_count(ammo_id) - taken
-	if int(loose[ammo_id]) == 0:
-		loose.erase(ammo_id)
-	return taken
-
-
-## Moves one loose round into a magazine. False when none is loose or the magazine will not take it.
-func fill_one(magazine: Magazine, ammo: AmmoType) -> bool:
-	if loose_count(ammo.id) < 1 or not MagazineRules.can_load(magazine, ammo):
+## False when the backpack has no free slot.
+func add_to_backpack(magazine: Magazine) -> bool:
+	if free_slots() < 1:
 		return false
-	take_loose(ammo.id, 1)
-	return MagazineRules.load_round(magazine, ammo)
-
-
-## Moves the top round of a magazine back to loose ammo. False when the magazine is empty.
-func unload_one(magazine: Magazine) -> bool:
-	var id: StringName = MagazineRules.unload_round(magazine)
-	if id == &"":
-		return false
-	add_loose(id, 1)
+	backpack.append(magazine)
 	return true
+
+
+## Loose ammo takes backpack slots: only what fits is accepted, the number accepted is returned.
+func add_loose(ammo_id: StringName, count: int) -> int:
+	return super(ammo_id, mini(count, loose_room(ammo_id)))
+
+
+func loose_room(ammo_id: StringName) -> int:
+	var stack: int = _stack_size(ammo_id)
+	var in_last_stack: int = loose_count(ammo_id) % stack
+	var rest_of_stack: int = (stack - in_last_stack) % stack
+	return rest_of_stack + free_slots() * stack
+
+
+## The number of slots `count` rounds use.
+func _stacks(ammo_id: StringName, count: int) -> int:
+	return ceili(float(count) / float(_stack_size(ammo_id)))
+
+
+func _stack_size(ammo_id: StringName) -> int:
+	var ammo: AmmoType = InventoryCatalog.default().find_ammo(ammo_id)
+	return maxi(ammo.stack_size if ammo != null else 60, 1)
 
 
 ## How many non-empty magazines in the pouches the weapon takes (the HUD's spare magazine count).
@@ -87,17 +96,24 @@ func to_dict() -> Dictionary:
 	return {
 		"pouch_count": pouch_count,
 		"pouches": pouches.map(func(magazine: Magazine) -> Dictionary: return magazine.to_dict()),
+		"backpack_capacity": backpack_capacity,
+		"backpack": backpack.map(func(magazine: Magazine) -> Dictionary: return magazine.to_dict()),
 		"loose": loose_data,
 	}
 
 
 static func from_dict(data: Dictionary, catalog: InventoryCatalog) -> AmmoInventory:
-	var inventory: AmmoInventory = AmmoInventory.new(int(data.get("pouch_count", 6)))
+	var inventory: AmmoInventory = AmmoInventory.new(int(data.get("pouch_count", 6)), int(data.get("backpack_capacity", 12)))
 	for saved: Variant in data.get("pouches", []):
 		var magazine: Magazine = Magazine.from_dict(saved, catalog)
 		if magazine != null:
 			inventory.add_magazine(magazine)
+	for saved: Variant in data.get("backpack", []):
+		var magazine: Magazine = Magazine.from_dict(saved, catalog)
+		if magazine != null:
+			inventory.add_to_backpack(magazine)
 	var saved_loose: Dictionary = data.get("loose", {})
 	for id: Variant in saved_loose:
-		inventory.add_loose(StringName(String(id)), int(saved_loose[id]))
+		# A saved game is taken as it was, even if it holds more than the slots allow.
+		inventory.loose[StringName(String(id))] = int(saved_loose[id])
 	return inventory

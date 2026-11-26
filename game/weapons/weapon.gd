@@ -147,6 +147,14 @@ func equip() -> void:
 
 
 ## Starts lowering the weapon so the holder can switch to another one when is_holstered() turns true.
+## Reloads with the rig magazine at `rig_index` (the inventory screen's drag onto the gun). False when this weapon
+## is not the one in hand, is swapping its attachment, or the logic refuses (`logic.reload_block` says why).
+func request_reload_with(rig_index: int) -> bool:
+	if not visible or _swap_remaining > 0.0 or definition.melee:
+		return false
+	return logic.start_reload_with(rig_index)
+
+
 ## A reload under way is abandoned: no ammo is loaded, its sound is cut and the arms go back to the idle clip.
 func begin_holster() -> void:
 	_holstering = true
@@ -174,6 +182,11 @@ func clear_holster() -> void:
 ## abandoned (begin_holster).
 func can_holster() -> bool:
 	return _melee_t < 0.0 and _swap_remaining <= 0.0
+
+
+## True when toggle_variant() would work: this weapon is in hand, has another version and is not busy.
+func toggle_variant_allowed() -> bool:
+	return visible and LoadoutRules.can_swap_variant(_variants.size() > 1, logic.is_reloading, _swap_remaining > 0.0)
 
 
 ## Swaps to the other version (suppressor <-> muzzle brake). False when there is none or the weapon is busy.

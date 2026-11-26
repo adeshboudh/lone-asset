@@ -36,6 +36,7 @@ func _init() -> void:
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
 	custom_minimum_size = Vector2(0.0, 107.0)
 	action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
+	clip_contents = true
 	var column: VBoxContainer = VBoxContainer.new()
 	_column = column
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -48,10 +49,13 @@ func _init() -> void:
 	_title_label = Label.new()
 	_title_label.theme_type_variation = &"HeaderLabel"
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Text never makes a button wider than the space it was given.
+	_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(_title_label)
 	_subtitle_label = Label.new()
 	_subtitle_label.theme_type_variation = &"MutedLabel"
 	_subtitle_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_subtitle_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(_subtitle_label)
 	_refresh()
 

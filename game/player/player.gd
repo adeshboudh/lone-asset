@@ -58,8 +58,10 @@ var _pose: BodyPoseState = BodyPoseState.new()
 ## Every weapon carried, in slot order, and the index of the one in hand.
 var _weapons: Array[Weapon] = []
 var _slot: int = 0
-## Magazine pouches and loose ammo, shared by every weapon.
+## Rig, backpack and loose ammo, shared by every weapon.
 var inventory: AmmoInventory
+## Bleeding, injuries and stress, shown in the inventory screen (nothing reads them yet).
+var condition: OperativeCondition = OperativeCondition.new()
 ## Slot being switched to while the weapon in hand is put away, or -1.
 var _pending_slot: int = -1
 var _inventory_key_down: bool = false
@@ -101,6 +103,7 @@ func _ready() -> void:
 	inventory_screen = InventoryScreen.new()
 	add_child(inventory_screen)
 	inventory_screen.setup(self)
+	EventBus.container_opened.connect(inventory_screen.open_container)
 
 
 ## Where guards look when checking whether they can see the player (design §8.1): head, chest and
@@ -122,6 +125,7 @@ func save_state() -> Dictionary:
 		"health": _health.health,
 		"slot": _slot,
 		"inventory": inventory.to_dict(),
+		"condition": condition.to_dict(),
 		"loadout": _weapons.map(func(w: Weapon) -> Dictionary:
 			var state: Dictionary = w.logic.to_dict()
 			state["id"] = String(w.base_id)
@@ -139,7 +143,14 @@ func load_state(data: Dictionary) -> void:
 	_pitch = 0.0
 	_stance.restore(data.get("stance", "stand") == "crouch", settings)
 	_head.position.y = _stance.eye_height
+	_load_operative(data)
+	_select_slot(clampi(int(data.get("slot", 0)), 0, _weapons.size() - 1), true)
+
+
+## Health, condition, inventory and weapons from a checkpoint or a mission profile.
+func _load_operative(data: Dictionary) -> void:
 	_health.health = float(data.get("health", _health.max_health))
+	condition = OperativeCondition.from_dict(data.get("condition"))
 	var saved_loadout: Array = data.get("loadout", [])
 	var catalog: InventoryCatalog = InventoryCatalog.default()
 	var legacy: bool = not data.has("inventory")
@@ -163,7 +174,12 @@ func load_state(data: Dictionary) -> void:
 		var saved_weapon: Dictionary = data.get("weapon", {})
 		_weapon.logic.set_round_count(int(saved_weapon.get("mag", _weapon.logic.magazine)))
 		inventory.stock_reserve(_weapon.definition, int(saved_weapon.get("reserve", 0)))
-	_select_slot(clampi(int(data.get("slot", 0)), 0, _weapons.size() - 1), true)
+
+
+## Starts a mission as the operative of a saved profile (health, condition, inventory, weapons); the position stays.
+func load_profile(data: Dictionary) -> void:
+	_load_operative(data)
+	_select_slot(_slot, true)
 
 
 ## Scripted input for tests and AI dummies; null returns control to the devices.

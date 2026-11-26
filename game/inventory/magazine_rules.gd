@@ -9,12 +9,10 @@ static func can_insert(weapon: WeaponDefinition, magazine: Magazine) -> bool:
 	return weapon.magazine_families.has(magazine.type.family)
 
 
-## Load fit: the round's caliber is one the magazine accepts, and the magazine is empty or holds the same ammo
-## (one ammo type per magazine in this version) and has room.
+## Load fit: the round's caliber is one the magazine accepts and there is room. Ammo types may mix: the last round
+## loaded is the first fired.
 static func can_load(magazine: Magazine, ammo: AmmoType) -> bool:
-	if magazine.is_full() or not magazine.type.accepted_calibers.has(ammo.caliber):
-		return false
-	return magazine.is_empty() or magazine.top() == ammo.id
+	return not magazine.is_full() and magazine.type.accepted_calibers.has(ammo.caliber)
 
 
 static func load_round(magazine: Magazine, ammo: AmmoType) -> bool:

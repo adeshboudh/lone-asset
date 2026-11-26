@@ -129,11 +129,22 @@ func level_ready() -> void:
 	if not Saves.pending.is_empty():
 		Saves.apply(Saves.pending)
 		Saves.pending = {}
+	elif Mission.state.definition.carry_over and not is_benchmark:
+		_apply_profile()
 	Settings.apply_graphics()
 	if not entered or is_benchmark:
 		return
 	if not Platform.is_mouse_captured() and not Platform.is_capture_pending():
 		pause()
+
+
+## The operative from the previous mission replaces the starting loadout (missions with `carry_over`).
+func _apply_profile() -> void:
+	var profile: Dictionary = ProfileStore.read()
+	var player: Player = get_tree().get_first_node_in_group(&"player") as Player
+	if profile.is_empty() or player == null:
+		return
+	player.load_profile(profile)
 
 
 func pause() -> void:
@@ -181,6 +192,9 @@ func _on_player_died() -> void:
 
 func _on_mission_completed() -> void:
 	if state == GameStateMachine.State.PLAYING:
+		var player: Player = get_tree().get_first_node_in_group(&"player") as Player
+		if player != null and not is_benchmark:
+			ProfileStore.write(player)
 		_mission_succeeded = true
 		_machine.transition(GameStateMachine.State.MISSION_END)
 

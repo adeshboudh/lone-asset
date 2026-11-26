@@ -3,7 +3,9 @@ extends RefCounted
 ## Pure rules for checkpoint files (design §16): the schema version, validation and migration.
 
 ## 2: weapons hold a magazine and a chambered round, the player has an inventory (pouches, loose ammo).
-const SCHEMA_VERSION: int = 2
+## 3: the inventory also has a backpack, the player has a condition (a save without them loads with an empty backpack
+## and a default condition).
+const SCHEMA_VERSION: int = 3
 
 
 ## "" if the data can be loaded, otherwise a reason to show the player.

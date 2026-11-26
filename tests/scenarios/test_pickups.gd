@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Ammo and magazine pickups on the real course: taking them, full pouches, guard drops and checkpoints.
+## Ammo and magazine pickups on the real course: taking them, full slots, and checkpoints.
 
 const COURSE_SCENE: PackedScene = preload("res://game/levels/graybox/movement_course.tscn")
 
@@ -73,14 +73,25 @@ func test_taking_a_magazine_fills_a_pouch_with_its_rounds() -> void:
 	assert_str(String(taken.top())).is_equal("ap_556")
 
 
-func test_a_magazine_stays_when_the_pouches_are_full() -> void:
+func test_a_magazine_goes_to_the_backpack_when_the_rig_is_full() -> void:
 	while _player.inventory.pouches.size() < _player.inventory.pouch_count:
 		_player.inventory.add_magazine(Magazine.new(preload("res://data/magazines/stanag_30.tres")))
 	var pickup: AmmoPickup = _pickup(&"pickup_mag_ap")
 	pickup._interactable.complete(_player)
+	assert_bool(pickup.is_taken).is_true()
+	assert_int(_player.inventory.backpack.size()).is_equal(1)
+
+
+func test_a_magazine_stays_when_the_rig_and_backpack_are_full() -> void:
+	while _player.inventory.pouches.size() < _player.inventory.pouch_count:
+		_player.inventory.add_magazine(Magazine.new(preload("res://data/magazines/stanag_30.tres")))
+	while _player.inventory.free_slots() > 0:
+		_player.inventory.add_to_backpack(Magazine.new(preload("res://data/magazines/stanag_30.tres")))
+	var pickup: AmmoPickup = _pickup(&"pickup_mag_ap")
+	pickup._interactable.complete(_player)
 	assert_bool(pickup.is_taken).is_false()
 	assert_bool(pickup.visible).is_true()
-	assert_array(_toasts).contains(["POUCHES FULL"])
+	assert_array(_toasts).contains(["NO ROOM IN THE RIG OR BACKPACK"])
 
 
 func test_the_player_can_look_at_a_pickup_and_take_it_with_the_interact_key() -> void:
@@ -105,24 +116,8 @@ func test_the_player_can_look_at_a_pickup_and_take_it_with_the_interact_key() ->
 	assert_bool(pickup._label.visible).is_false()
 
 
-func test_a_dead_guard_drops_a_magazine_that_can_be_taken() -> void:
-	var guard: Guard = _course.get_node("Guards/GuardB")
-	guard.load_state({"position": [-14.0, 0.0, -16.0], "yaw": 0.0, "alive": false})
-	await _ticks(3)
-	var drop: AmmoPickup = _pickup(&"drop_guard_b")
-	assert_object(drop).is_not_null()
-	assert_int(drop.count).is_equal(20)
-	var pouches: int = _player.inventory.pouches.size()
-	drop._interactable.complete(_player)
-	assert_int(_player.inventory.pouches.size()).is_equal(pouches + 1)
-
-
 func test_taken_pickups_stay_taken_after_a_checkpoint_restore() -> void:
-	var guard: Guard = _course.get_node("Guards/GuardB")
-	guard.load_state({"position": [-14.0, 0.0, -16.0], "yaw": 0.0, "alive": false})
-	await _ticks(3)
 	_pickup(&"pickup_loose_556")._interactable.complete(_player)
-	_pickup(&"drop_guard_b")._interactable.complete(_player)
 	assert_bool(Saves.save_checkpoint()).is_true()
 	var data: Dictionary = Saves.read_checkpoint()
 	assert_bool(data["world"]["pickups"]["pickup_loose_556"]["taken"]).is_true()
@@ -136,9 +131,25 @@ func test_taken_pickups_stay_taken_after_a_checkpoint_restore() -> void:
 	await _ticks(3)
 	assert_bool(_pickup(&"pickup_loose_556").is_taken).is_true()
 	assert_bool(_pickup(&"pickup_loose_9").is_taken).is_false()
-	assert_bool(_pickup(&"drop_guard_b").is_taken).is_true()
 
 
 func _ticks(count: int) -> void:
 	for i: int in count:
 		await get_tree().physics_frame
+
+
+func test_loose_ammo_only_takes_what_fits_the_backpack_slots() -> void:
+	var inventory: AmmoInventory = _player.inventory
+	# Leave room for 70 more 5.56 rounds: the rest of the stack in progress plus one free slot.
+	var fmj: StringName = &"fmj_556"
+	while inventory.free_slots() > 1:
+		inventory.add_to_backpack(Magazine.new(preload("res://data/magazines/stanag_30.tres")))
+	var before: int = inventory.loose_count(fmj)
+	var room: int = inventory.loose_room(fmj)
+	var pickup: AmmoPickup = _pickup(&"pickup_loose_556")
+	pickup.count = room + 25
+	pickup._interactable.complete(_player)
+	assert_int(inventory.loose_count(fmj)).is_equal(before + room)
+	assert_bool(pickup.is_taken).is_false()
+	assert_int(pickup.count).is_equal(25)
+	assert_array(_toasts).contains(["TOOK %d, BACKPACK FULL" % room])

@@ -57,3 +57,10 @@ func test_mission_progress_survives_save_and_load() -> void:
 	assert_int(restored.status_of(&"obj_download_data")).is_equal(MissionState.Status.ACTIVE)
 	assert_int(restored.status_of(&"obj_undetected")).is_equal(MissionState.Status.FAILED)
 	assert_bool(restored.combat_reached).is_true()
+
+
+func test_a_schema_2_save_migrates_to_3() -> void:
+	var data: Dictionary = _valid()
+	data["schema_version"] = 2
+	assert_str(SaveRules.problem_with(data)).is_empty()
+	assert_int(int(SaveRules.migrate(data)["schema_version"])).is_equal(3)
